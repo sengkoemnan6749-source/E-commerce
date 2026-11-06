@@ -297,8 +297,12 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
       {/* 1. TOP MINIMAL HEADER (Xiaomi Account / Apple ID Style) */}
       <header className="w-full border-b border-slate-100/90 bg-white/95 backdrop-blur-md sticky top-0 z-30 px-6 sm:px-12 py-3.5 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#ff6700] via-[#ff781e] to-[#ff944d] text-white flex items-center justify-center font-black text-lg shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform">
-            <span>TT</span>
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0c1b3a] to-[#050b1d] border border-cyan-500/40 p-1.5 flex items-center justify-center shadow-[0_0_15px_rgba(0,217,255,0.25)] group-hover:scale-105 transition-transform">
+            <img
+              src="/images/logo/techtonic-icon.png"
+              alt="TechTonic Logo"
+              className="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(0,217,255,0.6)]"
+            />
           </div>
           <div className="flex flex-col">
             <span className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-tight">

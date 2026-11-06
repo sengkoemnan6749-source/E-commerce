@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechTonic Store — ERD Diagram (Print Friendly)</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #ffffff;
+      color: #0f172a;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #0284c7;
+    }
+    .header p {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .diagram-container {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+      max-width: 1400px;
+      width: 100%;
+      overflow: auto;
+    }
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 12px;
+      color: #334155;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>TechTonic Store — Entity Relationship Diagram (ERD)</h1>
+    <p>Database Schema Architecture (Tables, Primary Keys, Foreign Keys & Cardinality)</p>
+  </div>
+
+  <div class="diagram-container">
+    <pre class="mermaid">
+erDiagram
+    USERS ||--o{ USER_ADDRESSES : "1 : N (places)"
+    USERS ||--o{ ORDERS : "1 : N (places)"
+    USERS ||--o{ PRODUCT_REVIEWS : "1 : N (writes)"
+    
+    CATEGORIES ||--|{ PRODUCTS : "1 : N (contains)"
+    
+    ORDERS ||--|{ ORDER_ITEMS : "1 : N (has)"
+    PRODUCTS ||--o{ ORDER_ITEMS : "1 : N (part of)"
+    
+    PRODUCTS ||--o{ PRODUCT_REVIEWS : "1 : N (has)"
+
+    USERS {
+        UUID id PK "Primary Key"
+        VARCHAR full_name "Customer Name"
+        VARCHAR email UK "Unique Login"
+        VARCHAR password_hash "Encrypted Password"
+        VARCHAR phone "Contact Number"
+        VARCHAR role "customer / admin"
+        TEXT avatar_url "Profile Image"
+        TIMESTAMP created_at "Created Time"
+    }
+
+    USER_ADDRESSES {
+        UUID id PK "Primary Key"
+        UUID user_id FK "References USERS(id)"
+        VARCHAR label "Home / Work"
+        VARCHAR recipient_name "Receiver Name"
+        VARCHAR phone "Contact Phone"
+        TEXT address_line "Street Address"
+        VARCHAR city "Khan / City"
+        VARCHAR province "Province"
+        VARCHAR postal_code "Postal Code"
+        BOOLEAN is_default "Default Flag"
+    }
+
+    CATEGORIES {
+        VARCHAR id PK "Category ID"
+        VARCHAR name "Display Name"
+        VARCHAR slug UK "URL Friendly Slug"
+        TEXT description "Category Details"
+        TEXT image_url "Banner Image"
+        VARCHAR badge "Popular / Hot"
+        INT sort_order "Sort Order"
+    }
+
+    PRODUCTS {
+        VARCHAR id PK "Product Code"
+        VARCHAR category_id FK "References CATEGORIES(id)"
+        VARCHAR name "Product Name"
+        VARCHAR slug UK "Unique Slug"
+        NUMERIC price "Price ($)"
+        NUMERIC original_price "MSRP"
+        INT stock "Inventory"
+        NUMERIC rating "Rating (1-5)"
+        INT reviews_count "Reviews Count"
+        BOOLEAN is_featured "Featured"
+        JSONB specs "Specifications"
+        JSONB variants "Color/Options"
+    }
+
+    ORDERS {
+        VARCHAR id PK "Order ID"
+        UUID user_id FK "References USERS(id)"
+        VARCHAR customer_name "Recipient Name"
+        VARCHAR customer_phone "Phone"
+        JSONB shipping_address "Shipping Address"
+        VARCHAR payment_method "khqr / card / cod"
+        VARCHAR payment_status "paid / pending"
+        VARCHAR order_status "confirmed / shipped"
+        NUMERIC subtotal "Subtotal"
+        NUMERIC shipping_fee "Shipping"
+        NUMERIC total "Total Charge"
+        VARCHAR tracking_number "Tracking #"
+        VARCHAR carrier_name "Courier"
+    }
+
+    ORDER_ITEMS {
+        UUID id PK "Item Row ID"
+        VARCHAR order_id FK "References ORDERS(id)"
+        VARCHAR product_id FK "References PRODUCTS(id)"
+        VARCHAR product_name "Product Name"
+        VARCHAR variant_name "Variant"
+        NUMERIC unit_price "Unit Price"
+        INT quantity "Quantity"
+        NUMERIC total_price "Line Total"
+    }
+
+    PRODUCT_REVIEWS {
+        UUID id PK "Review ID"
+        VARCHAR product_id FK "References PRODUCTS(id)"
+        UUID user_id FK "References USERS(id)"
+        VARCHAR user_name "Customer Name"
+        INT rating "Rating (1-5)"
+        VARCHAR title "Review Title"
+        TEXT comment "Feedback Text"
+        BOOLEAN verified_purchase "Verified"
+    }
+
+    PROMO_CODES {
+        VARCHAR code PK "Promo Code"
+        NUMERIC discount_amount "Discount ($)"
+        NUMERIC minimum_spend "Min Spend ($)"
+        BOOLEAN is_active "Active Status"
+        TIMESTAMP expires_at "Expires At"
+    }
+    </pre>
+
+    <div class="legend">
+      <div class="legend-item">
+        <span class="legend-color" style="background: #0284c7;"></span>
+        <span><strong>PK:</strong> Primary Key</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #d97706;"></span>
+        <span><strong>FK:</strong> Foreign Key</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #16a34a;"></span>
+        <span><strong>1 : N:</strong> One-to-Many Relationship</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background: #9333ea;"></span>
+        <span><strong>N : N:</strong> Many-to-Many Relationship (via ORDER_ITEMS)</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        fontSize: '13px'
+      }
+    });
+  </script>
+</body>
+</html>
