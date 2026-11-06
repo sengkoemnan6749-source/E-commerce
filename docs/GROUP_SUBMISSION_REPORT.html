@@ -3,22 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TechTonic Store — Project Documentation (Group 8)</title>
+  <title>Electronic Store (Team 8) — Digital University of Cambodia</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #0284c7;
-      --primary-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-      --pink-gradient: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
-      --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-      --emerald-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-      --amber-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-      --candy-bg: #faf5ff;
-      --text-main: #1e1b4b;
-      --text-muted: #64748b;
-      --card-radius: 20px;
+      --duc-yellow: #f59e0b;
+      --duc-yellow-light: #fef3c7;
+      --duc-red: #ef4444;
+      --duc-dark: #18181b;
+      --border-dark: #27272a;
+      --card-bg: #ffffff;
+      --page-bg: #f8fafc;
     }
 
     * {
@@ -31,63 +28,57 @@
 
     body {
       font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(180deg, #f8fafc 0%, #fdf2f8 50%, #f0fdf4 100%);
-      color: var(--text-main);
+      background: #f1f5f9;
+      color: var(--duc-dark);
       line-height: 1.7;
       padding: 30px 15px;
-      min-height: 100vh;
     }
 
-    .report-wrapper {
-      max-width: 1060px;
+    .presentation-container {
+      max-width: 1040px;
       margin: 0 auto;
-      background: #ffffff;
-      border-radius: 32px;
-      box-shadow: 0 25px 70px -15px rgba(99, 102, 241, 0.15), 0 0 0 1px rgba(226, 232, 240, 0.8);
-      overflow: hidden;
-      border: 1px solid rgba(244, 114, 182, 0.2);
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
     }
 
-    /* Cute Top Floating Toolbar */
+    /* Top Floating Toolbar (No Print) */
     .top-toolbar {
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #311042 100%);
+      background: #18181b;
       color: #ffffff;
-      padding: 16px 28px;
+      padding: 14px 24px;
+      border-radius: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      position: sticky;
+      top: 15px;
+      z-index: 100;
     }
-    .toolbar-title {
+    .toolbar-info {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       font-size: 13px;
       font-weight: 700;
-      color: #f1f5f9;
-      letter-spacing: 0.2px;
     }
-    .cute-dot {
-      width: 10px;
-      height: 10px;
-      background: #ec4899;
-      border-radius: 50%;
-      box-shadow: 0 0 12px #ec4899;
-      display: inline-block;
-      animation: pulse 2s infinite;
+    .badge-live {
+      background: #10b981;
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.2); opacity: 0.8; }
-    }
-    .toolbar-actions {
+    .toolbar-buttons {
       display: flex;
       gap: 10px;
     }
-    .btn-action {
-      padding: 9px 18px;
-      border-radius: 12px;
+    .btn-cute {
+      padding: 8px 18px;
+      border-radius: 9999px;
       font-size: 12.5px;
       font-weight: 800;
       cursor: pointer;
@@ -96,273 +87,310 @@
       align-items: center;
       gap: 6px;
       text-decoration: none;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.2s ease;
     }
     .btn-print {
-      background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
-      color: #ffffff;
-      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+      background: #f59e0b;
+      color: #000000;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
     }
     .btn-print:hover {
-      filter: brightness(1.1);
-      transform: translateY(-2px) scale(1.02);
-    }
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.22);
+      background: #fbbf24;
       transform: translateY(-2px);
     }
-
-    /* Content Sheet Padding */
-    .content-sheet {
-      padding: 45px 55px;
+    .btn-repo {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+    .btn-repo:hover {
+      background: rgba(255, 255, 255, 0.25);
     }
 
-    /* ======================================================== */
-    /* CUTE & AESTHETIC HERO CARD (REDESIGNED)                   */
-    /* ======================================================== */
-    .hero-header {
-      background: linear-gradient(135deg, #090d1a 0%, #171638 40%, #28103d 75%, #0b1329 100%);
+    /* Individual Slide Frame (A4 Landscape / Screen Style) */
+    .slide-frame {
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
       border-radius: 28px;
-      padding: 40px 44px;
-      color: #ffffff;
+      padding: 45px 50px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
       position: relative;
       overflow: hidden;
-      margin-bottom: 40px;
-      box-shadow: 0 20px 45px -10px rgba(40, 16, 61, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.12);
+      page-break-after: always;
     }
 
-    /* Glowing ambient bubbles */
-    .hero-header::before {
-      content: '';
-      position: absolute;
-      top: -60px;
-      right: -40px;
-      width: 280px;
-      height: 280px;
-      background: radial-gradient(circle, rgba(236, 72, 153, 0.35) 0%, rgba(139, 92, 246, 0.2) 50%, transparent 70%);
-      pointer-events-none;
-      filter: blur(20px);
-    }
-    .hero-header::after {
-      content: '';
-      position: absolute;
-      bottom: -60px;
-      left: 20%;
-      width: 240px;
-      height: 240px;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, transparent 70%);
-      pointer-events-none;
-      filter: blur(30px);
-    }
-
-    .hero-top-row {
+    /* ======================================================== */
+    /* SLIDE 1: UNIVERSITY COVER PAGE (EXACT CUTE DESIGN)       */
+    /* ======================================================== */
+    .slide-cover {
+      min-height: 580px;
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 24px;
-      position: relative;
-      z-index: 2;
+      border-left: 14px solid #f59e0b;
+      padding-left: 45px;
     }
 
-    .hero-left-content {
-      flex: 1;
-    }
-
-    .hero-badge-pills {
+    /* University Header */
+    .uni-header {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 18px;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 25px;
     }
-    .pill-cute {
-      font-size: 11px;
+    .uni-crest-img {
+      height: 60px;
+      width: auto;
+      object-fit: contain;
+    }
+    .uni-titles {
+      text-align: center;
+    }
+    .uni-khmer-name {
+      font-size: 26px;
       font-weight: 800;
-      padding: 5px 14px;
+      color: #0f172a;
+      line-height: 1.25;
+      letter-spacing: -0.3px;
+    }
+    .uni-eng-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #334155;
+      margin-top: 2px;
+      letter-spacing: 0.2px;
+    }
+
+    /* Main Cover Content */
+    .cover-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      margin: 30px 0;
+      position: relative;
+    }
+    .cover-tag-pill {
+      background: #fef3c7;
+      color: #b45309;
+      border: 1.5px solid #fde68a;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 5px 16px;
       border-radius: 9999px;
-      letter-spacing: 0.5px;
+      margin-bottom: 14px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      backdrop-filter: blur(8px);
     }
-    .pill-pink {
-      background: rgba(236, 72, 153, 0.2);
-      color: #f472b6;
-      border: 1px solid rgba(244, 114, 182, 0.4);
-      box-shadow: 0 0 12px rgba(236, 72, 153, 0.2);
-    }
-    .pill-cyan {
-      background: rgba(56, 189, 248, 0.2);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.4);
-    }
-    .pill-purple {
-      background: rgba(168, 85, 247, 0.2);
-      color: #c084fc;
-      border: 1px solid rgba(168, 85, 247, 0.4);
-    }
-
-    .hero-title {
-      font-size: 32px;
-      font-weight: 800;
-      letter-spacing: -0.6px;
-      line-height: 1.2;
+    .cover-main-title {
+      font-size: 58px;
+      font-weight: 900;
+      color: #ef4444; /* Exact Red from image */
+      letter-spacing: -1px;
+      line-height: 1.1;
       margin-bottom: 10px;
-      background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 50%, #fbcfe8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    }
+    .cover-brand-sub {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0284c7;
+      margin-bottom: 24px;
     }
 
-    .hero-tagline {
-      font-size: 14.5px;
-      color: #cbd5e1;
-      font-weight: 500;
-      display: flex;
+    /* Interactive Uploadable Logo Zone */
+    .logo-uploader-card {
+      display: inline-flex;
+      flex-direction: column;
       align-items: center;
       gap: 8px;
-      margin-bottom: 26px;
-    }
-
-    /* Cute Floating Logo Emblem Box */
-    .hero-logo-box {
-      width: 88px;
-      height: 88px;
-      border-radius: 24px;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-      border: 1.5px solid rgba(255, 255, 255, 0.25);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(56, 189, 248, 0.4), 0 0 40px rgba(236, 72, 153, 0.3);
-      padding: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(12px);
-      flex-shrink: 0;
-      position: relative;
-    }
-    .hero-logo-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      filter: drop-shadow(0 4px 10px rgba(0, 217, 255, 0.6));
-    }
-    .hero-logo-sparkle {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      font-size: 16px;
-      animation: float 3s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
-    }
-
-    /* Cute Glass Metadata Grid */
-    .hero-meta-glass {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 14px;
-      position: relative;
-      z-index: 2;
-    }
-    .glass-card {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 18px;
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      padding: 14px 22px;
+      background: #f8fafc;
+      border: 2px dashed #cbd5e1;
+      border-radius: 20px;
+      cursor: pointer;
       transition: all 0.2s ease;
+      position: relative;
     }
-    .glass-card:hover {
-      background: rgba(255, 255, 255, 0.14);
-      border-color: rgba(244, 114, 182, 0.4);
+    .logo-uploader-card:hover {
+      background: #eff6ff;
+      border-color: #38bdf8;
       transform: translateY(-2px);
     }
-    .glass-icon-bubble {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
+    .logo-preview-img {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      border-radius: 14px;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+    }
+    .logo-upload-hint {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #0284c7;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
+      gap: 4px;
     }
-    .bubble-purple { background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(192, 132, 252, 0.4); color: #c084fc; }
-    .bubble-cyan { background: rgba(56, 189, 248, 0.25); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; }
-    .bubble-pink { background: rgba(236, 72, 153, 0.25); border: 1px solid rgba(244, 114, 182, 0.4); color: #f472b6; }
-    .bubble-emerald { background: rgba(52, 211, 153, 0.25); border: 1px solid rgba(52, 211, 153, 0.4); color: #34d399; }
 
-    .glass-info {
+    /* Cover Footer Details */
+    .cover-footer {
       display: flex;
-      flex-direction: column;
-    }
-    .glass-label {
-      font-size: 10.5px;
-      text-transform: uppercase;
-      color: #94a3b8;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 2px solid #f1f5f9;
+      font-size: 14px;
       font-weight: 700;
+      color: #1e293b;
+    }
+    .cover-footer-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cover-footer-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .btn-slide-pill {
+      background: #f59e0b;
+      color: #000000;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+    }
+
+    /* Vertical TEAM 8 Badge */
+    .vertical-team-tag {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%) rotate(-90deg);
+      transform-origin: center;
+      font-size: 15px;
+      font-weight: 900;
+      color: #f59e0b;
+      letter-spacing: 2px;
+    }
+
+    /* ======================================================== */
+    /* SLIDE 2: MEMBER OF TEAM (EXACT CUTE DESIGN)              */
+    /* ======================================================== */
+    .slide-members {
+      text-align: center;
+    }
+    .pill-header-amber {
+      background: #f59e0b;
+      color: #000000;
+      font-size: 20px;
+      font-weight: 900;
+      padding: 10px 36px;
+      border-radius: 9999px;
+      display: inline-block;
+      margin-bottom: 35px;
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+      border: 2px solid #d97706;
       letter-spacing: 0.5px;
     }
-    .glass-val {
-      font-size: 13px;
-      color: #ffffff;
-      font-weight: 700;
-      word-break: break-all;
-    }
 
-    /* Section Headings with Cute Floating Badges */
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-top: 45px;
-      margin-bottom: 22px;
-      padding-bottom: 14px;
-      border-bottom: 2px dashed #fbcfe8;
-      page-break-after: avoid;
+    /* Members 2x2 Grid */
+    .members-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(240px, 320px));
+      gap: 35px 50px;
+      justify-content: center;
+      margin: 10px auto 25px auto;
     }
-    .section-bubble-num {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
+    .member-item {
       display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .member-photo-frame {
+      width: 175px;
+      height: 195px;
+      border-radius: 28px;
+      border: 3.5px solid #000000; /* Exact thick black border from image */
+      overflow: hidden;
+      background: #e2e8f0;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .member-item:hover .member-photo-frame {
+      transform: translateY(-4px) scale(1.02);
+      border-color: #f59e0b;
+      box-shadow: 0 14px 28px rgba(245, 158, 11, 0.25);
+    }
+    .member-photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .member-upload-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      font-weight: 800;
-      color: #ffffff;
-      flex-shrink: 0;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      font-size: 11px;
+      font-weight: 700;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      padding: 10px;
+      text-align: center;
     }
-    .bubble-b1 { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
-    .bubble-b2 { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
-    .bubble-b3 { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
-
-    .section-title-wrap h2 {
-      font-size: 21px;
-      font-weight: 800;
-      color: #0f172a;
-      letter-spacing: -0.4px;
+    .member-photo-frame:hover .member-upload-overlay {
+      opacity: 1;
     }
-    .section-title-wrap p {
-      font-size: 12.5px;
+    .member-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: #000000;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 14px;
+    }
+    .member-role-tag {
+      font-size: 11px;
+      font-weight: 700;
       color: #64748b;
-      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    /* ======================================================== */
+    /* REPORT SECTIONS: BUSINESS, PLANNING, DATABASE            */
+    /* ======================================================== */
+    .section-pill-title {
+      background: #f59e0b;
+      color: #000000;
+      font-size: 17px;
+      font-weight: 900;
+      padding: 8px 24px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
     }
 
     h3 {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 800;
-      color: #1e1b4b;
+      color: #0f172a;
       margin-top: 24px;
       margin-bottom: 12px;
       display: flex;
@@ -371,84 +399,58 @@
     }
     h3::before {
       content: '✦';
-      color: #ec4899;
-      font-size: 14px;
+      color: #f59e0b;
+      font-size: 15px;
     }
 
     p {
-      font-size: 13.5px;
+      font-size: 14px;
       color: #334155;
       line-height: 1.75;
       margin-bottom: 14px;
     }
 
-    /* Cute Cards Grids */
+    /* Grids */
     .grid-4 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
       gap: 16px;
-      margin: 18px 0 24px 0;
-    }
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: 16px;
-      margin: 18px 0 24px 0;
+      margin: 16px 0 24px 0;
     }
     .grid-2 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 16px;
-      margin: 18px 0 24px 0;
+      margin: 16px 0 24px 0;
     }
 
     .cute-card {
       background: #ffffff;
-      border-radius: 20px;
-      padding: 22px;
-      border: 1.5px solid #f1f5f9;
-      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
-      transition: all 0.25s ease;
+      border: 2px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.03);
       position: relative;
       overflow: hidden;
+      transition: all 0.2s ease;
     }
-    .cute-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-    }
-    .card-pink::before { background: var(--pink-gradient); }
-    .card-purple::before { background: var(--purple-gradient); }
-    .card-cyan::before { background: var(--primary-gradient); }
-    .card-emerald::before { background: var(--emerald-gradient); }
-    .card-amber::before { background: var(--amber-gradient); }
-
     .cute-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      border-color: #f59e0b;
     }
-
     .cute-card-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
-      margin-bottom: 14px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 12px;
+      background: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fde68a;
     }
-    .c-icon-pink { background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; }
-    .c-icon-purple { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
-    .c-icon-cyan { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
-    .c-icon-emerald { background: #f0fdf4; color: #059669; border: 1px solid #a7f3d0; }
-    .c-icon-amber { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
-
     .cute-card h4 {
       font-size: 14.5px;
       font-weight: 800;
@@ -458,18 +460,18 @@
     .cute-card p {
       font-size: 12.5px;
       color: #475569;
-      line-height: 1.65;
+      line-height: 1.6;
       margin-bottom: 0;
     }
 
-    /* Cute Tables */
+    /* Tables */
     .table-container {
       background: #ffffff;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 20px;
+      border: 2px solid #e2e8f0;
+      border-radius: 18px;
       overflow: hidden;
       margin: 20px 0 28px 0;
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
       page-break-inside: avoid;
     }
     table {
@@ -479,17 +481,17 @@
       text-align: left;
     }
     th {
-      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      background: #f8fafc;
       color: #0f172a;
       font-weight: 800;
-      padding: 13px 18px;
-      border-bottom: 1.5px solid #cbd5e1;
-      font-size: 11.5px;
+      padding: 12px 16px;
+      border-bottom: 2px solid #cbd5e1;
+      font-size: 12px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
     }
     td {
-      padding: 13px 18px;
+      padding: 12px 16px;
       border-bottom: 1px solid #f1f5f9;
       color: #334155;
       vertical-align: middle;
@@ -497,533 +499,513 @@
     tr:last-child td {
       border-bottom: none;
     }
-    tr:nth-child(even) td {
-      background: #fafafa;
-    }
     tr:hover td {
-      background: #fdf4ff;
+      background: #fffbeb;
     }
 
-    /* Candy Key Badges */
+    /* Key Badges */
     .key-pk {
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      background: #0284c7;
       color: #ffffff;
       font-family: 'JetBrains Mono', monospace;
       font-size: 10.5px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 8px;
-      display: inline-block;
-      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
-    }
-    .key-fk {
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: #ffffff;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10.5px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 8px;
-      display: inline-block;
-      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
-    }
-
-    /* Candy Data Type Badges */
-    .dtype {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       padding: 3px 8px;
       border-radius: 6px;
       display: inline-block;
     }
-    .dtype-uuid { background: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; }
-    .dtype-varchar { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
-    .dtype-num { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-    .dtype-int { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
-    .dtype-bool { background: #ffe4e6; color: #be123c; border: 1px solid #fda4af; }
-    .dtype-json { background: #fdf2f8; color: #be185d; border: 1px solid #f472b6; }
-    .dtype-time { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+    .key-fk {
+      background: #f59e0b;
+      color: #000000;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .dtype {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .dtype-uuid { background: #ede9fe; color: #6d28d9; }
+    .dtype-varchar { background: #e0f2fe; color: #0369a1; }
+    .dtype-num { background: #dcfce7; color: #15803d; }
+    .dtype-int { background: #fef3c7; color: #b45309; }
+    .dtype-bool { background: #ffe4e6; color: #be123c; }
+    .dtype-json { background: #fdf2f8; color: #be185d; }
+    .dtype-time { background: #f1f5f9; color: #475569; }
 
-    /* Cute Relationship Pills */
-    .pill-rel-1n {
-      background: #ecfdf5;
-      color: #047857;
-      border: 1.5px solid #6ee7b7;
+    .pill-rel {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
       font-weight: 800;
       font-size: 11px;
-      padding: 3px 10px;
+      padding: 3px 9px;
       border-radius: 9999px;
       display: inline-block;
     }
-    .pill-rel-nn {
-      background: #fdf2f8;
-      color: #be185d;
-      border: 1.5px solid #f472b6;
-      font-weight: 800;
-      font-size: 11px;
-      padding: 3px 10px;
-      border-radius: 9999px;
-      display: inline-block;
-    }
 
-    /* Diagram Presentation Frame */
+    /* Diagram Card */
     .diagram-frame {
       background: #ffffff;
       border: 2px solid #e2e8f0;
-      border-radius: 24px;
+      border-radius: 22px;
       padding: 24px;
-      margin: 22px 0 30px 0;
-      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+      margin: 20px 0 26px 0;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
       page-break-inside: avoid;
       text-align: center;
-      position: relative;
     }
     .diagram-frame img {
       width: 100%;
       height: auto;
-      border-radius: 14px;
+      border-radius: 12px;
       display: block;
     }
-    .diagram-legend-row {
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid #f1f5f9;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 16px;
-      font-size: 12px;
-      color: #475569;
-      font-weight: 700;
-    }
-    .legend-tag {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .legend-circle {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-    }
 
-    /* Cute Verification Box */
-    .cute-seal-box {
-      background: linear-gradient(135deg, #fdf2f8 0%, #f0fdf4 100%);
-      border: 2px solid #fbcfe8;
+    /* Cute Telegram Card */
+    .telegram-submit-box {
+      background: #18181b;
+      border: 2px solid #f59e0b;
       border-radius: 20px;
-      padding: 22px 26px;
-      margin: 32px 0;
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      page-break-inside: avoid;
-      box-shadow: 0 8px 24px rgba(236, 72, 153, 0.08);
-    }
-    .cute-seal-icon {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, #ec4899 0%, #10b981 100%);
+      padding: 24px 28px;
       color: #ffffff;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-      box-shadow: 0 6px 15px rgba(236, 72, 153, 0.35);
+      margin-top: 15px;
+      page-break-inside: avoid;
     }
-    .cute-seal-text h4 {
+    .tg-title {
+      color: #f59e0b;
       font-size: 15px;
       font-weight: 800;
-      color: #831843;
-      margin-bottom: 4px;
-    }
-    .cute-seal-text p {
-      font-size: 13px;
-      color: #065f46;
-      line-height: 1.65;
-      margin-bottom: 0;
-    }
-
-    /* Cute Telegram Box */
-    .cute-tg-card {
-      background: linear-gradient(135deg, #090d1a 0%, #171638 100%);
-      border-radius: 22px;
-      padding: 26px 30px;
-      color: #ffffff;
-      margin: 32px 0;
-      border: 1.5px solid rgba(244, 114, 182, 0.3);
-      page-break-inside: avoid;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-    }
-    .cute-tg-head {
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      margin-bottom: 12px;
     }
-    .cute-tg-head h4 {
-      font-size: 14.5px;
+    .tg-copy-btn {
+      background: #f59e0b;
+      color: #000;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 6px;
       font-weight: 800;
-      color: #f472b6;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 11.5px;
+      cursor: pointer;
     }
-    .cute-tg-code {
+    .tg-copy-btn:hover {
+      background: #fbbf24;
+    }
+    .tg-code-box {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 16px;
+      border-radius: 12px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 12.5px;
-      color: #cbd5e1;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 18px;
-      border-radius: 14px;
+      color: #f8fafc;
       white-space: pre-wrap;
       line-height: 1.7;
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Print Overrides */
+    /* Hidden File Inputs */
+    .hidden-file-input {
+      display: none;
+    }
+
+    /* Print Tweaks */
     @media print {
       body {
         background: #ffffff;
         padding: 0;
       }
-      .report-wrapper {
-        box-shadow: none;
-        border: none;
-        max-width: 100%;
-        border-radius: 0;
-      }
-      .content-sheet {
-        padding: 10px 0;
-      }
       .no-print {
         display: none !important;
       }
-      .hero-header {
-        margin-bottom: 24px;
-        page-break-inside: avoid;
+      .presentation-container {
+        gap: 0;
+        max-width: 100%;
       }
-      .section-header {
-        margin-top: 30px;
+      .slide-frame {
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 30px 20px;
+        page-break-after: always;
+        min-height: auto;
+      }
+      .slide-cover {
+        border-left: 10px solid #f59e0b;
+      }
+      .logo-uploader-card {
+        border: none;
+        padding: 0;
+        background: transparent;
       }
     }
   </style>
 </head>
 <body>
 
-  <div class="report-wrapper">
-    
-    <!-- 0. Top Interactive Toolbar (Hidden when printing to PDF) -->
+  <!-- Hidden Inputs for Self Uploads -->
+  <input type="file" id="input-logo" class="hidden-file-input" accept="image/*" onchange="handleLogoUpload(event)">
+  <input type="file" id="input-member-1" class="hidden-file-input" accept="image/*" onchange="handleMemberPhotoUpload(event, 'img-member-1', 'member_1_photo')">
+  <input type="file" id="input-member-2" class="hidden-file-input" accept="image/*" onchange="handleMemberPhotoUpload(event, 'img-member-2', 'member_2_photo')">
+  <input type="file" id="input-member-3" class="hidden-file-input" accept="image/*" onchange="handleMemberPhotoUpload(event, 'img-member-3', 'member_3_photo')">
+  <input type="file" id="input-member-4" class="hidden-file-input" accept="image/*" onchange="handleMemberPhotoUpload(event, 'img-member-4', 'member_4_photo')">
+
+  <div class="presentation-container">
+
+    <!-- 0. Top Floating Action Bar -->
     <div class="top-toolbar no-print">
-      <div class="toolbar-title">
-        <span class="cute-dot"></span>
-        <span>TechTonic Store — Academic Submission Portal (Week 8)</span>
+      <div class="toolbar-info">
+        <span class="badge-live">Team 8 Active</span>
+        <span>Digital University of Cambodia • E-Commerce Presentation</span>
       </div>
-      <div class="toolbar-actions">
-        <button class="btn-action btn-print" onclick="window.print()">
-          <span>🖨️ Print to PDF (A4 Color)</span>
+      <div class="toolbar-buttons">
+        <button class="btn-cute btn-print" onclick="window.print()">
+          <span>🖨️ Print as PDF (A4 Slide)</span>
         </button>
-        <a href="https://github.com/sengkoemnan6749-source/E-commerce" target="_blank" class="btn-action btn-secondary">
+        <a href="https://github.com/sengkoemnan6749-source/E-commerce" target="_blank" class="btn-cute btn-repo">
           <span>📦 GitHub Repo</span>
         </a>
       </div>
     </div>
 
-    <div class="content-sheet">
+    <!-- ======================================================== -->
+    <!-- SLIDE 1: UNIVERSITY OFFICIAL COVER (EXACT CUTE STYLE)     -->
+    <!-- ======================================================== -->
+    <div class="slide-frame slide-cover" id="slide-1">
+      
+      <!-- Vertical TEAM 8 Label -->
+      <div class="vertical-team-tag">TEAM 8</div>
 
-      <!-- ======================================================== -->
-      <!-- REDESIGNED AESTHETIC & CUTE HERO HEADER                  -->
-      <!-- ======================================================== -->
-      <div class="hero-header">
+      <!-- University Official Header -->
+      <div class="uni-header">
+        <img src="./duc_crest.png" alt="DUC Crest" class="uni-crest-img">
+        <div class="uni-titles">
+          <div class="uni-khmer-name">សាកលវិទ្យាល័យឌីជីថលកម្ពុជា</div>
+          <div class="uni-eng-name">Digital University of Cambodia</div>
+        </div>
+      </div>
+
+      <!-- Main Title Body -->
+      <div class="cover-body">
+        <div class="cover-tag-pill">✨ Modern Web Engineering & Database Design</div>
+        <h1 class="cover-main-title">Electronic store</h1>
+        <div class="cover-brand-sub">TechTonic Store — Engineered for the Modern Digital Lifestyle</div>
+
+        <!-- 📷 Interactive Logo Upload Zone -->
+        <div class="logo-uploader-card" onclick="document.getElementById('input-logo').click()" title="Click to upload your own custom logo!">
+          <img id="main-store-logo" src="./techtonic-icon.png" alt="Electronic Store Logo" class="logo-preview-img">
+          <div class="logo-upload-hint no-print">
+            <span>📷 Click to Upload Logo / ប្តូរ Logo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Slide Footer -->
+      <div class="cover-footer">
+        <div class="cover-footer-left">
+          <span>បង្រៀនដោយលោកគ្រូ:</span>
+          <strong style="color: #0f172a;">SAN SEN</strong>
+        </div>
+        <div class="cover-footer-right">
+          <div>មុខវិជ្ជា : <strong>E-COMMERCE</strong></div>
+          <div style="color: #94a3b8;">page | 1</div>
+          <a href="#slide-2" class="btn-slide-pill no-print">Start Slide</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SLIDE 2: MEMBER OF TEAM (EXACT CUTE SQUIRCLE FRAMES)     -->
+    <!-- ======================================================== -->
+    <div class="slide-frame slide-members" id="slide-2">
+      
+      <!-- Amber Header Pill -->
+      <div class="pill-header-amber">MEMBER OF TEAM</div>
+
+      <!-- 2x2 Member Squircle Cards -->
+      <div class="members-grid">
         
-        <div class="hero-top-row">
-          <div class="hero-left-content">
-            <div class="hero-badge-pills">
-              <span class="pill-cute pill-pink">✨ Cute & Modern E-Commerce</span>
-              <span class="pill-cute pill-cyan">🚀 React 18 + PostgreSQL 16</span>
-              <span class="pill-cute pill-purple">🌸 Week 8 Final Submission</span>
+        <!-- Member 1: CHAN NITEH -->
+        <div class="member-item" onclick="document.getElementById('input-member-1').click()" title="Click to change photo">
+          <div class="member-photo-frame">
+            <img id="img-member-1" src="./member_chan_niteh.png" alt="CHAN NITEH">
+            <div class="member-upload-overlay no-print">
+              <span>📷 Click to Change Photo</span>
             </div>
-            <h1 class="hero-title">TechTonic Store — Project Documentation</h1>
-            <p class="hero-tagline">
-              <span>💖 "Engineered for the Modern Digital Lifestyle"</span>
-              <span style="opacity: 0.5;">•</span>
-              <span style="color: #38bdf8;">Academic Full-Score Report</span>
-            </p>
           </div>
-
-          <!-- Cute Floating 3D Logo Emblem -->
-          <div class="hero-logo-box">
-            <img src="./techtonic-icon.png" alt="TechTonic 3D Logo">
-            <span class="hero-logo-sparkle">✨</span>
-          </div>
+          <div class="member-name">CHAN NITEH</div>
+          <div class="member-role-tag">Team Leader & Full-Stack</div>
         </div>
 
-        <!-- 4 Cute Glass Metadata Cards -->
-        <div class="hero-meta-glass">
-          <div class="glass-card">
-            <div class="glass-icon-bubble bubble-purple">👥</div>
-            <div class="glass-info">
-              <span class="glass-label">ក្រុមនិស្សិត (Group)</span>
-              <span class="glass-val">ក្រុមទី 8 (Team 8)</span>
+        <!-- Member 2: YON SIMIDA -->
+        <div class="member-item" onclick="document.getElementById('input-member-2').click()" title="Click to upload photo">
+          <div class="member-photo-frame">
+            <img id="img-member-2" src="./member_placeholder.png" alt="YON SIMIDA">
+            <div class="member-upload-overlay no-print">
+              <span>📷 Click to Upload Photo</span>
             </div>
           </div>
+          <div class="member-name">YON SIMIDA</div>
+          <div class="member-role-tag">Frontend & UI Design</div>
+        </div>
 
-          <div class="glass-card">
-            <div class="glass-icon-bubble bubble-pink">📚</div>
-            <div class="glass-info">
-              <span class="glass-label">មុខវិជ្ជា (Course)</span>
-              <span class="glass-val">Web & Database</span>
+        <!-- Member 3: MORN DOEK -->
+        <div class="member-item" onclick="document.getElementById('input-member-3').click()" title="Click to upload photo">
+          <div class="member-photo-frame">
+            <img id="img-member-3" src="./member_placeholder.png" alt="MORN DOEK">
+            <div class="member-upload-overlay no-print">
+              <span>📷 Click to Upload Photo</span>
             </div>
           </div>
+          <div class="member-name">MORN DOEK</div>
+          <div class="member-role-tag">Database & Backend</div>
+        </div>
 
-          <div class="glass-card">
-            <div class="glass-icon-bubble bubble-cyan">🗓️</div>
-            <div class="glass-info">
-              <span class="glass-label">កាលបរិច្ឆេទ (Date)</span>
-              <span class="glass-val">Week 8 — October 2026</span>
+        <!-- Member 4: SENG KOEMNAN -->
+        <div class="member-item" onclick="document.getElementById('input-member-4').click()" title="Click to upload photo">
+          <div class="member-photo-frame">
+            <img id="img-member-4" src="./member_placeholder.png" alt="SENG KOEMNAN">
+            <div class="member-upload-overlay no-print">
+              <span>📷 Click to Upload Photo</span>
             </div>
           </div>
-
-          <div class="glass-card">
-            <div class="glass-icon-bubble bubble-emerald">🔗</div>
-            <div class="glass-info">
-              <span class="glass-label">Repository</span>
-              <span class="glass-val" style="font-size: 11px;">sengkoemnan6749-source</span>
-            </div>
-          </div>
+          <div class="member-name">SENG KOEMNAN</div>
+          <div class="member-role-tag">System Planning & QA</div>
         </div>
 
       </div>
 
-      <!-- ======================================================== -->
-      <!-- SECTION 1: BUSINESS (ផែនការអាជីវកម្ម)                      -->
-      <!-- ======================================================== -->
-      <div class="section-header">
-        <div class="section-bubble-num bubble-b1">1</div>
-        <div class="section-title-wrap">
-          <h2>Business (ផែនការអាជីវកម្ម & ម៉ូដែលប្រតិបត្តិការ)</h2>
-          <p>យុទ្ធសាស្ត្រអាជីវកម្ម B2C E-Commerce, អតិថិជនគោលដៅ និងផលិតផលស្នូល</p>
-        </div>
+      <div style="font-size: 12.5px; color: #64748b; font-weight: 600;" class="no-print">
+        💡 <em>ចំណាំ៖ អ្នកអាចចុចលើរូបសមាជិកនីមួយៗដើម្បី Upload រូបពិតចេញពីកុំព្យូទ័ររបស់អ្នកបានភ្លាមៗ!</em>
       </div>
 
-      <h3>1.1 Executive Summary & Brand Identity (សេចក្តីសង្ខេបអាជីវកម្ម)</h3>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SLIDE 3: BUSINESS (ផែនការអាជីវកម្ម)                      -->
+    <!-- ======================================================== -->
+    <div class="slide-frame" id="slide-3">
+      
+      <div class="section-pill-title">
+        <span>💼 1. BUSINESS (ផែនការអាជីវកម្ម)</span>
+      </div>
+
+      <h3>1.1 Executive Summary (សេចក្តីសង្ខេបអាជីវកម្ម)</h3>
       <p>
-        <strong>TechTonic Store</strong> គឺជាវេទិកាពាណិជ្ជកម្មអេឡិចត្រូនិក (B2C E-Commerce Boutique) ជំនាន់ថ្មីដែលផ្តោតលើការផ្គត់ផ្គង់ឧបករណ៍អេឡិចត្រូនិកទំនើបៗ (Modern Consumer Electronics) កម្រិតខ្ពស់សម្រាប់អ្នកសរសេរកូដ (Software Engineers), អ្នកបង្កើតមាតិកា (Content Creators) និងសិស្ស-និស្សិតនៅក្នុងប្រទេសកម្ពុជា។ វេទិកានេះត្រូវបានបង្កើតឡើងដើម្បីដោះស្រាយបញ្ហាកង្វះខាតហាងលក់គ្រឿង Accessory ដែលមានគុណភាពពិតប្រាកដ (Genuine Warranties), ការដឹកជញ្ជូនយឺតយ៉ាវ និងភាពលំបាកក្នុងការទូទាត់ប្រាក់តាមប្រព័ន្ធក្នុងស្រុក។
+        <strong>TechTonic Store (Electronic Store)</strong> គឺជាវេទិកាពាណិជ្ជកម្មអេឡិចត្រូនិក B2C E-Commerce ជំនាន់ថ្មី ដែលផ្គត់ផ្គង់ឧបករណ៍អេឡិចត្រូនិកទំនើបៗ (Modern Consumer Electronics) ដូចជា ឧបករណ៍សម្លេងកម្រិតស្ទូឌីយោ, នាឡិកាវៃឆ្លាត Smart Wearables, គ្រឿង Ergonomic Desk Setups, និង Fast Power Accessories ក្នុងប្រទេសកម្ពុជា។
       </p>
 
-      <h3>1.2 Target Audience Personas (អតិថិជនគោលដៅទាំង ៣ ក្រុម)</h3>
-      <div class="grid-3">
-        <div class="cute-card card-cyan">
-          <div class="cute-card-icon c-icon-cyan">💻</div>
-          <h4>Software Engineers & Coders</h4>
-          <p>ទាមទារឧបករណ៍ Input Devices ដូចជា 75% Mechanical Keyboards (Hot-swappable tactile switches), Ergonomic Vertical Mice និង Studio ANC Headphones ដើម្បីផ្តោតអារម្មណ៍ក្នុងការ Coding រយៈពេលយូរ។</p>
-        </div>
-        <div class="cute-card card-purple">
-          <div class="cute-card-icon c-icon-purple">🎓</div>
-          <h4>University Students</h4>
-          <p>សិស្ស-និស្សិតដែលត្រូវការឧបករណ៍ Smart Wearables និង Power Banks គុណភាពខ្ពស់ ថាមពលថ្មកាន់បានពេញមួយថ្ងៃ និងមានតម្លៃសមរម្យ (Value-Engineered Pricing)។</p>
-        </div>
-        <div class="cute-card card-pink">
-          <div class="cute-card-icon c-icon-pink">🎙️</div>
-          <h4>Creators & Digital Nomads</h4>
-          <p>អ្នកបង្កើតមាតិកា និងអ្នកធ្វើការពីចម្ងាយដែលត្រូវការ Lossless Audio Monitoring, ឆ្នាំងសាក GaN III Fast Power 100W ទម្ងន់ស្រាលងាយស្រួលធ្វើដំណើរ និងជើងទម្រ CNC Aluminum។</p>
-        </div>
-      </div>
-
-      <h3>1.3 Core Product Lines (ប្រភេទផលិតផលចម្បងទាំង ៤)</h3>
+      <h3>1.2 Target Audience (អតិថិជនគោលដៅ)</h3>
       <div class="grid-4">
-        <div class="cute-card card-cyan">
-          <div class="cute-card-icon c-icon-cyan">🎧</div>
+        <div class="cute-card">
+          <div class="cute-card-icon">💻</div>
+          <h4>Software Engineers</h4>
+          <p>ក្ដារចុច 75% Mechanical Tactile, Vertical Mice និងកាស ANC ការពារសម្លេងរំខាន។</p>
+        </div>
+        <div class="cute-card">
+          <div class="cute-card-icon">🎓</div>
+          <h4>University Students</h4>
+          <p>ឧបករណ៍ Smart Wearables និង Power Bank គុណភាពខ្ពស់ តម្លៃសមរម្យសម្រាប់និស្សិត។</p>
+        </div>
+        <div class="cute-card">
+          <div class="cute-card-icon">🎙️</div>
+          <h4>Content Creators</h4>
+          <p>Studio Monitoring Headphones, USB Microphones និងជើងទម្រ CNC Aluminum។</p>
+        </div>
+        <div class="cute-card">
+          <div class="cute-card-icon">🏢</div>
+          <h4>Office Professionals</h4>
+          <p>ឧបករណ៍ Ergonomic ជួយសម្រាលការឈឺកដៃ និងខ្នងពេលអង្គុយធ្វើការយូរម៉ោង។</p>
+        </div>
+      </div>
+
+      <h3>1.3 Core Product Lines (ប្រភេទផលិតផលទាំង ៤)</h3>
+      <div class="grid-4">
+        <div class="cute-card">
+          <div class="cute-card-icon">🎧</div>
           <h4>Audio & Acoustics</h4>
-          <p>Studio reference ANC headphones, Lossless TWS earbuds, beryllium dynamic drivers ជាមួយនឹង Hi-Res Audio Certification។</p>
+          <p>Studio ANC Headphones, Hi-Res TWS Earbuds, Beryllium dynamic drivers។</p>
         </div>
-        <div class="cute-card card-amber">
-          <div class="cute-card-icon c-icon-amber">⌚</div>
+        <div class="cute-card">
+          <div class="cute-card-icon">⌚</div>
           <h4>Smart Wearables</h4>
-          <p>AMOLED Fitness Watches, Biosensor Health Trackers, និង Titanium Smart Health Rings ជាមួយការតាមដានចង្វាក់បេះដូង 24/7។</p>
+          <p>AMOLED Fitness Watches, Titanium Health Rings តាមដានចង្វាក់បេះដូង។</p>
         </div>
-        <div class="cute-card card-purple">
-          <div class="cute-card-icon c-icon-purple">⌨️</div>
+        <div class="cute-card">
+          <div class="cute-card-icon">⌨️</div>
           <h4>Workspace Peripherals</h4>
-          <p>75% Mechanical Keyboards, Silent Tactile Switches, Ergonomic Vertical Mice, និងជើងទម្រ Aluminum Laptop Riser Stands។</p>
+          <p>75% Hot-Swappable Mechanical Keyboards, Ergonomic Mice, Laptop Risers។</p>
         </div>
-        <div class="cute-card card-pink">
-          <div class="cute-card-icon c-icon-pink">⚡</div>
+        <div class="cute-card">
+          <div class="cute-card-icon">⚡</div>
           <h4>Power & Mobile</h4>
-          <p>100W Gallium Nitride (GaN III) Fast Chargers, MagSafe Wireless Battery Packs, និងខ្សែសាក Braided Liquid Silicone Cables។</p>
+          <p>100W GaN III Fast Chargers, MagSafe Wireless Batteries, Liquid Silicone Cables។</p>
         </div>
       </div>
 
-      <h3>1.4 Key Value Propositions (គុណតម្លៃស្នូលនៃការប្រកួតប្រជែង)</h3>
+      <h3>1.4 Key Value Propositions (គុណតម្លៃប្រកួតប្រជែង)</h3>
       <div class="grid-2">
-        <div class="cute-card card-cyan">
-          <div class="cute-card-icon c-icon-cyan">🚀</div>
-          <h4>Same-Day Express Dispatch (3-Hour GrabExpress)</h4>
-          <p>សេវាដឹកជញ្ជូនរហ័សទាន់ចិត្តក្នុងរាជធានីភ្នំពេញក្នុងរយៈពេលត្រឹមតែ ៣ ម៉ោងតាមរយៈដៃគូដឹកជញ្ជូន GrabExpress និង J&T Express សម្រាប់រាល់ការបញ្ជាទិញមុនម៉ោង 3:00 PM។</p>
+        <div class="cute-card">
+          <h4>🚀 Same-Day Express Dispatch (3-Hour GrabExpress)</h4>
+          <p>ដឹកជញ្ជូនរហ័សទាន់ចិត្តក្រោម ៣ ម៉ោងក្នុងរាជធានីភ្នំពេញ សម្រាប់រាល់ការបញ្ជាទិញមុនម៉ោង 3:00 PM។</p>
         </div>
-        <div class="cute-card card-emerald">
-          <div class="cute-card-icon c-icon-emerald">🛡️</div>
-          <h4>1-Year Official Local Serialized Warranty</h4>
-          <p>រាល់ផលិតផលទាំងអស់សុទ្ធតែមាន Serial Number ច្បាស់លាស់ ភ្ជាប់ជាមួយការធានាផ្លូវការរយៈពេល ១ ឆ្នាំពេញពីមជ្ឈមណ្ឌលសេវាកម្មប្រចាំរាជធានីភ្នំពេញ។</p>
+        <div class="cute-card">
+          <h4>🛡️ 1-Year Local Serialized Warranty</h4>
+          <p>ការធានាផ្លូវការរយៈពេល ១ ឆ្នាំពេញ ភ្ជាប់ជាមួយលេខ Serial Number ពីមជ្ឈមណ្ឌលសេវាកម្មភ្នំពេញ។</p>
         </div>
-        <div class="cute-card card-amber">
-          <div class="cute-card-icon c-icon-amber">🇰🇭</div>
-          <h4>Cambodia National Bank (NBC) Bakong KHQR</h4>
-          <p>គាំទ្រការទូទាត់ប្រាក់បែប Digital តាមរយៈស្ដង់ដារជាតិ KHQR អាចស្កេនទូទាត់ភ្លាមៗពីគ្រប់ធនាគារក្នុងស្រុក (ABA Mobile, Wing Bank, ACLEDA, Sathapana, Canadia)។</p>
+        <div class="cute-card">
+          <h4>🇰🇭 Cambodia National Bank (NBC) Bakong KHQR</h4>
+          <p>គាំទ្រការទូទាត់ប្រាក់ឌីជីថលតាមរយៈស្ដង់ដារ KHQR ពីគ្រប់ធនាគារ (ABA, Wing, ACLEDA, Sathapana)។</p>
         </div>
-        <div class="cute-card card-pink">
-          <div class="cute-card-icon c-icon-pink">🔄</div>
-          <h4>30-Day Hassle-Free Exchange Policy</h4>
-          <p>ផ្ដល់ទំនុកចិត្តខ្ពស់ជូនអតិថិជនក្នុងការប្តូរទំនិញក្នុងរយៈពេល ៣០ ថ្ងៃ ប្រសិនបើមិនពេញចិត្តនឹងទំហំ ការរចនា ឬ Switch Feel នៃក្ដារចុច។</p>
+        <div class="cute-card">
+          <h4>🔄 30-Day Hassle-Free Exchange Policy</h4>
+          <p>ផ្ដល់ទំនុកចិត្តខ្ពស់ក្នុងការប្តូរទំនិញក្នុងរយៈពេល ៣០ ថ្ងៃ ប្រសិនបើមិនពេញចិត្តនឹងទំហំ ឬ Switch feel។</p>
         </div>
       </div>
 
-      <!-- ======================================================== -->
-      <!-- SECTION 2: PROJECT PLANNING (ផែនការបច្ចេកវិទ្យា & ប្រព័ន្ធ) -->
-      <!-- ======================================================== -->
-      <div class="section-header">
-        <div class="section-bubble-num bubble-b2">2</div>
-        <div class="section-title-wrap">
-          <h2>Project Planning & Architecture (ផែនការបច្ចេកវិទ្យា & ប្រព័ន្ធ)</h2>
-          <p>រចនាសម្ព័ន្ធបច្ចេកវិទ្យា, Core Modules, Flowcharts និង UX Responsiveness</p>
-        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SLIDE 4: PROJECT PLANNING (ផែនការបច្ចេកវិទ្យា & ប្រព័ន្ធ) -->
+    <!-- ======================================================== -->
+    <div class="slide-frame" id="slide-4">
+      
+      <div class="section-pill-title">
+        <span>🛠️ 2. PROJECT PLANNING (ផែនការប្រព័ន្ធ)</span>
       </div>
 
-      <h3>2.1 Modern Technology Stack (បច្ចេកវិទ្យាជ្រើសរើសប្រើប្រាស់)</h3>
+      <h3>2.1 Modern Technology Stack (បច្ចេកវិទ្យាប្រើប្រាស់)</h3>
       <div class="table-container">
         <table>
           <thead>
             <tr>
-              <th style="width: 22%;">ផ្នែក (Layer)</th>
-              <th style="width: 24%;">បច្ចេកវិទ្យា (Technology)</th>
-              <th>មូលហេតុនៃការជ្រើសរើស (Justification & Benefits)</th>
+              <th style="width: 22%;">Layer</th>
+              <th style="width: 25%;">Technology</th>
+              <th>តួនាទី & អត្ថប្រយោជន៍ (Role & Justification)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td><strong>Frontend Framework</strong></td>
               <td><span class="dtype dtype-varchar">React 18 + Vite 6</span></td>
-              <td>ល្បឿន Development លឿនខ្លាំង (Hot Module Replacement) និង Performance កម្រិតខ្ពស់លើ Single Page Application (SPA)។</td>
+              <td>Single Page Application (SPA) ល្បឿនលឿន និង Hot Module Replacement (HMR)</td>
             </tr>
             <tr>
-              <td><strong>Styling & CSS</strong></td>
+              <td><strong>Styling & Design</strong></td>
               <td><span class="dtype dtype-varchar">Tailwind CSS 3.4</span></td>
-              <td>Utility-First CSS ជួយបង្កើត Cyber Dark/Light Mode, Glassmorphism, Micro-animations និង Fully Responsive Layouts។</td>
+              <td>បង្កើត UI Cyber/Light Mode, Glassmorphism និង Fully Responsive Design</td>
             </tr>
             <tr>
-              <td><strong>Client-Side Routing</strong></td>
+              <td><strong>Client Routing</strong></td>
               <td><span class="dtype dtype-uuid">React Router DOM v6</span></td>
-              <td>គ្រប់គ្រង Nested Layouts សម្រាប់អតិថិជន (Storefront Layout) និងអ្នកគ្រប់គ្រង (Admin Dashboard Layout) ជាមួយ Route Guards។</td>
+              <td>គ្រប់គ្រង Nested Layouts សម្រាប់ Storefront និង Admin Dashboard</td>
             </tr>
             <tr>
               <td><strong>State Management</strong></td>
-              <td><span class="dtype dtype-uuid">React Context API + LocalStorage</span></td>
-              <td>គ្រប់គ្រងទិន្នន័យរទេះ (Cart State), បញ្ជីប្រាថ្នា (Wishlist State), និង User Authentication ដោយរក្សាទុក Persistence មិនបាត់ពេល Refresh។</td>
+              <td><span class="dtype dtype-uuid">React Context + LocalStorage</span></td>
+              <td>គ្រប់គ្រង Cart State, Wishlist និង Auth ដោយរក្សាទុក Persistence មិនបាត់ពេល Refresh</td>
             </tr>
             <tr>
-              <td><strong>Icon System</strong></td>
-              <td><span class="dtype dtype-num">Lucide React Vector Icons</span></td>
-              <td>Icon វ៉ិចទ័រ SVG កម្រិតស្ដង់ដារពិភពលោក គ្មានប្រើ Emoji នាំឱ្យខូច Layout ជួយឱ្យ UI មើលទៅ Clean និងមានលក្ខណៈវិជ្ជាជីវៈខ្ពស់។</td>
+              <td><strong>Vector Icons</strong></td>
+              <td><span class="dtype dtype-num">Lucide React</span></td>
+              <td>Clean SVG Vector Icons ស្ដង់ដារសកល គ្មាន Emoji ជួយឱ្យ UI មើលទៅ Professional</td>
             </tr>
             <tr>
               <td><strong>Database Engine</strong></td>
               <td><span class="dtype dtype-num">PostgreSQL 16 Relational DB</span></td>
-              <td>ប្រព័ន្ធគ្រប់គ្រងទិន្នន័យ Relational DB ដែលមានស្ថិរភាពខ្ពស់ បែងចែកតាមស្ដង់ដារ Third Normal Form (3NF) ជាមួយ Foreign Key Constraints។</td>
+              <td>គ្រប់គ្រងទិន្នន័យតាមស្ដង់ដារ 3NF និងធានា Referential Integrity តាមរយៈ Foreign Keys</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <h3>2.2 Core Modules & Functional Architecture</h3>
+      <h3>2.2 Core System Modules</h3>
       <div class="grid-2">
-        <div class="cute-card card-cyan">
-          <div class="cute-card-icon c-icon-cyan">🛍️</div>
-          <h4>1. Storefront & Multi-Variant Catalog</h4>
-          <p>បង្ហាញទំនិញទាំង ៤០ មុខ ជាមួយការជ្រើសរើសជម្រើសពណ៌ (Color Swatches) និង Switch ប្រភេទផ្សេងៗ ការ Filter តាម Category, Search Keyword និង Sort តាមតម្លៃ។</p>
+        <div class="cute-card">
+          <h4>🛍️ 1. Storefront & Multi-Variant Catalog</h4>
+          <p>ទំនិញ ៤០ មុខ ជាមួយការជ្រើសរើសពណ៌ និង Switch ភ្លាមៗ, Search keyword, Category filter និង Brand loop។</p>
         </div>
-        <div class="cute-card card-amber">
-          <div class="cute-card-icon c-icon-amber">💳</div>
-          <h4>2. Cart & Interactive KHQR Checkout</h4>
-          <p>ប្រព័ន្ធគណនាតម្លៃទំនិញ, សេវាដឹកជញ្ជូន, បញ្ចុះតម្លៃតាម Coupon Code, ការជ្រើសរើសអាសយដ្ឋានដឹកជញ្ជូន និងការបង្កើតកូដ KHQR ស្កេនទូទាត់ជាក់ស្ដែង។</p>
+        <div class="cute-card">
+          <h4>💳 2. Cart & Interactive KHQR Checkout</h4>
+          <p>គណនាតម្លៃទំនិញ, សេវាដឹកជញ្ជូន, បញ្ចុះតម្លៃតាម Coupon Code, អាសយដ្ឋានដឹក និងកូដស្កេន KHQR ជាក់ស្ដែង។</p>
         </div>
-        <div class="cute-card card-purple">
-          <div class="cute-card-icon c-icon-purple">📍</div>
-          <h4>3. Real-Time Order Tracking Telemetry</h4>
-          <p>ប្រព័ន្ធតាមដានដំណើរការដឹកជញ្ជូន ៥ ដំណាក់កាល (`Confirmed` &rarr; `Processing` &rarr; `Shipped` &rarr; `Out for Delivery` &rarr; `Delivered`) ជាមួយផែនទី Live Telemetry។</p>
+        <div class="cute-card">
+          <h4>📍 3. Real-Time Order Tracking Telemetry</h4>
+          <p>តាមដានដំណើរការដឹកជញ្ជូន ៥ ដំណាក់កាល (`Confirmed` &rarr; `Delivered`) ជាមួយផែនទី Live Telemetry។</p>
         </div>
-        <div class="cute-card card-pink">
-          <div class="cute-card-icon c-icon-pink">🛡️</div>
-          <h4>4. Admin Management Dashboard</h4>
-          <p>ផ្ទាំងគ្រប់គ្រងសម្រាប់ Admin ក្នុងការបង្កើត/កែប្រែ/លុបទំនិញ (Full CRUD), ការគ្រប់គ្រងស្ថានភាពបញ្ជាទិញ (Order Status Flow) និងការត្រួតពិនិត្យអតិថិជន។</p>
+        <div class="cute-card">
+          <h4>🛡️ 4. Admin Management Dashboard</h4>
+          <p>ប្រព័ន្ធគ្រប់គ្រងសម្រាប់ Admin ក្នុងការបង្កើត/កែប្រែ/លុបទំនិញ (CRUD), ប្តូរ Status Order, និងគ្រប់គ្រង Customer។</p>
         </div>
       </div>
 
-      <!-- ======================================================== -->
-      <!-- SECTION 3: DATABASE DESIGN (តារាងទិន្នន័យ & រូបភាព ERD)   -->
-      <!-- ======================================================== -->
-      <div class="section-header">
-        <div class="section-bubble-num bubble-b3">3</div>
-        <div class="section-title-wrap">
-          <h2>Database Design (ការរចនាមូលដ្ឋានទិន្នន័យ & ERD)</h2>
-          <p>ស្ថាបត្យកម្ម Relational Schema 3NF, តារាងទិន្នន័យទាំង ៨, PK, FK, និងទំនាក់ទំនង</p>
-        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- SLIDE 5: DATABASE DESIGN & ERD (តារាងទិន្នន័យ & រូបភាព ERD) -->
+    <!-- ======================================================== -->
+    <div class="slide-frame" id="slide-5">
+      
+      <div class="section-pill-title">
+        <span>🗄️ 3. DATABASE DESIGN (ការរចនាទិន្នន័យ & ERD)</span>
       </div>
 
-      <h3>3.1 Complete Data Dictionary (តារាងទិន្នន័យទាំង ៨ លម្អិត)</h3>
-      <p>
-        មូលដ្ឋានទិន្នន័យរបស់ប្រព័ន្ធ TechTonic Store ត្រូវបានរៀបចំឡើងយ៉ាងត្រឹមត្រូវតាមស្ដង់ដារ <strong>Third Normal Form (3NF)</strong> ដោយបែងចែកជា <strong>៨ តារាង</strong> គ្មានទិន្នន័យស្ទួន និងមាន Referential Integrity ពេញលេញ៖
-      </p>
-
+      <h3>3.1 Complete Data Dictionary (តារាងទិន្នន័យទាំង ៨)</h3>
       <div class="table-container">
         <table>
           <thead>
             <tr>
-              <th style="width: 18%;">Table Name</th>
-              <th style="width: 14%;">Primary Key</th>
-              <th style="width: 25%;">Foreign Key (FK) Reference</th>
-              <th style="width: 16%;">Data Types Used</th>
-              <th>តួនាទី & ការពិពណ៌នា (Purpose)</th>
+              <th>Table Name</th>
+              <th>Primary Key</th>
+              <th>Foreign Key (FK) Reference</th>
+              <th>Data Types Used</th>
+              <th>ការពិពណ៌នា (Description)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td><strong><code>users</code></strong></td>
               <td><span class="key-pk">id</span></td>
-              <td><em>None (Root Entity)</em></td>
+              <td>-</td>
               <td><span class="dtype dtype-uuid">UUID</span>, <span class="dtype dtype-varchar">VARCHAR</span></td>
-              <td>ផ្ទុកព័ត៌មានគណនីអតិថិជន និង Admin (`customer`, `admin`)</td>
+              <td>ព័ត៌មានគណនីអតិថិជន និង Admin (`customer`, `admin`)</td>
             </tr>
             <tr>
               <td><strong><code>user_addresses</code></strong></td>
               <td><span class="key-pk">id</span></td>
               <td><span class="key-fk">user_id</span> &rarr; <code>users.id</code></td>
-              <td><span class="dtype dtype-uuid">UUID</span>, <span class="dtype dtype-varchar">VARCHAR</span>, <span class="dtype dtype-bool">BOOL</span></td>
-              <td>អាសយដ្ឋានដឹកជញ្ជូនច្រើនកន្លែងរបស់អតិថិជន (Home, Work)</td>
+              <td><span class="dtype dtype-uuid">UUID</span>, <span class="dtype dtype-varchar">VARCHAR</span></td>
+              <td>អាសយដ្ឋានដឹកជញ្ជូនច្រើនកន្លែងរបស់អតិថិជន</td>
             </tr>
             <tr>
               <td><strong><code>categories</code></strong></td>
               <td><span class="key-pk">id</span></td>
-              <td><em>None (Catalog Entity)</em></td>
+              <td>-</td>
               <td><span class="dtype dtype-varchar">VARCHAR</span>, <span class="dtype dtype-int">INT</span></td>
-              <td>ប្រភេទទំនិញ (Audio, Wearables, Keyboards, Power)</td>
+              <td>ប្រភេទផលិតផល (Audio, Wearables, Keyboards, Power)</td>
             </tr>
             <tr>
               <td><strong><code>products</code></strong></td>
               <td><span class="key-pk">id</span></td>
               <td><span class="key-fk">category_id</span> &rarr; <code>categories.id</code></td>
-              <td><span class="dtype dtype-varchar">VARCHAR</span>, <span class="dtype dtype-num">NUMERIC</span>, <span class="dtype dtype-json">JSONB</span></td>
+              <td><span class="dtype dtype-varchar">VARCHAR</span>, <span class="dtype dtype-num">NUM</span>, <span class="dtype dtype-json">JSON</span></td>
               <td>ព័ត៌មានលម្អិតនៃទំនិញ (តម្លៃ, ស្តុក, ជម្រើសពណ៌, Specs)</td>
             </tr>
             <tr>
               <td><strong><code>orders</code></strong></td>
               <td><span class="key-pk">id</span></td>
               <td><span class="key-fk">user_id</span> &rarr; <code>users.id</code></td>
-              <td><span class="dtype dtype-varchar">VARCHAR</span>, <span class="dtype dtype-num">NUMERIC</span>, <span class="dtype dtype-json">JSONB</span></td>
+              <td><span class="dtype dtype-varchar">VARCHAR</span>, <span class="dtype dtype-num">NUM</span>, <span class="dtype dtype-json">JSON</span></td>
               <td>ការបញ្ជាទិញ, ព័ត៌មានដឹកជញ្ជូន, និងស្ថានភាពទូទាត់ប្រាក់</td>
             </tr>
             <tr>
@@ -1033,7 +1015,7 @@
                 <span class="key-fk">order_id</span> &rarr; <code>orders.id</code><br>
                 <span class="key-fk">product_id</span> &rarr; <code>products.id</code>
               </td>
-              <td><span class="dtype dtype-uuid">UUID</span>, <span class="dtype dtype-num">NUMERIC</span>, <span class="dtype dtype-int">INT</span></td>
+              <td><span class="dtype dtype-uuid">UUID</span>, <span class="dtype dtype-num">NUM</span>, <span class="dtype dtype-int">INT</span></td>
               <td><strong>Junction Table:</strong> បំបែក Many-to-Many រវាង Orders & Products</td>
             </tr>
             <tr>
@@ -1049,122 +1031,86 @@
             <tr>
               <td><strong><code>promo_codes</code></strong></td>
               <td><span class="key-pk">code</span></td>
-              <td><em>None (Standalone Entity)</em></td>
-              <td><span class="dtype dtype-varchar">VARCHAR</span>, <span class="dtype dtype-num">NUMERIC</span>, <span class="dtype dtype-time">TIME</span></td>
+              <td>-</td>
+              <td><span class="dtype dtype-varchar">VARCHAR</span>, <span class="dtype dtype-num">NUM</span></td>
               <td>គូប៉ុងបញ្ចុះតម្លៃសម្រាប់ Checkout (ឧ. `WELCOME10`)</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <h3>3.2 Comprehensive Cardinality & Relationships Matrix</h3>
+      <h3>3.2 Relationships Matrix</h3>
       <div class="table-container">
         <table>
           <thead>
             <tr>
-              <th style="width: 28%;">ទំនាក់ទំនង (Relationship)</th>
-              <th style="width: 14%;">Cardinality</th>
-              <th style="width: 24%;">Foreign Key Binding</th>
-              <th>ការពន្យល់បច្ចេកទេស (Technical Explanation)</th>
+              <th>Relationship</th>
+              <th>Cardinality</th>
+              <th>FK Binding</th>
+              <th>ការពន្យល់បច្ចេកទេស</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td><strong><code>users</code> &rarr; <code>user_addresses</code></strong></td>
-              <td><span class="pill-rel-1n">🌿 1 : N</span></td>
+              <td><code>users</code> &rarr; <code>user_addresses</code></td>
+              <td><span class="pill-rel">1 : N</span></td>
               <td><code>user_addresses.user_id</code></td>
-              <td>អតិថិជនម្នាក់ (1 User) អាចកត់ត្រាអាសយដ្ឋានដឹកជញ្ជូនបានច្រើន (Many Addresses)។</td>
+              <td>User ម្នាក់អាចមានអាសយដ្ឋានដឹកជញ្ជូនច្រើន (Home, Work)</td>
             </tr>
             <tr>
-              <td><strong><code>categories</code> &rarr; <code>products</code></strong></td>
-              <td><span class="pill-rel-1n">🌿 1 : N</span></td>
+              <td><code>categories</code> &rarr; <code>products</code></td>
+              <td><span class="pill-rel">1 : N</span></td>
               <td><code>products.category_id</code></td>
-              <td>ប្រភេទទំនិញមួយ (1 Category) ផ្ទុកទំនិញជាច្រើនមុខ (Many Products)។</td>
+              <td>Category មួយមានទំនិញជាច្រើនមុខ</td>
             </tr>
             <tr>
-              <td><strong><code>users</code> &rarr; <code>orders</code></strong></td>
-              <td><span class="pill-rel-1n">🌿 1 : N</span></td>
+              <td><code>users</code> &rarr; <code>orders</code></td>
+              <td><span class="pill-rel">1 : N</span></td>
               <td><code>orders.user_id</code></td>
-              <td>អតិថិជនម្នាក់ (1 User) អាចបញ្ជាទិញទំនិញបានច្រើនដង (Many Orders) តាមពេលវេលាផ្សេងគ្នា។</td>
+              <td>User ម្នាក់អាចបញ្ជាទិញបានច្រើនដងតាមពេលវេលាផ្សេងគ្នា</td>
             </tr>
             <tr>
-              <td><strong><code>orders</code> &harr; <code>products</code></strong></td>
-              <td><span class="pill-rel-nn">🔮 N : N</span></td>
+              <td><code>orders</code> &harr; <code>products</code></td>
+              <td><span class="pill-rel" style="background:#fce7f3; color:#be185d; border-color:#fbcfe8;">N : N</span></td>
               <td>via <code>order_items</code></td>
-              <td>ការកុម្ម៉ង់ម្តងមានទំនិញច្រើនមុខ ហើយទំនិញមួយមុខអាចមានក្នុង Order ច្រើនដង (បំបែកតាម Junction Table)។</td>
+              <td>Order ម្តងមានទំនិញច្រើន ហើយទំនិញមួយមានក្នុង Order ច្រើន (Junction Table)</td>
             </tr>
             <tr>
-              <td><strong><code>products</code> &rarr; <code>product_reviews</code></strong></td>
-              <td><span class="pill-rel-1n">🌿 1 : N</span></td>
+              <td><code>products</code> &rarr; <code>product_reviews</code></td>
+              <td><span class="pill-rel">1 : N</span></td>
               <td><code>product_reviews.product_id</code></td>
-              <td>ទំនិញមួយមុខ (1 Product) អាចទទួលបាន Review និងផ្កាយពីអតិថិជនជាច្រើន។</td>
-            </tr>
-            <tr>
-              <td><strong><code>users</code> &rarr; <code>product_reviews</code></strong></td>
-              <td><span class="pill-rel-1n">🌿 1 : N</span></td>
-              <td><code>product_reviews.user_id</code></td>
-              <td>អតិថិជនម្នាក់ (1 User) អាចសរសេរ Review លើទំនិញផ្សេងៗបានច្រើនដង។</td>
+              <td>ទំនិញមួយមុខអាចមាន Review ផ្កាយច្រើនពីអតិថិជន</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <h3>3.3 Entity Relationship Diagram (ERD) — Visual Schema</h3>
-      <p>
-        ខាងក្រោមនេះជាប្លង់ Entity Relationship Diagram (ERD) ពេញលេញដែលបង្ហាញពីតារាងទាំង ៨, Primary Keys, Foreign Keys និងខ្សែភ្ជាប់ទំនាក់ទំនង Cardinality ត្រឹមត្រូវ 100%៖
-      </p>
-
+      <h3>3.3 Entity Relationship Diagram (ERD)</h3>
       <div class="diagram-frame">
-        <img src="./techtonic-erd-light.png" alt="TechTonic Store Database ERD Light Mode">
-        <div class="diagram-legend-row">
-          <div class="legend-tag">
-            <span class="legend-circle" style="background: #0284c7;"></span>
-            <span><strong>PK:</strong> Primary Key</span>
-          </div>
-          <div class="legend-tag">
-            <span class="legend-circle" style="background: #f59e0b;"></span>
-            <span><strong>FK:</strong> Foreign Key</span>
-          </div>
-          <div class="legend-tag">
-            <span class="legend-circle" style="background: #10b981;"></span>
-            <span><strong>1 : N:</strong> One-to-Many</span>
-          </div>
-          <div class="legend-tag">
-            <span class="legend-circle" style="background: #ec4899;"></span>
-            <span><strong>N : N:</strong> Many-to-Many (via order_items)</span>
-          </div>
+        <img src="./techtonic-erd-light.png" alt="TechTonic Store ERD Diagram">
+        <div style="font-size: 12px; color: #64748b; font-weight: 700; margin-top: 14px;">
+          <span>🔵 <strong>PK:</strong> Primary Key</span> &nbsp;|&nbsp;
+          <span>🟠 <strong>FK:</strong> Foreign Key</span> &nbsp;|&nbsp;
+          <span>🟢 <strong>1 : N:</strong> One-to-Many</span> &nbsp;|&nbsp;
+          <span>🟣 <strong>N : N:</strong> Many-to-Many via order_items</span>
         </div>
       </div>
 
-      <!-- Cute Verification Seal Box -->
-      <div class="cute-seal-box">
-        <div class="cute-seal-icon">🏆</div>
-        <div class="cute-seal-text">
-          <h4>Academic & Technical Verification Seal (ផ្ទៀងផ្ទាត់រួចរាល់ 100%)</h4>
-          <p>
-            រចនាសម្ព័ន្ធទិន្នន័យនេះត្រូវបានផ្ទៀងផ្ទាត់យ៉ាងម៉ត់ចត់ស្របតាមក្បួនខ្នាត Relational Database Management System (RDBMS) និងច្បាប់ Normalization (3NF) ដោយធានាបាននូវភាពស៊ីសង្វាក់គ្នានៃ Data Types, Referential Integrity តាមរយៈ Foreign Keys និងការបំបែក Many-to-Many តាមរយៈ Junction Table `order_items` យ៉ាងត្រឹមត្រូវ។
-          </p>
+      <!-- Telegram Template with EXACT Student Names -->
+      <div class="telegram-submit-box">
+        <div class="tg-title">
+          <span>📬 Telegram Submission Message Template</span>
+          <button class="tg-copy-btn" onclick="copyTelegramMessage()">📋 Copy Message</button>
         </div>
-      </div>
-
-      <!-- ======================================================== -->
-      <!-- SECTION 4: TELEGRAM SUBMISSION TEMPLATE                   -->
-      <!-- ======================================================== -->
-      <div class="cute-tg-card">
-        <div class="cute-tg-head">
-          <h4>📬 Telegram Submission Message Template (ទម្រង់ផ្ញើជូនគ្រូ)</h4>
-          <span style="font-size: 11px; color: #f472b6; font-weight: 700;">Copy & Paste ផ្ញើក្នុង Telegram Group ជាមួយ File Group 8.pdf</span>
-        </div>
-        <div class="cute-tg-code">Topic: UI E-Commerce TechTonic Store
+        <div class="tg-code-box" id="tg-text">Topic: UI Admin Electronic Store (TechTonic Store)
 
 1_ ក្រុមទី8 សមាជិកមាន
-   1_ [ឈ្មោះសមាជិកទី ១]
-   2_ [ឈ្មោះសមាជិកទី ២]
-   3_ [ឈ្មោះសមាជិកទី ៣]
-   ៤_ [ឈ្មោះសមាជិកទី ៤]
-   ៥_ [ឈ្មោះសមាជិកទី ៥]
+   1_ CHAN NITEH
+   2_ YON SIMIDA
+   3_ MORN DOEK
+   4_ SENG KOEMNAN
 
-2_ E-Commerce UI: TechTonic Store
+2_ E-Commerce UI: Electronic Store (TechTonic Store)
 
 3_ E-commerce: https://github.com/sengkoemnan6749-source/E-commerce
 
@@ -1172,7 +1118,71 @@
       </div>
 
     </div>
+
   </div>
+
+  <!-- Interactive JavaScript for Local Photo & Logo Uploading -->
+  <script>
+    // 1. Logo Upload Handler
+    function handleLogoUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const logoImg = document.getElementById('main-store-logo');
+          logoImg.src = e.target.result;
+          try {
+            localStorage.setItem('team8_custom_logo', e.target.result);
+          } catch(err) {}
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // 2. Member Photo Upload Handler
+    function handleMemberPhotoUpload(event, imgElementId, storageKey) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imgElem = document.getElementById(imgElementId);
+          imgElem.src = e.target.result;
+          try {
+            localStorage.setItem(storageKey, e.target.result);
+          } catch(err) {}
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // 3. Load Saved Photos from LocalStorage on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const savedLogo = localStorage.getItem('team8_custom_logo');
+        if (savedLogo) document.getElementById('main-store-logo').src = savedLogo;
+
+        const photo1 = localStorage.getItem('member_1_photo');
+        if (photo1) document.getElementById('img-member-1').src = photo1;
+
+        const photo2 = localStorage.getItem('member_2_photo');
+        if (photo2) document.getElementById('img-member-2').src = photo2;
+
+        const photo3 = localStorage.getItem('member_3_photo');
+        if (photo3) document.getElementById('img-member-3').src = photo3;
+
+        const photo4 = localStorage.getItem('member_4_photo');
+        if (photo4) document.getElementById('img-member-4').src = photo4;
+      } catch(e) {}
+    });
+
+    // 4. Copy Telegram Text Function
+    function copyTelegramMessage() {
+      const text = document.getElementById('tg-text').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied Telegram message to clipboard! អ្នកអាចយកទៅ Paste ក្នុង Telegram បានភ្លាមៗ!');
+      });
+    }
+  </script>
 
 </body>
 </html>
