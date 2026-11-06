@@ -239,39 +239,61 @@
       margin-bottom: 24px;
     }
 
-    /* Interactive Uploadable Logo Zone */
+    /* Interactive Uploadable Logo Zone (Seamless & Cute) */
     .logo-uploader-card {
       display: inline-flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-      padding: 14px 22px;
-      background: #f8fafc;
-      border: 2px dashed #cbd5e1;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      justify-content: center;
       position: relative;
+      cursor: pointer;
+      padding: 8px 20px;
+      border-radius: 24px;
+      background: transparent;
+      border: 2px dashed transparent;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      margin: 4px 0 14px 0;
     }
     .logo-uploader-card:hover {
-      background: #eff6ff;
+      background: rgba(240, 249, 255, 0.85);
       border-color: #38bdf8;
-      transform: translateY(-2px);
+      transform: translateY(-3px) scale(1.02);
     }
     .logo-preview-img {
-      width: 72px;
-      height: 72px;
+      height: 120px;
+      max-height: 130px;
+      width: auto;
+      max-width: 280px;
       object-fit: contain;
-      border-radius: 14px;
-      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+      border-radius: 18px;
+      filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.09));
+      transition: all 0.25s ease;
     }
+    .logo-uploader-card:hover .logo-preview-img {
+      filter: drop-shadow(0 12px 28px rgba(2, 132, 199, 0.22));
+    }
+    /* Upload hint only appears as floating pill on HOVER */
     .logo-upload-hint {
-      font-size: 11.5px;
-      font-weight: 700;
-      color: #0284c7;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0284c7;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .logo-uploader-card:hover .logo-upload-hint {
+      opacity: 1;
+      bottom: -14px;
     }
 
     /* Universal Slide Footer */
@@ -684,9 +706,17 @@
         border-left: 10px solid #f59e0b;
       }
       .logo-uploader-card {
-        border: none;
-        padding: 0;
-        background: transparent;
+        border: none !important;
+        padding: 0 !important;
+        background: transparent !important;
+        margin: 6px 0 !important;
+      }
+      .logo-preview-img {
+        height: 105px !important;
+        filter: none !important;
+      }
+      .logo-upload-hint {
+        display: none !important;
       }
     }
   </style>
@@ -712,6 +742,12 @@
       <div class="toolbar-buttons">
         <button class="btn-cute btn-repo" onclick="document.getElementById('input-uni-logo').click()" title="Click to upload your own University Logo">
           <span>🏛️ Upload Uni Logo</span>
+        </button>
+        <button class="btn-cute btn-repo" onclick="document.getElementById('input-logo').click()" title="Click to upload Store Logo / ប្តូរ Logo">
+          <span>🖼️ Upload Store Logo</span>
+        </button>
+        <button class="btn-cute btn-repo" onclick="resetAllPhotos()" title="Reset to original photos and logos" style="background: rgba(239, 68, 68, 0.25); border: 1px solid rgba(239, 68, 68, 0.4);">
+          <span>🔄 Reset Defaults</span>
         </button>
         <button class="btn-cute btn-print" onclick="window.print()">
           <span>🖨️ Print as PDF (A4 Slide)</span>
@@ -746,16 +782,18 @@
 
       <!-- Main Title Body -->
       <div class="cover-body">
+        
+        <!-- 📷 Interactive Logo Zone (Seamless, Borderless & Cute Hover Pill) -->
+        <div class="logo-uploader-card" onclick="document.getElementById('input-logo').click()" title="Click to change logo / ចុចទីនេះដើម្បីប្តូររូប Logo">
+          <img id="main-store-logo" src="./crest-orange-lime.png" alt="Electronic Store Logo" class="logo-preview-img">
+          <div class="logo-upload-hint no-print">
+            <span>📷 Click to Change Logo / ប្តូរ Logo</span>
+          </div>
+        </div>
+
         <h1 class="cover-main-title">Electronic store</h1>
         <div class="cover-brand-sub">TechTonic Store — Engineered for the Modern Digital Lifestyle</div>
 
-        <!-- 📷 Interactive Logo Upload Zone -->
-        <div class="logo-uploader-card" onclick="document.getElementById('input-logo').click()" title="Click to upload your own custom logo!">
-          <img id="main-store-logo" src="./techtonic-icon.png" alt="Electronic Store Logo" class="logo-preview-img">
-          <div class="logo-upload-hint no-print">
-            <span>📷 Click to Upload Logo / ប្តូរ Logo</span>
-          </div>
-        </div>
       </div>
 
       <!-- Bottom Slide Footer -->
@@ -1329,6 +1367,19 @@
       navigator.clipboard.writeText(text).then(() => {
         alert('Copied Telegram message to clipboard! អ្នកអាចយកទៅ Paste ក្នុង Telegram បានភ្លាមៗ!');
       });
+    }
+
+    // 5. Reset All Photos & Logos Function
+    function resetAllPhotos() {
+      if (confirm('តើអ្នកចង់ Reset រូបភាព និង Logo ទាំងអស់ទៅជាទម្រង់ដើមវិញទេ? (Reset all photos & logos to default?)')) {
+        localStorage.removeItem('team8_uni_logo');
+        localStorage.removeItem('team8_custom_logo');
+        localStorage.removeItem('member_1_photo');
+        localStorage.removeItem('member_2_photo');
+        localStorage.removeItem('member_3_photo');
+        localStorage.removeItem('member_4_photo');
+        location.reload();
+      }
     }
   </script>
 
