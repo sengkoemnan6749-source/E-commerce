@@ -110,24 +110,27 @@
     .slide-frame {
       background: #ffffff;
       border: 2px solid #e2e8f0;
+      border-left: 14px solid #f59e0b;
       border-radius: 28px;
-      padding: 45px 50px;
+      padding: 45px 50px 30px 50px;
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
       position: relative;
       overflow: hidden;
       page-break-after: always;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     /* ======================================================== */
     /* SLIDE 1: UNIVERSITY COVER PAGE (EXACT CUTE DESIGN)       */
     /* ======================================================== */
     .slide-cover {
-      min-height: 580px;
+      min-height: 620px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      border-left: 14px solid #f59e0b;
-      padding-left: 45px;
     }
 
     /* University Header */
@@ -235,36 +238,37 @@
       gap: 4px;
     }
 
-    /* Cover Footer Details */
-    .cover-footer {
+    /* Universal Slide Footer */
+    .slide-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding-top: 20px;
+      margin-top: 30px;
       border-top: 2px solid #f1f5f9;
       font-size: 14px;
       font-weight: 700;
       color: #1e293b;
+      width: 100%;
     }
-    .cover-footer-left {
+    .slide-footer-left {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    .cover-footer-right {
+    .slide-footer-right {
       display: flex;
       align-items: center;
       gap: 20px;
     }
-    .btn-slide-pill {
-      background: #f59e0b;
-      color: #000000;
-      padding: 6px 18px;
-      border-radius: 9999px;
-      font-size: 13px;
+    .slide-page-badge {
+      color: #64748b;
       font-weight: 800;
-      text-decoration: none;
-      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+      font-size: 14px;
+      background: #f8fafc;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      border: 1px solid #e2e8f0;
     }
 
     /* Vertical TEAM 8 Badge */
@@ -697,7 +701,6 @@
 
       <!-- Main Title Body -->
       <div class="cover-body">
-        <div class="cover-tag-pill">✨ Modern Web Engineering & Database Design</div>
         <h1 class="cover-main-title">Electronic store</h1>
         <div class="cover-brand-sub">TechTonic Store — Engineered for the Modern Digital Lifestyle</div>
 
@@ -711,14 +714,14 @@
       </div>
 
       <!-- Bottom Slide Footer -->
-      <div class="cover-footer">
-        <div class="cover-footer-left">
+      <div class="slide-footer">
+        <div class="slide-footer-left">
           <span>បង្រៀនដោយលោកគ្រូ:</span>
           <strong style="color: #0f172a; font-size: 15px;">SAN SEN</strong>
         </div>
-        <div class="cover-footer-right">
+        <div class="slide-footer-right">
           <div>មុខវិជ្ជា : <strong style="color: #0f172a; font-size: 15px;">E-COMMERCE</strong></div>
-          <div style="color: #64748b; font-weight: 800; font-size: 14px;">page | 1</div>
+          <div class="slide-page-badge">page | 1</div>
         </div>
       </div>
 
@@ -729,64 +732,81 @@
     <!-- ======================================================== -->
     <div class="slide-frame slide-members" id="slide-2">
       
-      <!-- Amber Header Pill -->
-      <div class="pill-header-amber">MEMBER OF TEAM</div>
+      <!-- Vertical TEAM 8 Label -->
+      <div class="vertical-team-tag">TEAM 8</div>
+      
+      <div>
+        <!-- Amber Header Pill -->
+        <div class="pill-header-amber">MEMBER OF TEAM</div>
 
-      <!-- 2x2 Member Squircle Cards -->
-      <div class="members-grid">
-        
-        <!-- Member 1: CHAN NITEH -->
-        <div class="member-item" onclick="document.getElementById('input-member-1').click()" title="Click to change photo">
-          <div class="member-photo-frame">
-            <img id="img-member-1" src="./member_chan_niteh.png" alt="CHAN NITEH">
-            <div class="member-upload-overlay no-print">
-              <span>📷 Click to Change Photo</span>
+        <!-- 2x2 Member Squircle Cards -->
+        <div class="members-grid">
+          
+          <!-- Member 1: CHAN NITEH -->
+          <div class="member-item" onclick="document.getElementById('input-member-1').click()" title="Click to change photo">
+            <div class="member-photo-frame">
+              <img id="img-member-1" src="./member_chan_niteh.png" alt="CHAN NITEH">
+              <div class="member-upload-overlay no-print">
+                <span>📷 Click to Change Photo</span>
+              </div>
             </div>
+            <div class="member-name">CHAN NITEH</div>
+            <div class="member-role-tag">Team Leader & Full-Stack</div>
           </div>
-          <div class="member-name">CHAN NITEH</div>
-          <div class="member-role-tag">Team Leader & Full-Stack</div>
+
+          <!-- Member 2: YON SIMIDA -->
+          <div class="member-item" onclick="document.getElementById('input-member-2').click()" title="Click to upload photo">
+            <div class="member-photo-frame">
+              <img id="img-member-2" src="./member_placeholder.png" alt="YON SIMIDA">
+              <div class="member-upload-overlay no-print">
+                <span>📷 Click to Upload Photo</span>
+              </div>
+            </div>
+            <div class="member-name">YON SIMIDA</div>
+            <div class="member-role-tag">Frontend & UI Design</div>
+          </div>
+
+          <!-- Member 3: MORN DOEK -->
+          <div class="member-item" onclick="document.getElementById('input-member-3').click()" title="Click to upload photo">
+            <div class="member-photo-frame">
+              <img id="img-member-3" src="./member_placeholder.png" alt="MORN DOEK">
+              <div class="member-upload-overlay no-print">
+                <span>📷 Click to Upload Photo</span>
+              </div>
+            </div>
+            <div class="member-name">MORN DOEK</div>
+            <div class="member-role-tag">Database & Backend</div>
+          </div>
+
+          <!-- Member 4: SENG KOEMNAN -->
+          <div class="member-item" onclick="document.getElementById('input-member-4').click()" title="Click to upload photo">
+            <div class="member-photo-frame">
+              <img id="img-member-4" src="./member_placeholder.png" alt="SENG KOEMNAN">
+              <div class="member-upload-overlay no-print">
+                <span>📷 Click to Upload Photo</span>
+              </div>
+            </div>
+            <div class="member-name">SENG KOEMNAN</div>
+            <div class="member-role-tag">System Planning & QA</div>
+          </div>
+
         </div>
 
-        <!-- Member 2: YON SIMIDA -->
-        <div class="member-item" onclick="document.getElementById('input-member-2').click()" title="Click to upload photo">
-          <div class="member-photo-frame">
-            <img id="img-member-2" src="./member_placeholder.png" alt="YON SIMIDA">
-            <div class="member-upload-overlay no-print">
-              <span>📷 Click to Upload Photo</span>
-            </div>
-          </div>
-          <div class="member-name">YON SIMIDA</div>
-          <div class="member-role-tag">Frontend & UI Design</div>
+        <div style="font-size: 12.5px; color: #64748b; font-weight: 600;" class="no-print">
+          💡 <em>ចំណាំ៖ អ្នកអាចចុចលើរូបសមាជិកនីមួយៗដើម្បី Upload រូបពិតចេញពីកុំព្យូទ័ររបស់អ្នកបានភ្លាមៗ!</em>
         </div>
-
-        <!-- Member 3: MORN DOEK -->
-        <div class="member-item" onclick="document.getElementById('input-member-3').click()" title="Click to upload photo">
-          <div class="member-photo-frame">
-            <img id="img-member-3" src="./member_placeholder.png" alt="MORN DOEK">
-            <div class="member-upload-overlay no-print">
-              <span>📷 Click to Upload Photo</span>
-            </div>
-          </div>
-          <div class="member-name">MORN DOEK</div>
-          <div class="member-role-tag">Database & Backend</div>
-        </div>
-
-        <!-- Member 4: SENG KOEMNAN -->
-        <div class="member-item" onclick="document.getElementById('input-member-4').click()" title="Click to upload photo">
-          <div class="member-photo-frame">
-            <img id="img-member-4" src="./member_placeholder.png" alt="SENG KOEMNAN">
-            <div class="member-upload-overlay no-print">
-              <span>📷 Click to Upload Photo</span>
-            </div>
-          </div>
-          <div class="member-name">SENG KOEMNAN</div>
-          <div class="member-role-tag">System Planning & QA</div>
-        </div>
-
       </div>
 
-      <div style="font-size: 12.5px; color: #64748b; font-weight: 600;" class="no-print">
-        💡 <em>ចំណាំ៖ អ្នកអាចចុចលើរូបសមាជិកនីមួយៗដើម្បី Upload រូបពិតចេញពីកុំព្យូទ័ររបស់អ្នកបានភ្លាមៗ!</em>
+      <!-- Bottom Slide Footer -->
+      <div class="slide-footer">
+        <div class="slide-footer-left">
+          <span>បង្រៀនដោយលោកគ្រូ:</span>
+          <strong style="color: #0f172a; font-size: 15px;">SAN SEN</strong>
+        </div>
+        <div class="slide-footer-right">
+          <div>មុខវិជ្ជា : <strong style="color: #0f172a; font-size: 15px;">E-COMMERCE</strong></div>
+          <div class="slide-page-badge">page | 2</div>
+        </div>
       </div>
 
     </div>
@@ -796,80 +816,97 @@
     <!-- ======================================================== -->
     <div class="slide-frame" id="slide-3">
       
-      <div class="section-pill-title">
-        <span>💼 1. BUSINESS (ផែនការអាជីវកម្ម)</span>
+      <!-- Vertical TEAM 8 Label -->
+      <div class="vertical-team-tag">TEAM 8</div>
+      
+      <div>
+        <div class="section-pill-title">
+          <span>💼 1. BUSINESS (ផែនការអាជីវកម្ម)</span>
+        </div>
+
+        <h3>1.1 Executive Summary (សេចក្តីសង្ខេបអាជីវកម្ម)</h3>
+        <p>
+          <strong>TechTonic Store (Electronic Store)</strong> គឺជាវេទិកាពាណិជ្ជកម្មអេឡិចត្រូនិក B2C E-Commerce ជំនាន់ថ្មី ដែលផ្គត់ផ្គង់ឧបករណ៍អេឡិចត្រូនិកទំនើបៗ (Modern Consumer Electronics) ដូចជា ឧបករណ៍សម្លេងកម្រិតស្ទូឌីយោ, នាឡិកាវៃឆ្លាត Smart Wearables, គ្រឿង Ergonomic Desk Setups, និង Fast Power Accessories ក្នុងប្រទេសកម្ពុជា។
+        </p>
+
+        <h3>1.2 Target Audience (អតិថិជនគោលដៅ)</h3>
+        <div class="grid-4">
+          <div class="cute-card">
+            <div class="cute-card-icon">💻</div>
+            <h4>Software Engineers</h4>
+            <p>ក្ដារចុច 75% Mechanical Tactile, Vertical Mice និងកាស ANC ការពារសម្លេងរំខាន។</p>
+          </div>
+          <div class="cute-card">
+            <div class="cute-card-icon">🎓</div>
+            <h4>University Students</h4>
+            <p>ឧបករណ៍ Smart Wearables និង Power Bank គុណភាពខ្ពស់ តម្លៃសមរម្យសម្រាប់និស្សិត។</p>
+          </div>
+          <div class="cute-card">
+            <div class="cute-card-icon">🎙️</div>
+            <h4>Content Creators</h4>
+            <p>Studio Monitoring Headphones, USB Microphones និងជើងទម្រ CNC Aluminum។</p>
+          </div>
+          <div class="cute-card">
+            <div class="cute-card-icon">🏢</div>
+            <h4>Office Professionals</h4>
+            <p>ឧបករណ៍ Ergonomic ជួយសម្រាលការឈឺកដៃ និងខ្នងពេលអង្គុយធ្វើការយូរម៉ោង។</p>
+          </div>
+        </div>
+
+        <h3>1.3 Core Product Lines (ប្រភេទផលិតផលទាំង ៤)</h3>
+        <div class="grid-4">
+          <div class="cute-card">
+            <div class="cute-card-icon">🎧</div>
+            <h4>Audio & Acoustics</h4>
+            <p>Studio ANC Headphones, Hi-Res TWS Earbuds, Beryllium dynamic drivers។</p>
+          </div>
+          <div class="cute-card">
+            <div class="cute-card-icon">⌚</div>
+            <h4>Smart Wearables</h4>
+            <p>AMOLED Fitness Watches, Titanium Health Rings តាមដានចង្វាក់បេះដូង។</p>
+          </div>
+          <div class="cute-card">
+            <div class="cute-card-icon">⌨️</div>
+            <h4>Workspace Peripherals</h4>
+            <p>75% Hot-Swappable Mechanical Keyboards, Ergonomic Mice, Laptop Risers។</p>
+          </div>
+          <div class="cute-card">
+            <div class="cute-card-icon">⚡</div>
+            <h4>Power & Mobile</h4>
+            <p>100W GaN III Fast Chargers, MagSafe Wireless Batteries, Liquid Silicone Cables។</p>
+          </div>
+        </div>
+
+        <h3>1.4 Key Value Propositions (គុណតម្លៃប្រកួតប្រជែង)</h3>
+        <div class="grid-2">
+          <div class="cute-card">
+            <h4>🚀 Same-Day Express Dispatch (3-Hour GrabExpress)</h4>
+            <p>ដឹកជញ្ជូនរហ័សទាន់ចិត្តក្រោម ៣ ម៉ោងក្នុងរាជធានីភ្នំពេញ សម្រាប់រាល់ការបញ្ជាទិញមុនម៉ោង 3:00 PM។</p>
+          </div>
+          <div class="cute-card">
+            <h4>🛡️ 1-Year Local Serialized Warranty</h4>
+            <p>ការធានាផ្លូវការរយៈពេល ១ ឆ្នាំពេញ ភ្ជាប់ជាមួយលេខ Serial Number ពីមជ្ឈមណ្ឌលសេវាកម្មភ្នំពេញ។</p>
+          </div>
+          <div class="cute-card">
+            <h4>🇰🇭 Cambodia National Bank (NBC) Bakong KHQR</h4>
+            <p>គាំទ្រការទូទាត់ប្រាក់ឌីជីថលតាមរយៈស្ដង់ដារ KHQR ពីគ្រប់ធនាគារ (ABA, Wing, ACLEDA, Sathapana)។</p>
+          </div>
+          <div class="cute-card">
+            <h4>🔄 30-Day Hassle-Free Exchange Policy</h4>
+            <p>ផ្ដល់ទំនុកចិត្តខ្ពស់ក្នុងការប្តូរទំនិញក្នុងរយៈពេល ៣០ ថ្ងៃ ប្រសិនបើមិនពេញចិត្តនឹងទំហំ ឬ Switch feel។</p>
+          </div>
+        </div>
       </div>
 
-      <h3>1.1 Executive Summary (សេចក្តីសង្ខេបអាជីវកម្ម)</h3>
-      <p>
-        <strong>TechTonic Store (Electronic Store)</strong> គឺជាវេទិកាពាណិជ្ជកម្មអេឡិចត្រូនិក B2C E-Commerce ជំនាន់ថ្មី ដែលផ្គត់ផ្គង់ឧបករណ៍អេឡិចត្រូនិកទំនើបៗ (Modern Consumer Electronics) ដូចជា ឧបករណ៍សម្លេងកម្រិតស្ទូឌីយោ, នាឡិកាវៃឆ្លាត Smart Wearables, គ្រឿង Ergonomic Desk Setups, និង Fast Power Accessories ក្នុងប្រទេសកម្ពុជា។
-      </p>
-
-      <h3>1.2 Target Audience (អតិថិជនគោលដៅ)</h3>
-      <div class="grid-4">
-        <div class="cute-card">
-          <div class="cute-card-icon">💻</div>
-          <h4>Software Engineers</h4>
-          <p>ក្ដារចុច 75% Mechanical Tactile, Vertical Mice និងកាស ANC ការពារសម្លេងរំខាន។</p>
+      <!-- Bottom Slide Footer -->
+      <div class="slide-footer">
+        <div class="slide-footer-left">
+          <span>បង្រៀនដោយលោកគ្រូ:</span>
+          <strong style="color: #0f172a; font-size: 15px;">SAN SEN</strong>
         </div>
-        <div class="cute-card">
-          <div class="cute-card-icon">🎓</div>
-          <h4>University Students</h4>
-          <p>ឧបករណ៍ Smart Wearables និង Power Bank គុណភាពខ្ពស់ តម្លៃសមរម្យសម្រាប់និស្សិត។</p>
-        </div>
-        <div class="cute-card">
-          <div class="cute-card-icon">🎙️</div>
-          <h4>Content Creators</h4>
-          <p>Studio Monitoring Headphones, USB Microphones និងជើងទម្រ CNC Aluminum។</p>
-        </div>
-        <div class="cute-card">
-          <div class="cute-card-icon">🏢</div>
-          <h4>Office Professionals</h4>
-          <p>ឧបករណ៍ Ergonomic ជួយសម្រាលការឈឺកដៃ និងខ្នងពេលអង្គុយធ្វើការយូរម៉ោង។</p>
-        </div>
-      </div>
-
-      <h3>1.3 Core Product Lines (ប្រភេទផលិតផលទាំង ៤)</h3>
-      <div class="grid-4">
-        <div class="cute-card">
-          <div class="cute-card-icon">🎧</div>
-          <h4>Audio & Acoustics</h4>
-          <p>Studio ANC Headphones, Hi-Res TWS Earbuds, Beryllium dynamic drivers។</p>
-        </div>
-        <div class="cute-card">
-          <div class="cute-card-icon">⌚</div>
-          <h4>Smart Wearables</h4>
-          <p>AMOLED Fitness Watches, Titanium Health Rings តាមដានចង្វាក់បេះដូង។</p>
-        </div>
-        <div class="cute-card">
-          <div class="cute-card-icon">⌨️</div>
-          <h4>Workspace Peripherals</h4>
-          <p>75% Hot-Swappable Mechanical Keyboards, Ergonomic Mice, Laptop Risers។</p>
-        </div>
-        <div class="cute-card">
-          <div class="cute-card-icon">⚡</div>
-          <h4>Power & Mobile</h4>
-          <p>100W GaN III Fast Chargers, MagSafe Wireless Batteries, Liquid Silicone Cables។</p>
-        </div>
-      </div>
-
-      <h3>1.4 Key Value Propositions (គុណតម្លៃប្រកួតប្រជែង)</h3>
-      <div class="grid-2">
-        <div class="cute-card">
-          <h4>🚀 Same-Day Express Dispatch (3-Hour GrabExpress)</h4>
-          <p>ដឹកជញ្ជូនរហ័សទាន់ចិត្តក្រោម ៣ ម៉ោងក្នុងរាជធានីភ្នំពេញ សម្រាប់រាល់ការបញ្ជាទិញមុនម៉ោង 3:00 PM។</p>
-        </div>
-        <div class="cute-card">
-          <h4>🛡️ 1-Year Local Serialized Warranty</h4>
-          <p>ការធានាផ្លូវការរយៈពេល ១ ឆ្នាំពេញ ភ្ជាប់ជាមួយលេខ Serial Number ពីមជ្ឈមណ្ឌលសេវាកម្មភ្នំពេញ។</p>
-        </div>
-        <div class="cute-card">
-          <h4>🇰🇭 Cambodia National Bank (NBC) Bakong KHQR</h4>
-          <p>គាំទ្រការទូទាត់ប្រាក់ឌីជីថលតាមរយៈស្ដង់ដារ KHQR ពីគ្រប់ធនាគារ (ABA, Wing, ACLEDA, Sathapana)។</p>
-        </div>
-        <div class="cute-card">
-          <h4>🔄 30-Day Hassle-Free Exchange Policy</h4>
-          <p>ផ្ដល់ទំនុកចិត្តខ្ពស់ក្នុងការប្តូរទំនិញក្នុងរយៈពេល ៣០ ថ្ងៃ ប្រសិនបើមិនពេញចិត្តនឹងទំហំ ឬ Switch feel។</p>
+        <div class="slide-footer-right">
+          <div>មុខវិជ្ជា : <strong style="color: #0f172a; font-size: 15px;">E-COMMERCE</strong></div>
+          <div class="slide-page-badge">page | 3</div>
         </div>
       </div>
 
@@ -880,72 +917,89 @@
     <!-- ======================================================== -->
     <div class="slide-frame" id="slide-4">
       
-      <div class="section-pill-title">
-        <span>🛠️ 2. PROJECT PLANNING (ផែនការប្រព័ន្ធ)</span>
+      <!-- Vertical TEAM 8 Label -->
+      <div class="vertical-team-tag">TEAM 8</div>
+
+      <div>
+        <div class="section-pill-title">
+          <span>🛠️ 2. PROJECT PLANNING (ផែនការប្រព័ន្ធ)</span>
+        </div>
+
+        <h3>2.1 Modern Technology Stack (បច្ចេកវិទ្យាប្រើប្រាស់)</h3>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 22%;">Layer</th>
+                <th style="width: 25%;">Technology</th>
+                <th>តួនាទី & អត្ថប្រយោជន៍ (Role & Justification)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Frontend Framework</strong></td>
+                <td><span class="dtype dtype-varchar">React 18 + Vite 6</span></td>
+                <td>Single Page Application (SPA) ល្បឿនលឿន និង Hot Module Replacement (HMR)</td>
+              </tr>
+              <tr>
+                <td><strong>Styling & Design</strong></td>
+                <td><span class="dtype dtype-varchar">Tailwind CSS 3.4</span></td>
+                <td>បង្កើត UI Cyber/Light Mode, Glassmorphism និង Fully Responsive Design</td>
+              </tr>
+              <tr>
+                <td><strong>Client Routing</strong></td>
+                <td><span class="dtype dtype-uuid">React Router DOM v6</span></td>
+                <td>គ្រប់គ្រង Nested Layouts សម្រាប់ Storefront និង Admin Dashboard</td>
+              </tr>
+              <tr>
+                <td><strong>State Management</strong></td>
+                <td><span class="dtype dtype-uuid">React Context + LocalStorage</span></td>
+                <td>គ្រប់គ្រង Cart State, Wishlist និង Auth ដោយរក្សាទុក Persistence មិនបាត់ពេល Refresh</td>
+              </tr>
+              <tr>
+                <td><strong>Vector Icons</strong></td>
+                <td><span class="dtype dtype-num">Lucide React</span></td>
+                <td>Clean SVG Vector Icons ស្ដង់ដារសកល គ្មាន Emoji ជួយឱ្យ UI មើលទៅ Professional</td>
+              </tr>
+              <tr>
+                <td><strong>Database Engine</strong></td>
+                <td><span class="dtype dtype-num">PostgreSQL 16 Relational DB</span></td>
+                <td>គ្រប់គ្រងទិន្នន័យតាមស្ដង់ដារ 3NF និងធានា Referential Integrity តាមរយៈ Foreign Keys</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>2.2 Core System Modules</h3>
+        <div class="grid-2">
+          <div class="cute-card">
+            <h4>🛍️ 1. Storefront & Multi-Variant Catalog</h4>
+            <p>ទំនិញ ៤០ មុខ ជាមួយការជ្រើសរើសពណ៌ និង Switch ភ្លាមៗ, Search keyword, Category filter និង Brand loop។</p>
+          </div>
+          <div class="cute-card">
+            <h4>💳 2. Cart & Interactive KHQR Checkout</h4>
+            <p>គណនាតម្លៃទំនិញ, សេវាដឹកជញ្ជូន, បញ្ចុះតម្លៃតាម Coupon Code, អាសយដ្ឋានដឹក និងកូដស្កេន KHQR ជាក់ស្ដែង។</p>
+          </div>
+          <div class="cute-card">
+            <h4>📍 3. Real-Time Order Tracking Telemetry</h4>
+            <p>តាមដានដំណើរការដឹកជញ្ជូន ៥ ដំណាក់កាល (`Confirmed` &rarr; `Delivered`) ជាមួយផែនទី Live Telemetry។</p>
+          </div>
+          <div class="cute-card">
+            <h4>🛡️ 4. Admin Management Dashboard</h4>
+            <p>ប្រព័ន្ធគ្រប់គ្រងសម្រាប់ Admin ក្នុងការបង្កើត/កែប្រែ/លុបទំនិញ (CRUD), ប្តូរ Status Order, និងគ្រប់គ្រង Customer។</p>
+          </div>
+        </div>
       </div>
 
-      <h3>2.1 Modern Technology Stack (បច្ចេកវិទ្យាប្រើប្រាស់)</h3>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 22%;">Layer</th>
-              <th style="width: 25%;">Technology</th>
-              <th>តួនាទី & អត្ថប្រយោជន៍ (Role & Justification)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Frontend Framework</strong></td>
-              <td><span class="dtype dtype-varchar">React 18 + Vite 6</span></td>
-              <td>Single Page Application (SPA) ល្បឿនលឿន និង Hot Module Replacement (HMR)</td>
-            </tr>
-            <tr>
-              <td><strong>Styling & Design</strong></td>
-              <td><span class="dtype dtype-varchar">Tailwind CSS 3.4</span></td>
-              <td>បង្កើត UI Cyber/Light Mode, Glassmorphism និង Fully Responsive Design</td>
-            </tr>
-            <tr>
-              <td><strong>Client Routing</strong></td>
-              <td><span class="dtype dtype-uuid">React Router DOM v6</span></td>
-              <td>គ្រប់គ្រង Nested Layouts សម្រាប់ Storefront និង Admin Dashboard</td>
-            </tr>
-            <tr>
-              <td><strong>State Management</strong></td>
-              <td><span class="dtype dtype-uuid">React Context + LocalStorage</span></td>
-              <td>គ្រប់គ្រង Cart State, Wishlist និង Auth ដោយរក្សាទុក Persistence មិនបាត់ពេល Refresh</td>
-            </tr>
-            <tr>
-              <td><strong>Vector Icons</strong></td>
-              <td><span class="dtype dtype-num">Lucide React</span></td>
-              <td>Clean SVG Vector Icons ស្ដង់ដារសកល គ្មាន Emoji ជួយឱ្យ UI មើលទៅ Professional</td>
-            </tr>
-            <tr>
-              <td><strong>Database Engine</strong></td>
-              <td><span class="dtype dtype-num">PostgreSQL 16 Relational DB</span></td>
-              <td>គ្រប់គ្រងទិន្នន័យតាមស្ដង់ដារ 3NF និងធានា Referential Integrity តាមរយៈ Foreign Keys</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <h3>2.2 Core System Modules</h3>
-      <div class="grid-2">
-        <div class="cute-card">
-          <h4>🛍️ 1. Storefront & Multi-Variant Catalog</h4>
-          <p>ទំនិញ ៤០ មុខ ជាមួយការជ្រើសរើសពណ៌ និង Switch ភ្លាមៗ, Search keyword, Category filter និង Brand loop។</p>
+      <!-- Bottom Slide Footer -->
+      <div class="slide-footer">
+        <div class="slide-footer-left">
+          <span>បង្រៀនដោយលោកគ្រូ:</span>
+          <strong style="color: #0f172a; font-size: 15px;">SAN SEN</strong>
         </div>
-        <div class="cute-card">
-          <h4>💳 2. Cart & Interactive KHQR Checkout</h4>
-          <p>គណនាតម្លៃទំនិញ, សេវាដឹកជញ្ជូន, បញ្ចុះតម្លៃតាម Coupon Code, អាសយដ្ឋានដឹក និងកូដស្កេន KHQR ជាក់ស្ដែង។</p>
-        </div>
-        <div class="cute-card">
-          <h4>📍 3. Real-Time Order Tracking Telemetry</h4>
-          <p>តាមដានដំណើរការដឹកជញ្ជូន ៥ ដំណាក់កាល (`Confirmed` &rarr; `Delivered`) ជាមួយផែនទី Live Telemetry។</p>
-        </div>
-        <div class="cute-card">
-          <h4>🛡️ 4. Admin Management Dashboard</h4>
-          <p>ប្រព័ន្ធគ្រប់គ្រងសម្រាប់ Admin ក្នុងការបង្កើត/កែប្រែ/លុបទំនិញ (CRUD), ប្តូរ Status Order, និងគ្រប់គ្រង Customer។</p>
+        <div class="slide-footer-right">
+          <div>មុខវិជ្ជា : <strong style="color: #0f172a; font-size: 15px;">E-COMMERCE</strong></div>
+          <div class="slide-page-badge">page | 4</div>
         </div>
       </div>
 
@@ -955,6 +1009,11 @@
     <!-- SLIDE 5: DATABASE DESIGN & ERD (តារាងទិន្នន័យ & រូបភាព ERD) -->
     <!-- ======================================================== -->
     <div class="slide-frame" id="slide-5">
+      
+      <!-- Vertical TEAM 8 Label -->
+      <div class="vertical-team-tag">TEAM 8</div>
+
+      <div>
       
       <div class="section-pill-title">
         <span>🗄️ 3. DATABASE DESIGN (ការរចនាទិន្នន័យ & ERD)</span>
@@ -1115,6 +1174,19 @@
 3_ E-commerce: https://github.com/sengkoemnan6749-source/E-commerce
 
 4_ Repository: https://github.com/sengkoemnan6749-source/E-commerce</div>
+      </div>
+      </div>
+
+      <!-- Bottom Slide Footer -->
+      <div class="slide-footer">
+        <div class="slide-footer-left">
+          <span>បង្រៀនដោយលោកគ្រូ:</span>
+          <strong style="color: #0f172a; font-size: 15px;">SAN SEN</strong>
+        </div>
+        <div class="slide-footer-right">
+          <div>មុខវិជ្ជា : <strong style="color: #0f172a; font-size: 15px;">E-COMMERCE</strong></div>
+          <div class="slide-page-badge">page | 5</div>
+        </div>
       </div>
 
     </div>
