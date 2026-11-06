@@ -681,32 +681,174 @@
       display: none;
     }
 
-    /* Print Tweaks */
+    /* ======================================================== */
+    /* ULTRA-PRECISE A4 LANDSCAPE PRINT / PDF EXPORT ENGINE     */
+    /* ======================================================== */
+    @page {
+      size: A4 landscape;
+      margin: 0;
+    }
+
     @media print {
-      body {
-        background: #ffffff;
-        padding: 0;
+      *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
+
+      html, body {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        overflow: visible;
+      }
+
       .no-print,
       .telegram-submit-box,
       .top-toolbar {
         display: none !important;
       }
+
       .presentation-container {
-        gap: 0;
-        max-width: 100%;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 0 !important;
       }
+
+      /* Each Slide Exactly Matches 1 Full A4 Landscape Page */
       .slide-frame {
-        border: none;
-        border-radius: 0;
-        box-shadow: none;
-        padding: 30px 20px;
-        page-break-after: always;
-        min-height: auto;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        min-height: 100vh !important;
+        box-sizing: border-box !important;
+        padding: 28px 45px 22px 65px !important;
+        margin: 0 !important;
+        border: none !important;
+        border-left: 14px solid #f59e0b !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        page-break-after: always !important;
+        page-break-inside: avoid !important;
+        break-after: page !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        position: relative !important;
+        overflow: hidden !important;
       }
-      .slide-cover {
-        border-left: 10px solid #f59e0b;
+
+      /* Slide 1 Cover Page: Perfectly Centered & Balanced */
+      .slide-cover .cover-body {
+        margin: auto 0 !important;
+        gap: 6px;
       }
+      .slide-cover .cover-main-title {
+        font-size: 54px !important;
+        margin-bottom: 6px !important;
+      }
+      .slide-cover .cover-brand-sub {
+        font-size: 16px !important;
+        margin-bottom: 0 !important;
+      }
+      .slide-cover .logo-preview-img {
+        height: 110px !important;
+      }
+
+      /* Slide 2 Members Page: Perfectly Centered & Large Squircle Cards */
+      .slide-members {
+        justify-content: space-between !important;
+      }
+      .slide-members .pill-header-amber {
+        margin: 0 auto 20px auto !important;
+      }
+      .slide-members .members-grid {
+        gap: 30px 60px !important;
+        margin: auto 0 !important;
+      }
+      .slide-members .member-photo-frame {
+        width: 120px !important;
+        height: 120px !important;
+      }
+      .slide-members .member-name {
+        font-size: 16px !important;
+      }
+
+      /* Slide 3, 4, 5: Compact & Content-Optimized to Fit 1 Page Each */
+      .section-pill-title {
+        font-size: 13px !important;
+        padding: 4px 14px !important;
+        margin-bottom: 10px !important;
+      }
+      h3 {
+        font-size: 13px !important;
+        margin: 8px 0 4px 0 !important;
+      }
+      p {
+        font-size: 11px !important;
+        line-height: 1.4 !important;
+        margin-bottom: 6px !important;
+      }
+      .grid-4 {
+        gap: 8px !important;
+        margin: 6px 0 !important;
+      }
+      .grid-2 {
+        gap: 8px !important;
+        margin: 6px 0 !important;
+      }
+      .cute-card {
+        padding: 8px 12px !important;
+        border-radius: 12px !important;
+      }
+      .cute-card h4 {
+        font-size: 11px !important;
+        margin-bottom: 3px !important;
+      }
+      .cute-card p {
+        font-size: 9.5px !important;
+        line-height: 1.35 !important;
+      }
+      .cute-card-icon {
+        font-size: 14px !important;
+        margin-bottom: 2px !important;
+      }
+
+      /* Tables & ERD Frame Compact Sizing */
+      .table-container {
+        margin: 6px 0 8px 0 !important;
+        border-radius: 10px !important;
+      }
+      th {
+        padding: 6px 10px !important;
+        font-size: 10px !important;
+      }
+      td {
+        padding: 5px 10px !important;
+        font-size: 10px !important;
+      }
+      .diagram-frame {
+        padding: 10px !important;
+        border-radius: 12px !important;
+        margin: 6px 0 !important;
+      }
+      .diagram-frame img {
+        max-height: 220px !important;
+        width: auto !important;
+        margin: 0 auto !important;
+        object-fit: contain !important;
+      }
+
+      /* Slide Footers Pinned Bottom */
+      .slide-footer {
+        padding-top: 8px !important;
+        border-top: 1.5px solid #e2e8f0 !important;
+        margin-top: 6px !important;
+      }
+
       .logo-uploader-card {
         border: none !important;
         padding: 0 !important;
