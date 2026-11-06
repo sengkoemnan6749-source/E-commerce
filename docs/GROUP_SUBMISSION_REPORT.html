@@ -687,7 +687,9 @@
         background: #ffffff;
         padding: 0;
       }
-      .no-print {
+      .no-print,
+      .telegram-submit-box,
+      .top-toolbar {
         display: none !important;
       }
       .presentation-container {
@@ -740,6 +742,9 @@
         <span>Digital University of Cambodia • E-Commerce Presentation</span>
       </div>
       <div class="toolbar-buttons">
+        <button class="btn-cute btn-repo" onclick="copyTelegramMessage()" title="Copy Telegram submission message text">
+          <span>📋 Copy Telegram Text</span>
+        </button>
         <button class="btn-cute btn-repo" onclick="document.getElementById('input-uni-logo').click()" title="Click to upload your own University Logo">
           <span>🏛️ Upload Uni Logo</span>
         </button>
@@ -1237,27 +1242,6 @@
           <span>🟣 <strong>N : N:</strong> Many-to-Many via order_items</span>
         </div>
       </div>
-
-      <!-- Telegram Template with EXACT Student Names -->
-      <div class="telegram-submit-box">
-        <div class="tg-title">
-          <span>📬 Telegram Submission Message Template</span>
-          <button class="tg-copy-btn" onclick="copyTelegramMessage()">📋 Copy Message</button>
-        </div>
-        <div class="tg-code-box" id="tg-text">Topic: UI Admin Electronic Store (TechTonic Store)
-
-1_ ក្រុមទី8 សមាជិកមាន
-   1_ CHAN NITEH
-   2_ YON SIMIDA
-   3_ MORN DOEK
-   4_ SENG KOEMNAN
-
-2_ E-Commerce UI: Electronic Store (TechTonic Store)
-
-3_ E-commerce: https://github.com/sengkoemnan6749-source/E-commerce
-
-4_ Repository: https://github.com/sengkoemnan6749-source/E-commerce</div>
-      </div>
       </div>
 
       <!-- Bottom Slide Footer -->
@@ -1274,6 +1258,29 @@
 
     </div>
 
+  </div>
+
+  <!-- Telegram Template (Web Only - 100% Hidden in Print & PDF) -->
+  <div style="max-width: 1080px; margin: 30px auto 50px auto; padding: 0 20px;" class="no-print">
+    <div class="telegram-submit-box no-print">
+      <div class="tg-title">
+        <span>📬 Telegram Submission Message Template (Web Helper)</span>
+        <button class="tg-copy-btn" onclick="copyTelegramMessage()">📋 Copy Message</button>
+      </div>
+      <div class="tg-code-box" id="tg-text">Topic: UI Admin TechTonic Store
+
+1_ ក្រុមទី8 សមាជិកមាន
+   1_ CHAN NITEH
+   2_ YON SIMIDA
+   3_ MORN DOEK
+   4_ SENG KOEMNAN
+
+2_ E-Commerce UI: TechTonic Store
+
+3_ E-commerce: https://github.com/sengkoemnan6749-source/E-commerce
+
+4_ Repository: https://github.com/sengkoemnan6749-source/E-commerce</div>
+    </div>
   </div>
 
   <!-- Interactive JavaScript for Local Photo & Logo Uploading -->
