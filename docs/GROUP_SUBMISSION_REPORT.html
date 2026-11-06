@@ -10,23 +10,15 @@
   <style>
     :root {
       --primary: #0284c7;
-      --primary-dark: #0369a1;
-      --primary-light: #e0f2fe;
-      --secondary: #6366f1;
-      --secondary-light: #e0e7ff;
-      --accent-emerald: #10b981;
-      --accent-emerald-light: #dcfce7;
-      --accent-amber: #f59e0b;
-      --accent-amber-light: #fef3c7;
-      --accent-rose: #f43f5e;
-      --accent-rose-light: #ffe4e6;
-      --accent-purple: #8b5cf6;
-      --accent-purple-light: #ede9fe;
-      --dark-navy: #090e1a;
-      --card-bg: #ffffff;
-      --border-color: #e2e8f0;
-      --text-main: #1e293b;
+      --primary-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+      --pink-gradient: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+      --purple-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+      --emerald-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+      --amber-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+      --candy-bg: #faf5ff;
+      --text-main: #1e1b4b;
       --text-muted: #64748b;
+      --card-radius: 20px;
     }
 
     * {
@@ -39,24 +31,26 @@
 
     body {
       font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f1f5f9;
+      background: linear-gradient(180deg, #f8fafc 0%, #fdf2f8 50%, #f0fdf4 100%);
       color: var(--text-main);
-      line-height: 1.65;
+      line-height: 1.7;
       padding: 30px 15px;
+      min-height: 100vh;
     }
 
     .report-wrapper {
-      max-width: 1040px;
+      max-width: 1060px;
       margin: 0 auto;
       background: #ffffff;
-      border-radius: 24px;
-      box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(226, 232, 240, 0.8);
+      border-radius: 32px;
+      box-shadow: 0 25px 70px -15px rgba(99, 102, 241, 0.15), 0 0 0 1px rgba(226, 232, 240, 0.8);
       overflow: hidden;
+      border: 1px solid rgba(244, 114, 182, 0.2);
     }
 
-    /* Top Floating Toolbar (No Print) */
+    /* Cute Top Floating Toolbar */
     .top-toolbar {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #311042 100%);
       color: #ffffff;
       padding: 16px 28px;
       display: flex;
@@ -68,171 +62,290 @@
     .toolbar-title {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       font-size: 13px;
-      font-weight: 600;
-      color: #cbd5e1;
+      font-weight: 700;
+      color: #f1f5f9;
+      letter-spacing: 0.2px;
     }
-    .status-dot {
+    .cute-dot {
       width: 10px;
       height: 10px;
-      background: #10b981;
+      background: #ec4899;
       border-radius: 50%;
-      box-shadow: 0 0 10px #10b981;
+      box-shadow: 0 0 12px #ec4899;
       display: inline-block;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.8; }
     }
     .toolbar-actions {
       display: flex;
       gap: 10px;
     }
     .btn-action {
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
+      padding: 9px 18px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 800;
       cursor: pointer;
       border: none;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       text-decoration: none;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .btn-print {
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
       color: #ffffff;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
     }
     .btn-print:hover {
       filter: brightness(1.1);
-      transform: translateY(-1px);
+      transform: translateY(-2px) scale(1.02);
     }
     .btn-secondary {
       background: rgba(255, 255, 255, 0.12);
       color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateY(-2px);
     }
 
     /* Content Sheet Padding */
     .content-sheet {
-      padding: 50px 60px;
+      padding: 45px 55px;
     }
 
-    /* Executive Hero Header */
+    /* ======================================================== */
+    /* CUTE & AESTHETIC HERO CARD (REDESIGNED)                   */
+    /* ======================================================== */
     .hero-header {
-      background: linear-gradient(135deg, #0a101f 0%, #0f172a 60%, #1e1b4b 100%);
-      border-radius: 20px;
-      padding: 36px 40px;
+      background: linear-gradient(135deg, #090d1a 0%, #171638 40%, #28103d 75%, #0b1329 100%);
+      border-radius: 28px;
+      padding: 40px 44px;
       color: #ffffff;
       position: relative;
       overflow: hidden;
       margin-bottom: 40px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+      box-shadow: 0 20px 45px -10px rgba(40, 16, 61, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.12);
     }
+
+    /* Glowing ambient bubbles */
     .hero-header::before {
       content: '';
       position: absolute;
-      top: -40px;
+      top: -60px;
       right: -40px;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, rgba(2, 132, 199, 0.4) 0%, transparent 70%);
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.35) 0%, rgba(139, 92, 246, 0.2) 50%, transparent 70%);
       pointer-events-none;
+      filter: blur(20px);
     }
-    .hero-badge-row {
+    .hero-header::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: 20%;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, transparent 70%);
+      pointer-events-none;
+      filter: blur(30px);
+    }
+
+    .hero-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-left-content {
+      flex: 1;
+    }
+
+    .hero-badge-pills {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 16px;
+      gap: 8px;
+      margin-bottom: 18px;
     }
-    .pill {
+    .pill-cute {
       font-size: 11px;
       font-weight: 800;
-      padding: 4px 12px;
+      padding: 5px 14px;
       border-radius: 9999px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.5px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      backdrop-filter: blur(8px);
+    }
+    .pill-pink {
+      background: rgba(236, 72, 153, 0.2);
+      color: #f472b6;
+      border: 1px solid rgba(244, 114, 182, 0.4);
+      box-shadow: 0 0 12px rgba(236, 72, 153, 0.2);
     }
     .pill-cyan {
-      background: rgba(56, 189, 248, 0.18);
+      background: rgba(56, 189, 248, 0.2);
       color: #38bdf8;
       border: 1px solid rgba(56, 189, 248, 0.4);
     }
-    .pill-emerald {
-      background: rgba(52, 211, 153, 0.18);
-      color: #34d399;
-      border: 1px solid rgba(52, 211, 153, 0.4);
+    .pill-purple {
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.4);
     }
+
     .hero-title {
-      font-size: 30px;
+      font-size: 32px;
       font-weight: 800;
       letter-spacing: -0.6px;
-      line-height: 1.25;
-      margin-bottom: 8px;
+      line-height: 1.2;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 50%, #fbcfe8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
+
     .hero-tagline {
-      font-size: 14px;
-      color: #94a3b8;
+      font-size: 14.5px;
+      color: #cbd5e1;
       font-weight: 500;
-      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 26px;
     }
-    .hero-meta-grid {
+
+    /* Cute Floating Logo Emblem Box */
+    .hero-logo-box {
+      width: 88px;
+      height: 88px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(56, 189, 248, 0.4), 0 0 40px rgba(236, 72, 153, 0.3);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(12px);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .hero-logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 10px rgba(0, 217, 255, 0.6));
+    }
+    .hero-logo-sparkle {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      font-size: 16px;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* Cute Glass Metadata Grid */
+    .hero-meta-glass {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      position: relative;
+      z-index: 2;
     }
-    .hero-meta-item {
+    .glass-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 18px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(244, 114, 182, 0.4);
+      transform: translateY(-2px);
+    }
+    .glass-icon-bubble {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .bubble-purple { background: rgba(168, 85, 247, 0.25); border: 1px solid rgba(192, 132, 252, 0.4); color: #c084fc; }
+    .bubble-cyan { background: rgba(56, 189, 248, 0.25); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; }
+    .bubble-pink { background: rgba(236, 72, 153, 0.25); border: 1px solid rgba(244, 114, 182, 0.4); color: #f472b6; }
+    .bubble-emerald { background: rgba(52, 211, 153, 0.25); border: 1px solid rgba(52, 211, 153, 0.4); color: #34d399; }
+
+    .glass-info {
       display: flex;
       flex-direction: column;
     }
-    .hero-meta-label {
-      font-size: 11px;
+    .glass-label {
+      font-size: 10.5px;
       text-transform: uppercase;
       color: #94a3b8;
       font-weight: 700;
       letter-spacing: 0.5px;
-      margin-bottom: 4px;
     }
-    .hero-meta-val {
+    .glass-val {
       font-size: 13px;
-      color: #f8fafc;
-      font-weight: 600;
+      color: #ffffff;
+      font-weight: 700;
+      word-break: break-all;
     }
 
-    /* Section Headings */
+    /* Section Headings with Cute Floating Badges */
     .section-header {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-top: 48px;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #e2e8f0;
+      gap: 16px;
+      margin-top: 45px;
+      margin-bottom: 22px;
+      padding-bottom: 14px;
+      border-bottom: 2px dashed #fbcfe8;
       page-break-after: avoid;
     }
-    .section-badge {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+    .section-bubble-num {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
+      font-size: 18px;
       font-weight: 800;
       color: #ffffff;
-      shrink-0: 0;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      flex-shrink: 0;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
     }
-    .badge-b1 { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
-    .badge-b2 { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
-    .badge-b3 { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+    .bubble-b1 { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
+    .bubble-b2 { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+    .bubble-b3 { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
 
     .section-title-wrap h2 {
       font-size: 21px;
@@ -241,15 +354,15 @@
       letter-spacing: -0.4px;
     }
     .section-title-wrap p {
-      font-size: 12px;
-      color: var(--text-muted);
+      font-size: 12.5px;
+      color: #64748b;
       font-weight: 500;
     }
 
     h3 {
       font-size: 15px;
-      font-weight: 700;
-      color: #1e293b;
+      font-weight: 800;
+      color: #1e1b4b;
       margin-top: 24px;
       margin-bottom: 12px;
       display: flex;
@@ -257,31 +370,28 @@
       gap: 8px;
     }
     h3::before {
-      content: '';
-      width: 4px;
-      height: 16px;
-      background: var(--primary);
-      border-radius: 2px;
-      display: inline-block;
+      content: '✦';
+      color: #ec4899;
+      font-size: 14px;
     }
 
     p {
       font-size: 13.5px;
       color: #334155;
-      line-height: 1.7;
-      margin-bottom: 12px;
+      line-height: 1.75;
+      margin-bottom: 14px;
     }
 
-    /* Cards Grid */
+    /* Cute Cards Grids */
     .grid-4 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
       margin: 18px 0 24px 0;
     }
     .grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
       gap: 16px;
       margin: 18px 0 24px 0;
     }
@@ -292,17 +402,17 @@
       margin: 18px 0 24px 0;
     }
 
-    .color-card {
+    .cute-card {
       background: #ffffff;
-      border-radius: 14px;
-      padding: 20px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-      transition: all 0.2s ease;
+      border-radius: 20px;
+      padding: 22px;
+      border: 1.5px solid #f1f5f9;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+      transition: all 0.25s ease;
       position: relative;
       overflow: hidden;
     }
-    .color-card::before {
+    .cute-card::before {
       content: '';
       position: absolute;
       top: 0;
@@ -310,51 +420,56 @@
       right: 0;
       height: 4px;
     }
-    .card-cyan::before { background: linear-gradient(90deg, #0284c7, #38bdf8); }
-    .card-indigo::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
-    .card-emerald::before { background: linear-gradient(90deg, #10b981, #34d399); }
-    .card-amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-    .card-purple::before { background: linear-gradient(90deg, #8b5cf6, #c084fc); }
-    .card-rose::before { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+    .card-pink::before { background: var(--pink-gradient); }
+    .card-purple::before { background: var(--purple-gradient); }
+    .card-cyan::before { background: var(--primary-gradient); }
+    .card-emerald::before { background: var(--emerald-gradient); }
+    .card-amber::before { background: var(--amber-gradient); }
 
-    .card-icon-pill {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
+    .cute-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      border-color: #cbd5e1;
+    }
+
+    .cute-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 20px;
       margin-bottom: 14px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     }
-    .icon-cyan { background: #e0f2fe; color: #0284c7; }
-    .icon-indigo { background: #e0e7ff; color: #4f46e5; }
-    .icon-emerald { background: #dcfce7; color: #059669; }
-    .icon-amber { background: #fef3c7; color: #d97706; }
-    .icon-purple { background: #ede9fe; color: #7c3aed; }
-    .icon-rose { background: #ffe4e6; color: #e11d48; }
+    .c-icon-pink { background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; }
+    .c-icon-purple { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+    .c-icon-cyan { background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; }
+    .c-icon-emerald { background: #f0fdf4; color: #059669; border: 1px solid #a7f3d0; }
+    .c-icon-amber { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
 
-    .color-card h4 {
-      font-size: 14px;
-      font-weight: 700;
+    .cute-card h4 {
+      font-size: 14.5px;
+      font-weight: 800;
       color: #0f172a;
       margin-bottom: 6px;
     }
-    .color-card p {
+    .cute-card p {
       font-size: 12.5px;
       color: #475569;
-      line-height: 1.6;
+      line-height: 1.65;
       margin-bottom: 0;
     }
 
-    /* Modern Styled Tables */
+    /* Cute Tables */
     .table-container {
       background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 20px;
       overflow: hidden;
-      margin: 18px 0 26px 0;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      margin: 20px 0 28px 0;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
       page-break-inside: avoid;
     }
     table {
@@ -364,17 +479,17 @@
       text-align: left;
     }
     th {
-      background: #f8fafc;
+      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
       color: #0f172a;
-      font-weight: 700;
-      padding: 12px 16px;
+      font-weight: 800;
+      padding: 13px 18px;
       border-bottom: 1.5px solid #cbd5e1;
-      font-size: 12px;
+      font-size: 11.5px;
       text-transform: uppercase;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.5px;
     }
     td {
-      padding: 12px 16px;
+      padding: 13px 18px;
       border-bottom: 1px solid #f1f5f9;
       color: #334155;
       vertical-align: middle;
@@ -382,195 +497,196 @@
     tr:last-child td {
       border-bottom: none;
     }
+    tr:nth-child(even) td {
+      background: #fafafa;
+    }
     tr:hover td {
-      background: #f8fafc;
+      background: #fdf4ff;
     }
 
-    /* Key Badges */
+    /* Candy Key Badges */
     .key-pk {
       background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: #ffffff;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 10.5px;
       font-weight: 700;
       padding: 3px 8px;
-      border-radius: 6px;
+      border-radius: 8px;
       display: inline-block;
-      box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
     }
     .key-fk {
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       color: #ffffff;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 8px;
+      display: inline-block;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+    }
+
+    /* Candy Data Type Badges */
+    .dtype {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
       font-weight: 700;
       padding: 3px 8px;
       border-radius: 6px;
       display: inline-block;
-      box-shadow: 0 2px 4px rgba(245, 158, 11, 0.25);
     }
-    .key-uk {
-      background: #dcfce7;
-      color: #15803d;
-      border: 1px solid #86efac;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 5px;
-      display: inline-block;
-    }
+    .dtype-uuid { background: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; }
+    .dtype-varchar { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+    .dtype-num { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .dtype-int { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+    .dtype-bool { background: #ffe4e6; color: #be123c; border: 1px solid #fda4af; }
+    .dtype-json { background: #fdf2f8; color: #be185d; border: 1px solid #f472b6; }
+    .dtype-time { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-    /* Data Type Badges */
-    .dtype {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 5px;
-      display: inline-block;
-    }
-    .dtype-uuid { background: #ede9fe; color: #6d28d9; }
-    .dtype-varchar { background: #e0f2fe; color: #0369a1; }
-    .dtype-num { background: #dcfce7; color: #15803d; }
-    .dtype-int { background: #fef3c7; color: #b45309; }
-    .dtype-bool { background: #ffe4e6; color: #be123c; }
-    .dtype-json { background: #f3e8ff; color: #7e22ce; }
-    .dtype-time { background: #f1f5f9; color: #475569; }
-
-    /* Relationship Badges */
-    .badge-rel-1n {
+    /* Cute Relationship Pills */
+    .pill-rel-1n {
       background: #ecfdf5;
       color: #047857;
-      border: 1px solid #a7f3d0;
+      border: 1.5px solid #6ee7b7;
       font-weight: 800;
       font-size: 11px;
-      padding: 3px 9px;
-      border-radius: 6px;
+      padding: 3px 10px;
+      border-radius: 9999px;
       display: inline-block;
     }
-    .badge-rel-nn {
-      background: #f5f3ff;
-      color: #6d28d9;
-      border: 1px solid #c4b5fd;
+    .pill-rel-nn {
+      background: #fdf2f8;
+      color: #be185d;
+      border: 1.5px solid #f472b6;
       font-weight: 800;
       font-size: 11px;
-      padding: 3px 9px;
-      border-radius: 6px;
+      padding: 3px 10px;
+      border-radius: 9999px;
       display: inline-block;
     }
 
-    /* Diagram Presentation Box */
+    /* Diagram Presentation Frame */
     .diagram-frame {
       background: #ffffff;
-      border: 2px solid #cbd5e1;
-      border-radius: 16px;
-      padding: 20px;
-      margin: 20px 0 28px 0;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      border: 2px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 24px;
+      margin: 22px 0 30px 0;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
       page-break-inside: avoid;
       text-align: center;
+      position: relative;
     }
     .diagram-frame img {
       width: 100%;
       height: auto;
-      border-radius: 10px;
+      border-radius: 14px;
       display: block;
     }
-    .diagram-footer-note {
-      margin-top: 14px;
-      font-size: 12px;
-      color: #64748b;
-      font-weight: 600;
+    .diagram-legend-row {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid #f1f5f9;
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* Relationship Matrix Table */
-    .rel-table td:first-child {
+      gap: 16px;
+      font-size: 12px;
+      color: #475569;
       font-weight: 700;
-      color: #0f172a;
+    }
+    .legend-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-circle {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
     }
 
-    /* Verification Box */
-    .verified-banner {
-      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-      border: 1.5px solid #86efac;
-      border-radius: 14px;
-      padding: 20px 24px;
-      margin: 30px 0;
+    /* Cute Verification Box */
+    .cute-seal-box {
+      background: linear-gradient(135deg, #fdf2f8 0%, #f0fdf4 100%);
+      border: 2px solid #fbcfe8;
+      border-radius: 20px;
+      padding: 22px 26px;
+      margin: 32px 0;
       display: flex;
       align-items: flex-start;
       gap: 16px;
       page-break-inside: avoid;
+      box-shadow: 0 8px 24px rgba(236, 72, 153, 0.08);
     }
-    .verified-icon {
-      width: 36px;
-      height: 36px;
-      background: #10b981;
+    .cute-seal-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #ec4899 0%, #10b981 100%);
       color: #ffffff;
-      border-radius: 10px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      shrink-0: 0;
-      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+      font-size: 22px;
+      flex-shrink: 0;
+      box-shadow: 0 6px 15px rgba(236, 72, 153, 0.35);
     }
-    .verified-content h4 {
-      font-size: 14.5px;
+    .cute-seal-text h4 {
+      font-size: 15px;
       font-weight: 800;
-      color: #065f46;
+      color: #831843;
       margin-bottom: 4px;
     }
-    .verified-content p {
-      font-size: 12.5px;
-      color: #047857;
-      line-height: 1.6;
+    .cute-seal-text p {
+      font-size: 13px;
+      color: #065f46;
+      line-height: 1.65;
       margin-bottom: 0;
     }
 
-    /* Telegram Template Box */
-    .tg-template-card {
-      background: #0f172a;
-      border-radius: 16px;
-      padding: 24px 28px;
-      color: #f8fafc;
-      margin: 30px 0;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Cute Telegram Box */
+    .cute-tg-card {
+      background: linear-gradient(135deg, #090d1a 0%, #171638 100%);
+      border-radius: 22px;
+      padding: 26px 30px;
+      color: #ffffff;
+      margin: 32px 0;
+      border: 1.5px solid rgba(244, 114, 182, 0.3);
       page-break-inside: avoid;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
     }
-    .tg-template-header {
+    .cute-tg-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
       padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     }
-    .tg-template-header h4 {
-      font-size: 14px;
+    .cute-tg-head h4 {
+      font-size: 14.5px;
       font-weight: 800;
-      color: #38bdf8;
+      color: #f472b6;
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .tg-code {
+    .cute-tg-code {
       font-family: 'JetBrains Mono', monospace;
       font-size: 12.5px;
       color: #cbd5e1;
-      background: rgba(0, 0, 0, 0.35);
-      padding: 16px;
-      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 18px;
+      border-radius: 14px;
       white-space: pre-wrap;
       line-height: 1.7;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Print Specific Tweaks */
+    /* Print Overrides */
     @media print {
       body {
         background: #ffffff;
@@ -580,6 +696,7 @@
         box-shadow: none;
         border: none;
         max-width: 100%;
+        border-radius: 0;
       }
       .content-sheet {
         padding: 10px 0;
@@ -587,11 +704,12 @@
       .no-print {
         display: none !important;
       }
-      .section-header {
-        margin-top: 32px;
-      }
       .hero-header {
         margin-bottom: 24px;
+        page-break-inside: avoid;
+      }
+      .section-header {
+        margin-top: 30px;
       }
     }
   </style>
@@ -603,15 +721,15 @@
     <!-- 0. Top Interactive Toolbar (Hidden when printing to PDF) -->
     <div class="top-toolbar no-print">
       <div class="toolbar-title">
-        <span class="status-dot"></span>
+        <span class="cute-dot"></span>
         <span>TechTonic Store — Academic Submission Portal (Week 8)</span>
       </div>
       <div class="toolbar-actions">
         <button class="btn-action btn-print" onclick="window.print()">
-          <span>🖨️ Print as PDF (A4 Color)</span>
+          <span>🖨️ Print to PDF (A4 Color)</span>
         </button>
         <a href="https://github.com/sengkoemnan6749-source/E-commerce" target="_blank" class="btn-action btn-secondary">
-          <span>📦 Open GitHub Repo</span>
+          <span>📦 GitHub Repo</span>
         </a>
       </div>
     </div>
@@ -619,41 +737,74 @@
     <div class="content-sheet">
 
       <!-- ======================================================== -->
-      <!-- EXECUTIVE COVER / HERO HEADER                            -->
+      <!-- REDESIGNED AESTHETIC & CUTE HERO HEADER                  -->
       <!-- ======================================================== -->
       <div class="hero-header">
-        <div class="hero-badge-row">
-          <span class="pill pill-cyan">✦ E-Commerce Web Engineering</span>
-          <span class="pill pill-emerald">✓ Week 8 Final Submission</span>
-        </div>
-        <h1 class="hero-title">TechTonic Store — Project Documentation</h1>
-        <p class="hero-tagline">"Engineered for the Modern Digital Lifestyle" — Modern Consumer Electronics Platform</p>
+        
+        <div class="hero-top-row">
+          <div class="hero-left-content">
+            <div class="hero-badge-pills">
+              <span class="pill-cute pill-pink">✨ Cute & Modern E-Commerce</span>
+              <span class="pill-cute pill-cyan">🚀 React 18 + PostgreSQL 16</span>
+              <span class="pill-cute pill-purple">🌸 Week 8 Final Submission</span>
+            </div>
+            <h1 class="hero-title">TechTonic Store — Project Documentation</h1>
+            <p class="hero-tagline">
+              <span>💖 "Engineered for the Modern Digital Lifestyle"</span>
+              <span style="opacity: 0.5;">•</span>
+              <span style="color: #38bdf8;">Academic Full-Score Report</span>
+            </p>
+          </div>
 
-        <div class="hero-meta-grid">
-          <div class="hero-meta-item">
-            <span class="hero-meta-label">ក្រុមនិស្សិត (Group)</span>
-            <span class="hero-meta-val">ក្រុមទី 8 (Team 8)</span>
-          </div>
-          <div class="hero-meta-item">
-            <span class="hero-meta-label">មុខវិជ្ជា (Subject)</span>
-            <span class="hero-meta-val">Web Engineering & Database Design</span>
-          </div>
-          <div class="hero-meta-item">
-            <span class="hero-meta-label">កាលបរិច្ឆេទ (Submission Date)</span>
-            <span class="hero-meta-val">Week 8 — October / November 2026</span>
-          </div>
-          <div class="hero-meta-item">
-            <span class="hero-meta-label">Git Repository</span>
-            <span class="hero-meta-val">github.com/sengkoemnan6749-source/E-commerce</span>
+          <!-- Cute Floating 3D Logo Emblem -->
+          <div class="hero-logo-box">
+            <img src="./techtonic-icon.png" alt="TechTonic 3D Logo">
+            <span class="hero-logo-sparkle">✨</span>
           </div>
         </div>
+
+        <!-- 4 Cute Glass Metadata Cards -->
+        <div class="hero-meta-glass">
+          <div class="glass-card">
+            <div class="glass-icon-bubble bubble-purple">👥</div>
+            <div class="glass-info">
+              <span class="glass-label">ក្រុមនិស្សិត (Group)</span>
+              <span class="glass-val">ក្រុមទី 8 (Team 8)</span>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="glass-icon-bubble bubble-pink">📚</div>
+            <div class="glass-info">
+              <span class="glass-label">មុខវិជ្ជា (Course)</span>
+              <span class="glass-val">Web & Database</span>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="glass-icon-bubble bubble-cyan">🗓️</div>
+            <div class="glass-info">
+              <span class="glass-label">កាលបរិច្ឆេទ (Date)</span>
+              <span class="glass-val">Week 8 — October 2026</span>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="glass-icon-bubble bubble-emerald">🔗</div>
+            <div class="glass-info">
+              <span class="glass-label">Repository</span>
+              <span class="glass-val" style="font-size: 11px;">sengkoemnan6749-source</span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- ======================================================== -->
       <!-- SECTION 1: BUSINESS (ផែនការអាជីវកម្ម)                      -->
       <!-- ======================================================== -->
       <div class="section-header">
-        <div class="section-badge badge-b1">1</div>
+        <div class="section-bubble-num bubble-b1">1</div>
         <div class="section-title-wrap">
           <h2>Business (ផែនការអាជីវកម្ម & ម៉ូដែលប្រតិបត្តិការ)</h2>
           <p>យុទ្ធសាស្ត្រអាជីវកម្ម B2C E-Commerce, អតិថិជនគោលដៅ និងផលិតផលស្នូល</p>
@@ -665,44 +816,44 @@
         <strong>TechTonic Store</strong> គឺជាវេទិកាពាណិជ្ជកម្មអេឡិចត្រូនិក (B2C E-Commerce Boutique) ជំនាន់ថ្មីដែលផ្តោតលើការផ្គត់ផ្គង់ឧបករណ៍អេឡិចត្រូនិកទំនើបៗ (Modern Consumer Electronics) កម្រិតខ្ពស់សម្រាប់អ្នកសរសេរកូដ (Software Engineers), អ្នកបង្កើតមាតិកា (Content Creators) និងសិស្ស-និស្សិតនៅក្នុងប្រទេសកម្ពុជា។ វេទិកានេះត្រូវបានបង្កើតឡើងដើម្បីដោះស្រាយបញ្ហាកង្វះខាតហាងលក់គ្រឿង Accessory ដែលមានគុណភាពពិតប្រាកដ (Genuine Warranties), ការដឹកជញ្ជូនយឺតយ៉ាវ និងភាពលំបាកក្នុងការទូទាត់ប្រាក់តាមប្រព័ន្ធក្នុងស្រុក។
       </p>
 
-      <h3>1.2 Target Audience Demographics (អតិថិជនគោលដៅទាំង ៣ ក្រុម)</h3>
+      <h3>1.2 Target Audience Personas (អតិថិជនគោលដៅទាំង ៣ ក្រុម)</h3>
       <div class="grid-3">
-        <div class="color-card card-cyan">
-          <div class="card-icon-pill icon-cyan">💻</div>
+        <div class="cute-card card-cyan">
+          <div class="cute-card-icon c-icon-cyan">💻</div>
           <h4>Software Engineers & Coders</h4>
           <p>ទាមទារឧបករណ៍ Input Devices ដូចជា 75% Mechanical Keyboards (Hot-swappable tactile switches), Ergonomic Vertical Mice និង Studio ANC Headphones ដើម្បីផ្តោតអារម្មណ៍ក្នុងការ Coding រយៈពេលយូរ។</p>
         </div>
-        <div class="color-card card-indigo">
-          <div class="card-icon-pill icon-indigo">🎓</div>
+        <div class="cute-card card-purple">
+          <div class="cute-card-icon c-icon-purple">🎓</div>
           <h4>University Students</h4>
           <p>សិស្ស-និស្សិតដែលត្រូវការឧបករណ៍ Smart Wearables និង Power Banks គុណភាពខ្ពស់ ថាមពលថ្មកាន់បានពេញមួយថ្ងៃ និងមានតម្លៃសមរម្យ (Value-Engineered Pricing)។</p>
         </div>
-        <div class="color-card card-emerald">
-          <div class="card-icon-pill icon-emerald">🎙️</div>
+        <div class="cute-card card-pink">
+          <div class="cute-card-icon c-icon-pink">🎙️</div>
           <h4>Creators & Digital Nomads</h4>
           <p>អ្នកបង្កើតមាតិកា និងអ្នកធ្វើការពីចម្ងាយដែលត្រូវការ Lossless Audio Monitoring, ឆ្នាំងសាក GaN III Fast Power 100W ទម្ងន់ស្រាលងាយស្រួលធ្វើដំណើរ និងជើងទម្រ CNC Aluminum។</p>
         </div>
       </div>
 
-      <h3>1.3 Product Catalog Breakdown (ប្រភេទផលិតផលចម្បងទាំង ៤)</h3>
+      <h3>1.3 Core Product Lines (ប្រភេទផលិតផលចម្បងទាំង ៤)</h3>
       <div class="grid-4">
-        <div class="color-card card-cyan">
-          <div class="card-icon-pill icon-cyan">🎧</div>
+        <div class="cute-card card-cyan">
+          <div class="cute-card-icon c-icon-cyan">🎧</div>
           <h4>Audio & Acoustics</h4>
           <p>Studio reference ANC headphones, Lossless TWS earbuds, beryllium dynamic drivers ជាមួយនឹង Hi-Res Audio Certification។</p>
         </div>
-        <div class="color-card card-amber">
-          <div class="card-icon-pill icon-amber">⌚</div>
+        <div class="cute-card card-amber">
+          <div class="cute-card-icon c-icon-amber">⌚</div>
           <h4>Smart Wearables</h4>
           <p>AMOLED Fitness Watches, Biosensor Health Trackers, និង Titanium Smart Health Rings ជាមួយការតាមដានចង្វាក់បេះដូង 24/7។</p>
         </div>
-        <div class="color-card card-purple">
-          <div class="card-icon-pill icon-purple">⌨️</div>
+        <div class="cute-card card-purple">
+          <div class="cute-card-icon c-icon-purple">⌨️</div>
           <h4>Workspace Peripherals</h4>
           <p>75% Mechanical Keyboards, Silent Tactile Switches, Ergonomic Vertical Mice, និងជើងទម្រ Aluminum Laptop Riser Stands។</p>
         </div>
-        <div class="color-card card-rose">
-          <div class="card-icon-pill icon-rose">⚡</div>
+        <div class="cute-card card-pink">
+          <div class="cute-card-icon c-icon-pink">⚡</div>
           <h4>Power & Mobile</h4>
           <p>100W Gallium Nitride (GaN III) Fast Chargers, MagSafe Wireless Battery Packs, និងខ្សែសាក Braided Liquid Silicone Cables។</p>
         </div>
@@ -710,23 +861,23 @@
 
       <h3>1.4 Key Value Propositions (គុណតម្លៃស្នូលនៃការប្រកួតប្រជែង)</h3>
       <div class="grid-2">
-        <div class="color-card card-cyan">
-          <div class="card-icon-pill icon-cyan">🚀</div>
+        <div class="cute-card card-cyan">
+          <div class="cute-card-icon c-icon-cyan">🚀</div>
           <h4>Same-Day Express Dispatch (3-Hour GrabExpress)</h4>
           <p>សេវាដឹកជញ្ជូនរហ័សទាន់ចិត្តក្នុងរាជធានីភ្នំពេញក្នុងរយៈពេលត្រឹមតែ ៣ ម៉ោងតាមរយៈដៃគូដឹកជញ្ជូន GrabExpress និង J&T Express សម្រាប់រាល់ការបញ្ជាទិញមុនម៉ោង 3:00 PM។</p>
         </div>
-        <div class="color-card card-emerald">
-          <div class="card-icon-pill icon-emerald">🛡️</div>
+        <div class="cute-card card-emerald">
+          <div class="cute-card-icon c-icon-emerald">🛡️</div>
           <h4>1-Year Official Local Serialized Warranty</h4>
           <p>រាល់ផលិតផលទាំងអស់សុទ្ធតែមាន Serial Number ច្បាស់លាស់ ភ្ជាប់ជាមួយការធានាផ្លូវការរយៈពេល ១ ឆ្នាំពេញពីមជ្ឈមណ្ឌលសេវាកម្មប្រចាំរាជធានីភ្នំពេញ។</p>
         </div>
-        <div class="color-card card-amber">
-          <div class="card-icon-pill icon-amber">🇰🇭</div>
+        <div class="cute-card card-amber">
+          <div class="cute-card-icon c-icon-amber">🇰🇭</div>
           <h4>Cambodia National Bank (NBC) Bakong KHQR</h4>
           <p>គាំទ្រការទូទាត់ប្រាក់បែប Digital តាមរយៈស្ដង់ដារជាតិ KHQR អាចស្កេនទូទាត់ភ្លាមៗពីគ្រប់ធនាគារក្នុងស្រុក (ABA Mobile, Wing Bank, ACLEDA, Sathapana, Canadia)។</p>
         </div>
-        <div class="color-card card-indigo">
-          <div class="card-icon-pill icon-indigo">🔄</div>
+        <div class="cute-card card-pink">
+          <div class="cute-card-icon c-icon-pink">🔄</div>
           <h4>30-Day Hassle-Free Exchange Policy</h4>
           <p>ផ្ដល់ទំនុកចិត្តខ្ពស់ជូនអតិថិជនក្នុងការប្តូរទំនិញក្នុងរយៈពេល ៣០ ថ្ងៃ ប្រសិនបើមិនពេញចិត្តនឹងទំហំ ការរចនា ឬ Switch Feel នៃក្ដារចុច។</p>
         </div>
@@ -736,7 +887,7 @@
       <!-- SECTION 2: PROJECT PLANNING (ផែនការបច្ចេកវិទ្យា & ប្រព័ន្ធ) -->
       <!-- ======================================================== -->
       <div class="section-header">
-        <div class="section-badge badge-b2">2</div>
+        <div class="section-bubble-num bubble-b2">2</div>
         <div class="section-title-wrap">
           <h2>Project Planning & Architecture (ផែនការបច្ចេកវិទ្យា & ប្រព័ន្ធ)</h2>
           <p>រចនាសម្ព័ន្ធបច្ចេកវិទ្យា, Core Modules, Flowcharts និង UX Responsiveness</p>
@@ -748,40 +899,40 @@
         <table>
           <thead>
             <tr>
-              <th style="width: 20%;">ផ្នែក (Layer)</th>
-              <th style="width: 25%;">បច្ចេកវិទ្យា (Technology)</th>
+              <th style="width: 22%;">ផ្នែក (Layer)</th>
+              <th style="width: 24%;">បច្ចេកវិទ្យា (Technology)</th>
               <th>មូលហេតុនៃការជ្រើសរើស (Justification & Benefits)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td><strong>Frontend Framework</strong></td>
-              <td><span class="pill pill-cyan">React 18 + Vite 6</span></td>
+              <td><span class="dtype dtype-varchar">React 18 + Vite 6</span></td>
               <td>ល្បឿន Development លឿនខ្លាំង (Hot Module Replacement) និង Performance កម្រិតខ្ពស់លើ Single Page Application (SPA)។</td>
             </tr>
             <tr>
               <td><strong>Styling & CSS</strong></td>
-              <td><span class="pill pill-cyan">Tailwind CSS 3.4</span></td>
+              <td><span class="dtype dtype-varchar">Tailwind CSS 3.4</span></td>
               <td>Utility-First CSS ជួយបង្កើត Cyber Dark/Light Mode, Glassmorphism, Micro-animations និង Fully Responsive Layouts។</td>
             </tr>
             <tr>
               <td><strong>Client-Side Routing</strong></td>
-              <td><span class="pill pill-indigo">React Router DOM v6</span></td>
+              <td><span class="dtype dtype-uuid">React Router DOM v6</span></td>
               <td>គ្រប់គ្រង Nested Layouts សម្រាប់អតិថិជន (Storefront Layout) និងអ្នកគ្រប់គ្រង (Admin Dashboard Layout) ជាមួយ Route Guards។</td>
             </tr>
             <tr>
               <td><strong>State Management</strong></td>
-              <td><span class="pill pill-indigo">React Context API + LocalStorage</span></td>
+              <td><span class="dtype dtype-uuid">React Context API + LocalStorage</span></td>
               <td>គ្រប់គ្រងទិន្នន័យរទេះ (Cart State), បញ្ជីប្រាថ្នា (Wishlist State), និង User Authentication ដោយរក្សាទុក Persistence មិនបាត់ពេល Refresh។</td>
             </tr>
             <tr>
               <td><strong>Icon System</strong></td>
-              <td><span class="pill pill-emerald">Lucide React Vector Icons</span></td>
+              <td><span class="dtype dtype-num">Lucide React Vector Icons</span></td>
               <td>Icon វ៉ិចទ័រ SVG កម្រិតស្ដង់ដារពិភពលោក គ្មានប្រើ Emoji នាំឱ្យខូច Layout ជួយឱ្យ UI មើលទៅ Clean និងមានលក្ខណៈវិជ្ជាជីវៈខ្ពស់។</td>
             </tr>
             <tr>
               <td><strong>Database Engine</strong></td>
-              <td><span class="pill pill-emerald">PostgreSQL 16 Relational DB</span></td>
+              <td><span class="dtype dtype-num">PostgreSQL 16 Relational DB</span></td>
               <td>ប្រព័ន្ធគ្រប់គ្រងទិន្នន័យ Relational DB ដែលមានស្ថិរភាពខ្ពស់ បែងចែកតាមស្ដង់ដារ Third Normal Form (3NF) ជាមួយ Foreign Key Constraints។</td>
             </tr>
           </tbody>
@@ -790,23 +941,23 @@
 
       <h3>2.2 Core Modules & Functional Architecture</h3>
       <div class="grid-2">
-        <div class="color-card card-cyan">
-          <div class="card-icon-pill icon-cyan">🛍️</div>
+        <div class="cute-card card-cyan">
+          <div class="cute-card-icon c-icon-cyan">🛍️</div>
           <h4>1. Storefront & Multi-Variant Catalog</h4>
           <p>បង្ហាញទំនិញទាំង ៤០ មុខ ជាមួយការជ្រើសរើសជម្រើសពណ៌ (Color Swatches) និង Switch ប្រភេទផ្សេងៗ ការ Filter តាម Category, Search Keyword និង Sort តាមតម្លៃ។</p>
         </div>
-        <div class="color-card card-amber">
-          <div class="card-icon-pill icon-amber">💳</div>
+        <div class="cute-card card-amber">
+          <div class="cute-card-icon c-icon-amber">💳</div>
           <h4>2. Cart & Interactive KHQR Checkout</h4>
           <p>ប្រព័ន្ធគណនាតម្លៃទំនិញ, សេវាដឹកជញ្ជូន, បញ្ចុះតម្លៃតាម Coupon Code, ការជ្រើសរើសអាសយដ្ឋានដឹកជញ្ជូន និងការបង្កើតកូដ KHQR ស្កេនទូទាត់ជាក់ស្ដែង។</p>
         </div>
-        <div class="color-card card-indigo">
-          <div class="card-icon-pill icon-indigo">📍</div>
+        <div class="cute-card card-purple">
+          <div class="cute-card-icon c-icon-purple">📍</div>
           <h4>3. Real-Time Order Tracking Telemetry</h4>
           <p>ប្រព័ន្ធតាមដានដំណើរការដឹកជញ្ជូន ៥ ដំណាក់កាល (`Confirmed` &rarr; `Processing` &rarr; `Shipped` &rarr; `Out for Delivery` &rarr; `Delivered`) ជាមួយផែនទី Live Telemetry។</p>
         </div>
-        <div class="color-card card-rose">
-          <div class="card-icon-pill icon-rose">🛡️</div>
+        <div class="cute-card card-pink">
+          <div class="cute-card-icon c-icon-pink">🛡️</div>
           <h4>4. Admin Management Dashboard</h4>
           <p>ផ្ទាំងគ្រប់គ្រងសម្រាប់ Admin ក្នុងការបង្កើត/កែប្រែ/លុបទំនិញ (Full CRUD), ការគ្រប់គ្រងស្ថានភាពបញ្ជាទិញ (Order Status Flow) និងការត្រួតពិនិត្យអតិថិជន។</p>
         </div>
@@ -816,7 +967,7 @@
       <!-- SECTION 3: DATABASE DESIGN (តារាងទិន្នន័យ & រូបភាព ERD)   -->
       <!-- ======================================================== -->
       <div class="section-header">
-        <div class="section-badge badge-b3">3</div>
+        <div class="section-bubble-num bubble-b3">3</div>
         <div class="section-title-wrap">
           <h2>Database Design (ការរចនាមូលដ្ឋានទិន្នន័យ & ERD)</h2>
           <p>ស្ថាបត្យកម្ម Relational Schema 3NF, តារាងទិន្នន័យទាំង ៨, PK, FK, និងទំនាក់ទំនង</p>
@@ -835,7 +986,7 @@
               <th style="width: 18%;">Table Name</th>
               <th style="width: 14%;">Primary Key</th>
               <th style="width: 25%;">Foreign Key (FK) Reference</th>
-              <th style="width: 15%;">Data Types Used</th>
+              <th style="width: 16%;">Data Types Used</th>
               <th>តួនាទី & ការពិពណ៌នា (Purpose)</th>
             </tr>
           </thead>
@@ -908,7 +1059,7 @@
 
       <h3>3.2 Comprehensive Cardinality & Relationships Matrix</h3>
       <div class="table-container">
-        <table class="rel-table">
+        <table>
           <thead>
             <tr>
               <th style="width: 28%;">ទំនាក់ទំនង (Relationship)</th>
@@ -919,38 +1070,38 @@
           </thead>
           <tbody>
             <tr>
-              <td><code>users</code> &rarr; <code>user_addresses</code></td>
-              <td><span class="badge-rel-1n">1 : N</span></td>
+              <td><strong><code>users</code> &rarr; <code>user_addresses</code></strong></td>
+              <td><span class="pill-rel-1n">🌿 1 : N</span></td>
               <td><code>user_addresses.user_id</code></td>
               <td>អតិថិជនម្នាក់ (1 User) អាចកត់ត្រាអាសយដ្ឋានដឹកជញ្ជូនបានច្រើន (Many Addresses)។</td>
             </tr>
             <tr>
-              <td><code>categories</code> &rarr; <code>products</code></td>
-              <td><span class="badge-rel-1n">1 : N</span></td>
+              <td><strong><code>categories</code> &rarr; <code>products</code></strong></td>
+              <td><span class="pill-rel-1n">🌿 1 : N</span></td>
               <td><code>products.category_id</code></td>
               <td>ប្រភេទទំនិញមួយ (1 Category) ផ្ទុកទំនិញជាច្រើនមុខ (Many Products)។</td>
             </tr>
             <tr>
-              <td><code>users</code> &rarr; <code>orders</code></td>
-              <td><span class="badge-rel-1n">1 : N</span></td>
+              <td><strong><code>users</code> &rarr; <code>orders</code></strong></td>
+              <td><span class="pill-rel-1n">🌿 1 : N</span></td>
               <td><code>orders.user_id</code></td>
               <td>អតិថិជនម្នាក់ (1 User) អាចបញ្ជាទិញទំនិញបានច្រើនដង (Many Orders) តាមពេលវេលាផ្សេងគ្នា។</td>
             </tr>
             <tr>
-              <td><code>orders</code> &harr; <code>products</code></td>
-              <td><span class="badge-rel-nn">N : N</span></td>
+              <td><strong><code>orders</code> &harr; <code>products</code></strong></td>
+              <td><span class="pill-rel-nn">🔮 N : N</span></td>
               <td>via <code>order_items</code></td>
               <td>ការកុម្ម៉ង់ម្តងមានទំនិញច្រើនមុខ ហើយទំនិញមួយមុខអាចមានក្នុង Order ច្រើនដង (បំបែកតាម Junction Table)។</td>
             </tr>
             <tr>
-              <td><code>products</code> &rarr; <code>product_reviews</code></td>
-              <td><span class="badge-rel-1n">1 : N</span></td>
+              <td><strong><code>products</code> &rarr; <code>product_reviews</code></strong></td>
+              <td><span class="pill-rel-1n">🌿 1 : N</span></td>
               <td><code>product_reviews.product_id</code></td>
               <td>ទំនិញមួយមុខ (1 Product) អាចទទួលបាន Review និងផ្កាយពីអតិថិជនជាច្រើន។</td>
             </tr>
             <tr>
-              <td><code>users</code> &rarr; <code>product_reviews</code></td>
-              <td><span class="badge-rel-1n">1 : N</span></td>
+              <td><strong><code>users</code> &rarr; <code>product_reviews</code></strong></td>
+              <td><span class="pill-rel-1n">🌿 1 : N</span></td>
               <td><code>product_reviews.user_id</code></td>
               <td>អតិថិជនម្នាក់ (1 User) អាចសរសេរ Review លើទំនិញផ្សេងៗបានច្រើនដង។</td>
             </tr>
@@ -965,18 +1116,30 @@
 
       <div class="diagram-frame">
         <img src="./techtonic-erd-light.png" alt="TechTonic Store Database ERD Light Mode">
-        <div class="diagram-footer-note">
-          <span>🔵 <strong>PK:</strong> Primary Key</span> &nbsp;|&nbsp;
-          <span>🟠 <strong>FK:</strong> Foreign Key</span> &nbsp;|&nbsp;
-          <span>🟢 <strong>1 : N:</strong> One-to-Many</span> &nbsp;|&nbsp;
-          <span>🟣 <strong>N : N:</strong> Many-to-Many (via order_items)</span>
+        <div class="diagram-legend-row">
+          <div class="legend-tag">
+            <span class="legend-circle" style="background: #0284c7;"></span>
+            <span><strong>PK:</strong> Primary Key</span>
+          </div>
+          <div class="legend-tag">
+            <span class="legend-circle" style="background: #f59e0b;"></span>
+            <span><strong>FK:</strong> Foreign Key</span>
+          </div>
+          <div class="legend-tag">
+            <span class="legend-circle" style="background: #10b981;"></span>
+            <span><strong>1 : N:</strong> One-to-Many</span>
+          </div>
+          <div class="legend-tag">
+            <span class="legend-circle" style="background: #ec4899;"></span>
+            <span><strong>N : N:</strong> Many-to-Many (via order_items)</span>
+          </div>
         </div>
       </div>
 
-      <!-- Verification Seal Box -->
-      <div class="verified-banner">
-        <div class="verified-icon">✓</div>
-        <div class="verified-content">
+      <!-- Cute Verification Seal Box -->
+      <div class="cute-seal-box">
+        <div class="cute-seal-icon">🏆</div>
+        <div class="cute-seal-text">
           <h4>Academic & Technical Verification Seal (ផ្ទៀងផ្ទាត់រួចរាល់ 100%)</h4>
           <p>
             រចនាសម្ព័ន្ធទិន្នន័យនេះត្រូវបានផ្ទៀងផ្ទាត់យ៉ាងម៉ត់ចត់ស្របតាមក្បួនខ្នាត Relational Database Management System (RDBMS) និងច្បាប់ Normalization (3NF) ដោយធានាបាននូវភាពស៊ីសង្វាក់គ្នានៃ Data Types, Referential Integrity តាមរយៈ Foreign Keys និងការបំបែក Many-to-Many តាមរយៈ Junction Table `order_items` យ៉ាងត្រឹមត្រូវ។
@@ -987,12 +1150,12 @@
       <!-- ======================================================== -->
       <!-- SECTION 4: TELEGRAM SUBMISSION TEMPLATE                   -->
       <!-- ======================================================== -->
-      <div class="tg-template-card">
-        <div class="tg-template-header">
+      <div class="cute-tg-card">
+        <div class="cute-tg-head">
           <h4>📬 Telegram Submission Message Template (ទម្រង់ផ្ញើជូនគ្រូ)</h4>
-          <span style="font-size: 11px; color: #94a3b8;">Copy & Paste ផ្ញើក្នុង Telegram Group ជាមួយ File Group 8.pdf</span>
+          <span style="font-size: 11px; color: #f472b6; font-weight: 700;">Copy & Paste ផ្ញើក្នុង Telegram Group ជាមួយ File Group 8.pdf</span>
         </div>
-        <div class="tg-code">Topic: UI E-Commerce TechTonic Store
+        <div class="cute-tg-code">Topic: UI E-Commerce TechTonic Store
 
 1_ ក្រុមទី8 សមាជិកមាន
    1_ [ឈ្មោះសមាជិកទី ១]
