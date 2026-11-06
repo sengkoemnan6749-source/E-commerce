@@ -141,8 +141,44 @@
       gap: 22px;
       margin-bottom: 25px;
     }
+    .uni-logo-uploader {
+      position: relative;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 18px;
+      padding: 6px;
+      transition: all 0.25s ease;
+      border: 2px dashed transparent;
+    }
+    .uni-logo-uploader:hover {
+      background: #eff6ff;
+      border-color: #38bdf8;
+      transform: scale(1.05);
+    }
+    .uni-upload-overlay {
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0284c7;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+    }
+    .uni-logo-uploader:hover .uni-upload-overlay {
+      opacity: 1;
+    }
     .uni-crest-img {
-      height: 88px;
+      height: 92px;
       width: auto;
       object-fit: contain;
       filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
@@ -658,6 +694,7 @@
 <body>
 
   <!-- Hidden Inputs for Self Uploads -->
+  <input type="file" id="input-uni-logo" class="hidden-file-input" accept="image/*" onchange="handleUniLogoUpload(event)">
   <input type="file" id="input-logo" class="hidden-file-input" accept="image/*" onchange="handleLogoUpload(event)">
   <input type="file" id="input-member-1" class="hidden-file-input" accept="image/*" onchange="handleMemberPhotoUpload(event, 'img-member-1', 'member_1_photo')">
   <input type="file" id="input-member-2" class="hidden-file-input" accept="image/*" onchange="handleMemberPhotoUpload(event, 'img-member-2', 'member_2_photo')">
@@ -673,6 +710,9 @@
         <span>Digital University of Cambodia • E-Commerce Presentation</span>
       </div>
       <div class="toolbar-buttons">
+        <button class="btn-cute btn-repo" onclick="document.getElementById('input-uni-logo').click()" title="Click to upload your own University Logo">
+          <span>🏛️ Upload Uni Logo</span>
+        </button>
         <button class="btn-cute btn-print" onclick="window.print()">
           <span>🖨️ Print as PDF (A4 Slide)</span>
         </button>
@@ -692,7 +732,12 @@
 
       <!-- University Official Header -->
       <div class="uni-header">
-        <img src="./duc_crest.png" alt="DUC Crest" class="uni-crest-img">
+        <div class="uni-logo-uploader" onclick="document.getElementById('input-uni-logo').click()" title="Click to upload your own University Logo / ចុចទីនេះដើម្បីប្តូរ Logo សាកលវិទ្យាល័យ!">
+          <img id="uni-crest-logo" src="./duc_crest.png" alt="DUC Crest" class="uni-crest-img">
+          <div class="uni-upload-overlay no-print">
+            <span>📷 Change Uni Logo</span>
+          </div>
+        </div>
         <div class="uni-titles">
           <div class="uni-khmer-name">សាកលវិទ្យាល័យឌីជីថលកម្ពុជា</div>
           <div class="uni-eng-name">Digital University of Cambodia</div>
@@ -1195,6 +1240,22 @@
 
   <!-- Interactive JavaScript for Local Photo & Logo Uploading -->
   <script>
+    // 0. University Logo Upload Handler
+    function handleUniLogoUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const uniImg = document.getElementById('uni-crest-logo');
+          uniImg.src = e.target.result;
+          try {
+            localStorage.setItem('team8_uni_logo', e.target.result);
+          } catch(err) {}
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
     // 1. Logo Upload Handler
     function handleLogoUpload(event) {
       const file = event.target.files[0];
@@ -1227,23 +1288,38 @@
       }
     }
 
-    // 3. Load Saved Photos from LocalStorage on page load
+    // 3. Load Saved Photos & Logos from LocalStorage on page load
     window.addEventListener('DOMContentLoaded', () => {
       try {
+        const savedUniLogo = localStorage.getItem('team8_uni_logo');
+        if (savedUniLogo && document.getElementById('uni-crest-logo')) {
+          document.getElementById('uni-crest-logo').src = savedUniLogo;
+        }
+
         const savedLogo = localStorage.getItem('team8_custom_logo');
-        if (savedLogo) document.getElementById('main-store-logo').src = savedLogo;
+        if (savedLogo && document.getElementById('main-store-logo')) {
+          document.getElementById('main-store-logo').src = savedLogo;
+        }
 
         const photo1 = localStorage.getItem('member_1_photo');
-        if (photo1) document.getElementById('img-member-1').src = photo1;
+        if (photo1 && document.getElementById('img-member-1')) {
+          document.getElementById('img-member-1').src = photo1;
+        }
 
         const photo2 = localStorage.getItem('member_2_photo');
-        if (photo2) document.getElementById('img-member-2').src = photo2;
+        if (photo2 && document.getElementById('img-member-2')) {
+          document.getElementById('img-member-2').src = photo2;
+        }
 
         const photo3 = localStorage.getItem('member_3_photo');
-        if (photo3) document.getElementById('img-member-3').src = photo3;
+        if (photo3 && document.getElementById('img-member-3')) {
+          document.getElementById('img-member-3').src = photo3;
+        }
 
         const photo4 = localStorage.getItem('member_4_photo');
-        if (photo4) document.getElementById('img-member-4').src = photo4;
+        if (photo4 && document.getElementById('img-member-4')) {
+          document.getElementById('img-member-4').src = photo4;
+        }
       } catch(e) {}
     });
 
