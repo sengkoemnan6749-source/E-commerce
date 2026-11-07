@@ -1,14 +1,14 @@
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from './mockData';
 
-const PRODUCTS_KEY = 'techtonic_products_v20';
-const CATEGORIES_KEY = 'techtonic_categories_v20';
+const PRODUCTS_KEY = 'techtonic_products_v21';
+const CATEGORIES_KEY = 'techtonic_categories_v21';
 
 // Purge obsolete cached stores to ensure fresh 40-product multi-variant catalog
 try {
-  ['techtonic_products', 'techtonic_products_v1', 'techtonic_products_v2', 'techtonic_products_v3', 'techtonic_products_v4', 'techtonic_products_v5', 'techtonic_products_v6', 'techtonic_products_v7', 'techtonic_products_v8', 'techtonic_products_v9', 'techtonic_products_v10', 'techtonic_products_v11', 'techtonic_products_v12', 'techtonic_products_v13', 'techtonic_products_v14', 'techtonic_products_v15', 'techtonic_products_v16', 'techtonic_products_v17', 'techtonic_products_v18', 'techtonic_products_v19'].forEach(k => {
+  ['techtonic_products', 'techtonic_products_v1', 'techtonic_products_v2', 'techtonic_products_v3', 'techtonic_products_v4', 'techtonic_products_v5', 'techtonic_products_v6', 'techtonic_products_v7', 'techtonic_products_v8', 'techtonic_products_v9', 'techtonic_products_v10', 'techtonic_products_v11', 'techtonic_products_v12', 'techtonic_products_v13', 'techtonic_products_v14', 'techtonic_products_v15', 'techtonic_products_v16', 'techtonic_products_v17', 'techtonic_products_v18', 'techtonic_products_v19', 'techtonic_products_v20'].forEach(k => {
     localStorage.removeItem(k);
   });
-  ['techtonic_categories', 'techtonic_categories_v1', 'techtonic_categories_v2', 'techtonic_categories_v3', 'techtonic_categories_v4', 'techtonic_categories_v5', 'techtonic_categories_v6', 'techtonic_categories_v7', 'techtonic_categories_v8', 'techtonic_categories_v9', 'techtonic_categories_v10', 'techtonic_categories_v11', 'techtonic_categories_v12', 'techtonic_categories_v13', 'techtonic_categories_v14', 'techtonic_categories_v15', 'techtonic_categories_v16', 'techtonic_categories_v17', 'techtonic_categories_v18'].forEach(k => {
+  ['techtonic_categories', 'techtonic_categories_v1', 'techtonic_categories_v2', 'techtonic_categories_v3', 'techtonic_categories_v4', 'techtonic_categories_v5', 'techtonic_categories_v6', 'techtonic_categories_v7', 'techtonic_categories_v8', 'techtonic_categories_v9', 'techtonic_categories_v10', 'techtonic_categories_v11', 'techtonic_categories_v12', 'techtonic_categories_v13', 'techtonic_categories_v14', 'techtonic_categories_v15', 'techtonic_categories_v16', 'techtonic_categories_v17', 'techtonic_categories_v18', 'techtonic_categories_v19', 'techtonic_categories_v20'].forEach(k => {
     localStorage.removeItem(k);
   });
 } catch {}
