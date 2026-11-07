@@ -20,7 +20,10 @@ export default defineConfig(({ command, mode }) => {
                 code: code
                   .split('"/images/').join(`"${base}images/`)
                   .split("'/images/").join(`'${base}images/`)
-                  .split('`/images/').join(`\`${base}images/`),
+                  .split('`/images/').join(`\`${base}images/`)
+                  .split('"/icons/').join(`"${base}icons/`)
+                  .split("'/icons/").join(`'${base}icons/`)
+                  .split('`/icons/').join(`\`${base}icons/`),
                 map: null
               };
             }

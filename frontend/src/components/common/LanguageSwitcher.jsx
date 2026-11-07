@@ -18,20 +18,23 @@ export default function LanguageSwitcher({ variant = 'navbar', className = '' })
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+
   const languages = [
     {
       code: 'en',
       label: 'English',
       nativeLabel: 'English (US)',
       badge: 'EN',
-      flag: '/icons/flags/us.png'
+      flag: `${cleanBase}icons/flags/us.png`
     },
     {
       code: 'km',
       label: 'Khmer',
       nativeLabel: 'ភាសាខ្មែរ',
       badge: 'KH',
-      flag: '/icons/flags/kh.png'
+      flag: `${cleanBase}icons/flags/kh.png`
     }
   ];
 
