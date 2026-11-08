@@ -115,7 +115,7 @@ export default function ProductReviews({ rating = 4.8, reviewsCount = 24 }) {
             { star: 1, pct: 0 }
           ].map((bar) => (
             <div key={bar.star} className="flex items-center gap-2 text-xs">
-              <span className="w-6 font-medium text-slate-600">{bar.star}★</span>
+              <span className="w-8 font-medium text-slate-600 flex items-center gap-0.5">{bar.star} <Star className="w-3 h-3 text-amber-400 fill-amber-400 inline" /></span>
               <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-amber-400 rounded-full"

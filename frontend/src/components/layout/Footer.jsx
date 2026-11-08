@@ -385,7 +385,7 @@ export function Footer() {
               <span>NBC Bakong Certified</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="text-xs">🇰🇭</span>
+              <MapPin className="w-3 h-3 text-[#00D9FF]" />
               <span className="text-[#00D9FF] font-mono font-bold">Cambodia Flagship</span>
             </span>
           </div>

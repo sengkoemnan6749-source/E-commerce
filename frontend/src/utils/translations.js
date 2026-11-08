@@ -79,7 +79,7 @@ export const TRANSLATIONS = {
     cart_view_bag: 'View Bag',
     cart_subtotal: 'Subtotal',
     cart_shipping_calc: 'Calculated at checkout',
-    cart_free_shipping_eligible: '🎉 You unlocked Free Express Delivery!',
+    cart_free_shipping_eligible: 'You unlocked Free Express Delivery!',
     cart_free_shipping_remaining: 'away from Free Express Delivery',
 
     // 4 Value Proposition Cards (Footer & Home)
@@ -320,7 +320,7 @@ export const TRANSLATIONS = {
     cart_view_bag: 'មើលកន្ត្រកទំនិញ',
     cart_subtotal: 'តម្លៃទំនិញសរុប',
     cart_shipping_calc: 'គណនាក្នុងដំណាក់កាលទូទាត់',
-    cart_free_shipping_eligible: '🎉 អ្នកទទួលបានសេវាដឹកជញ្ជូនឥតគិតថ្លៃ!',
+    cart_free_shipping_eligible: 'អ្នកទទួលបានសេវាដឹកជញ្ជូនឥតគិតថ្លៃ!',
     cart_free_shipping_remaining: 'ទៀត ដើម្បីទទួលបានសេវាដឹកឥតគិតថ្លៃ',
 
     // 4 Value Proposition Cards (Footer & Home)

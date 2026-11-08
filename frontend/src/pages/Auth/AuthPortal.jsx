@@ -109,7 +109,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
       cookiePolicy: 'Cookie Policy',
       acceptCookies: 'Accept cookies',
       demoMode: '1-Click Instant Demo (Sara Meng)',
-      checkoutNotice: '🔐 Sign in to complete checkout: Your cart items are saved and ready.'
+      checkoutNotice: 'Sign in to complete checkout: Your cart items are saved and ready.'
     },
     km: {
       accountTitle: 'គណនី TechTonic',
@@ -143,7 +143,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
       cookiePolicy: 'គោលការណ៍ Cookies',
       acceptCookies: 'យល់ព្រម',
       demoMode: 'ចូលគណនីសាកល្បង (Sara Meng)',
-      checkoutNotice: '🔐 សូមចូលគណនីដើម្បីបន្តការទូទាត់ប្រាក់៖ ទំនិញក្នុងកន្ត្រករបស់អ្នកត្រូវបានរក្សាទុកយ៉ាងត្រឹមត្រូវ។'
+      checkoutNotice: 'សូមចូលគណនីដើម្បីបន្តការទូទាត់ប្រាក់៖ ទំនិញក្នុងកន្ត្រករបស់អ្នកត្រូវបានរក្សាទុកយ៉ាងត្រឹមត្រូវ។'
     }
   }[lang];
 
@@ -477,7 +477,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
               </div>
             ) : (
               <div>
-                {/* 🌟 ANIMATED SLIDING TABS (The Exact Feature Requested!) */}
+                {/* ANIMATED SLIDING TABS */}
                 <div className="relative mb-7 border-b border-slate-100 flex items-center gap-8 select-none">
                   {/* Sign In Tab Button */}
                   <button
@@ -503,7 +503,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                     <span>{t.signUpTab}</span>
                   </button>
 
-                  {/* 🚀 SMOOTH SLIDING ORANGE INDICATOR (Glides horizontally with animation!) */}
+                  {/* SMOOTH SLIDING ORANGE INDICATOR (Glides horizontally with animation) */}
                   <span
                     className="absolute bottom-0 h-[3.5px] bg-[#ff6700] rounded-full pointer-events-none"
                     style={{
@@ -534,7 +534,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                   </div>
                 )}
 
-                {/* 🔄 ANIMATED FORM CONTENT TRANSITION */}
+                {/* ANIMATED FORM CONTENT TRANSITION */}
                 <div className="relative overflow-hidden">
                   {activeTab === 'signin' ? (
                     /* ==================== SIGN IN FORM ==================== */

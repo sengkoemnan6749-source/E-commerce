@@ -16,7 +16,12 @@ import {
   Clock,
   Warehouse,
   CheckCircle2,
-  Compass
+  Compass,
+  Moon,
+  Sun,
+  Star,
+  Package,
+  Home
 } from 'lucide-react';
 
 // Real GPS waypoints across Phnom Penh (Toul Kork Hub -> Russian Blvd -> Monivong Blvd -> St 310, BKK1)
@@ -162,8 +167,9 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
             <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #1e3a8a, #172554); border:3px solid #60a5fa; box-shadow:0 0 16px rgba(59,130,246,0.9); display:flex; align-items:center; justify-content:center; color:#ffffff;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             </div>
-            <div style="background:rgba(10,18,36,0.94); border:1.5px solid #3b82f6; padding:3px 9px; border-radius:8px; font-size:11px; font-weight:800; color:#93c5fd; white-space:nowrap; box-shadow:0 4px 14px rgba(0,0,0,0.6);">
-              📦 Toul Kork Hub
+            <div style="background:rgba(10,18,36,0.94); border:1.5px solid #3b82f6; padding:3px 9px; border-radius:8px; font-size:11px; font-weight:800; color:#93c5fd; white-space:nowrap; box-shadow:0 4px 14px rgba(0,0,0,0.6); display:flex; align-items:center; gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              <span>Toul Kork Hub</span>
             </div>
           </div>
         `,
@@ -179,8 +185,9 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
             <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #065f46, #022c22); border:3px solid #34d399; box-shadow:0 0 18px rgba(16,185,129,0.95); display:flex; align-items:center; justify-content:center; color:#ffffff;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             </div>
-            <div style="background:rgba(10,18,36,0.94); border:1.5px solid #10b981; padding:3px 9px; border-radius:8px; font-size:11px; font-weight:800; color:#6ee7b7; white-space:nowrap; box-shadow:0 4px 14px rgba(0,0,0,0.6);">
-              🏠 Sara Meng • BKK1
+            <div style="background:rgba(10,18,36,0.94); border:1.5px solid #10b981; padding:3px 9px; border-radius:8px; font-size:11px; font-weight:800; color:#6ee7b7; white-space:nowrap; box-shadow:0 4px 14px rgba(0,0,0,0.6); display:flex; align-items:center; gap:5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              <span>Sara Meng • BKK1</span>
             </div>
           </div>
         `,
@@ -284,24 +291,26 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
             <button
               type="button"
               onClick={() => setActiveTheme('dark')}
-              className={`text-[11px] font-bold px-3 py-1 rounded-lg transition-all ${
+              className={`text-[11px] font-bold px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
                 activeTheme === 'dark'
                   ? 'bg-slate-900 text-cyan-400 shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              🌙 Cyber Dark
+              <Moon className="w-3.5 h-3.5" />
+              <span>Cyber Dark</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveTheme('light')}
-              className={`text-[11px] font-bold px-3 py-1 rounded-lg transition-all ${
+              className={`text-[11px] font-bold px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
                 activeTheme === 'light'
                   ? 'bg-white text-blue-700 shadow-sm'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              ☀️ Clean City Map
+              <Sun className="w-3.5 h-3.5" />
+              <span>Clean City Map</span>
             </button>
           </div>
 
@@ -334,7 +343,10 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-extrabold text-sm text-white">Sokha Kong</span>
-                  <span className="text-[11px] text-amber-400 font-bold flex items-center">★ 4.9</span>
+                  <span className="text-[11px] text-amber-400 font-bold flex items-center gap-1">
+                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                    <span>4.9</span>
+                  </span>
                 </div>
                 <span className="text-[10px] text-slate-400 block font-mono">Honda Dream 125 • 1K-8899</span>
               </div>
