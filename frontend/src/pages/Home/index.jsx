@@ -24,7 +24,6 @@ import {
   Laptop,
   ShoppingBag,
   Users,
-  Activity,
   Phone,
   PhoneOff,
   Heart
@@ -384,49 +383,6 @@ export default function Home() {
                       <div className="absolute -inset-full w-[200%] h-[200%] bg-gradient-to-r from-transparent via-cyan-400/12 via-purple-500/10 to-transparent animate-sapphire-glare pointer-events-none" />
                     </div>
                   </div>
-
-                  {/* Floating Badge 1: 100M Swim-Proof (Top-Right of Splash) */}
-                  <div className="absolute top-[4%] right-[0%] sm:right-[4%] z-20 scale-85 sm:scale-100 origin-top-right flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl bg-[#050b1d]/90 backdrop-blur-xl border border-sky-400/50 shadow-[0_0_25px_rgba(0,217,255,0.35)]">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300 shadow-[0_0_12px_rgba(0,217,255,0.35)] shrink-0">
-                      <Droplets className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-[11px] sm:text-xs font-bold text-white tracking-tight">{t('hero_badge_swim', '100M Swim-Proof')}</div>
-                      <div className="text-[9px] sm:text-[10px] text-cyan-300/80 font-medium">{t('hero_badge_hydro', 'HydroGuard EN13319 Safe')}</div>
-                    </div>
-                  </div>
-
-                  {/* Floating Badge 2: Cellular & GPS Connected (Left of Splash Ring) */}
-                  <div className="absolute top-[30%] left-[0%] sm:left-[2%] z-20 scale-85 sm:scale-100 origin-top-left flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#050b1d]/90 backdrop-blur-xl border border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.35)]">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400 shadow-[0_0_6px_#34d399]" />
-                    </span>
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-300 tracking-tight">{t('hero_badge_cellular', 'Cellular & GPS Connected')}</span>
-                    <Activity className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 ml-0.5" />
-                  </div>
-
-                  {/* Floating Badge 3: TechTonic Pulse Ultra Pro Tier (Bottom-Center under watches) */}
-                  <Link
-                    to="/product/prod-012"
-                    className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-20 scale-85 sm:scale-100 origin-bottom flex items-center gap-2.5 sm:gap-3 px-4 py-2 sm:px-5 sm:py-2.5 rounded-2xl bg-[#050e24]/95 hover:bg-[#091533] backdrop-blur-xl border border-sky-400/60 hover:border-sky-300 shadow-[0_0_30px_rgba(0,217,255,0.4)] hover:shadow-[0_0_40px_rgba(0,217,255,0.6)] transition-all duration-300 group whitespace-nowrap"
-                  >
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-sky-500/30 to-blue-600/40 border border-sky-400/60 flex items-center justify-center text-sky-300 group-hover:scale-105 transition-transform shrink-0 shadow-[0_0_12px_rgba(0,217,255,0.3)]">
-                      <Watch className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-                    </div>
-                    <div className="text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-white tracking-tight">TechTonic Pulse Ultra</span>
-                        <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">
-                          Pro Tier
-                        </span>
-                      </div>
-                      <div className="text-[10px] text-slate-300 font-medium">
-                        Titanium · Dual GPS · <strong className="text-sky-300 font-bold">$219.99</strong>
-                      </div>
-                    </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-sky-400 group-hover:translate-x-1 transition-transform ml-1 shrink-0" />
-                  </Link>
                 </div>
               </div>
 
@@ -551,29 +507,6 @@ export default function Home() {
                   <div className="absolute -inset-full w-[200%] h-[200%] bg-gradient-to-r from-transparent via-cyan-400/10 via-purple-500/10 to-transparent animate-sapphire-glare pointer-events-none" />
                 </div>
               </div>
-
-              {/* Mobile Floating Card 1: 100M Swim-Proof */}
-              <div className="absolute top-2 right-2 z-20 flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#081226]/90 backdrop-blur-md border border-cyan-400/50 shadow-xs">
-                <Droplets className="w-3.5 h-3.5 text-cyan-300" />
-                <span className="text-[10px] font-bold text-white">{t('hero_badge_swim', '100M Swim-Proof')}</span>
-              </div>
-
-              {/* Mobile Floating Card 2: Pulse Ultra Pill */}
-              <Link
-                to="/product/prod-012"
-                className="absolute bottom-2 left-2 right-2 z-20 flex items-center justify-between p-2.5 rounded-xl bg-[#09152f]/95 backdrop-blur-md border border-sky-400/50 shadow-lg"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-sky-500/20 flex items-center justify-center text-sky-300">
-                    <Watch className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-bold text-white">TechTonic Pulse Ultra</div>
-                    <div className="text-[9px] text-[#00D9FF] font-semibold">$219.99 · Titanium GPS</div>
-                  </div>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-sky-400" />
-              </Link>
             </div>
 
             {/* Bottom Trust Indicators (Mobile / Tablet) */}
