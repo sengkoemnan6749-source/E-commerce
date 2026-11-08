@@ -469,7 +469,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
           </span>
         </div>
         <div className="text-[11px] font-mono text-slate-500">
-          Delivery Hub: St 598, Toul Kork ➔ Destination: St 310, Building 24, BKK1
+          Delivery Hub: St 598, Toul Kork &rarr; Destination: St 310, Building 24, BKK1
         </div>
       </div>
     </div>
