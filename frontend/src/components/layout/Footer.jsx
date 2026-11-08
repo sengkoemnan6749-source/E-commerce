@@ -93,9 +93,9 @@ export function Footer() {
 
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 relative z-10">
             <div className="max-w-xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-wider mb-3">
-                <Mail className="w-3.5 h-3.5" />
-                <span>Stay In The Loop</span>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-400 mb-2">
+                <Mail className="w-4 h-4 text-blue-400" />
+                <span>Newsletter</span>
               </div>
               <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                 Subscribe to TechTonic Dispatch

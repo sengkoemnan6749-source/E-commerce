@@ -117,26 +117,6 @@ export default function Home() {
           {/* Subtle Ambient Cosmic Glows (Non-intrusive) */}
           <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-blue-700/10 via-indigo-600/5 to-transparent rounded-full blur-[140px] pointer-events-none" />
 
-          {/* Clean constellation network on bottom-left */}
-          <div className="hidden lg:block absolute left-0 bottom-0 w-80 h-72 pointer-events-none opacity-30 z-0">
-            <svg viewBox="0 0 320 280" className="w-full h-full">
-              <line x1="20" y1="260" x2="80" y2="210" stroke="#00D9FF" strokeWidth="0.75" />
-              <line x1="80" y1="210" x2="160" y2="240" stroke="#00D9FF" strokeWidth="0.75" />
-              <line x1="160" y1="240" x2="220" y2="180" stroke="#00D9FF" strokeWidth="0.75" />
-              <line x1="80" y1="210" x2="120" y2="140" stroke="#818cf8" strokeWidth="0.75" />
-              <line x1="120" y1="140" x2="200" y2="120" stroke="#818cf8" strokeWidth="0.75" />
-              <line x1="200" y1="120" x2="220" y2="180" stroke="#00D9FF" strokeWidth="0.75" />
-              <line x1="20" y1="180" x2="80" y2="210" stroke="#00D9FF" strokeWidth="0.75" />
-              <circle cx="20" cy="260" r="2.5" fill="#00D9FF" />
-              <circle cx="80" cy="210" r="3" fill="#00D9FF" />
-              <circle cx="160" cy="240" r="2" fill="#818cf8" />
-              <circle cx="220" cy="180" r="2.5" fill="#00D9FF" />
-              <circle cx="120" cy="140" r="3" fill="#a855f7" />
-              <circle cx="200" cy="120" r="2" fill="#00D9FF" />
-              <circle cx="20" cy="180" r="2" fill="#818cf8" />
-            </svg>
-          </div>
-
           {/* DESKTOP (>= 1024px) - Balanced Two-Column Cinematic Layout */}
           <div className="hidden lg:block relative w-full max-w-7xl xl:max-w-[1400px] mx-auto px-6 lg:px-8 py-12 xl:py-16">
             <div className="grid grid-cols-12 gap-8 xl:gap-12 items-center">
@@ -164,7 +144,7 @@ export default function Home() {
                 <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
                   <Link
                     to="/shop"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-7 sm:py-3.5 rounded-full font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-[#00D9FF] via-[#00b4d8] to-[#1769FF] hover:from-[#00e1ff] hover:to-[#1e7bff] shadow-[0_0_25px_rgba(0,217,255,0.4)] hover:shadow-[0_0_35px_rgba(0,217,255,0.6)] transition-all transform hover:-translate-y-0.5 active:scale-95"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full font-bold text-xs sm:text-sm text-white bg-blue-600 hover:bg-blue-500 shadow-md hover:shadow-blue-500/20 transition-all transform hover:-translate-y-0.5 active:scale-95"
                   >
                     <span>{t('hero_explore', 'Explore Products')}</span>
                     <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -172,10 +152,10 @@ export default function Home() {
 
                   <Link
                     to="/product/prod-012"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-full font-semibold text-xs sm:text-sm text-slate-200 bg-[#0c1527]/90 hover:bg-[#13203c] border border-sky-500/40 hover:border-sky-400 shadow-[0_0_15px_rgba(0,217,255,0.15)] backdrop-blur-md transition-all transform hover:-translate-y-0.5 active:scale-95 group"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full font-semibold text-xs sm:text-sm text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 hover:border-slate-600 shadow-sm transition-all transform hover:-translate-y-0.5 active:scale-95 group"
                   >
                     <span>TechTonic Pulse Ultra</span>
-                    <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00D9FF] group-hover:scale-110 transition-transform" />
+                    <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400 group-hover:scale-110 transition-transform" />
                   </Link>
                 </div>
 
@@ -355,7 +335,7 @@ export default function Home() {
               <div className="flex flex-wrap items-center justify-center gap-2.5 w-full">
                 <Link
                   to="/shop"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs text-white bg-gradient-to-r from-[#00D9FF] via-[#00b4d8] to-[#1769FF] shadow-md shadow-blue-500/25 transition-all active:scale-95"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs text-white bg-blue-600 hover:bg-blue-500 shadow-sm transition-all active:scale-95"
                 >
                   <span>{t('hero_explore', 'Explore Products')}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -363,10 +343,10 @@ export default function Home() {
 
                 <Link
                   to="/product/prod-012"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full font-semibold text-xs text-slate-200 bg-[#0c1527]/90 hover:bg-[#13203c] border border-sky-500/40 shadow-xs transition-all active:scale-95"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full font-semibold text-xs text-slate-200 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 shadow-xs transition-all active:scale-95"
                 >
                   <span>TechTonic Pulse Ultra</span>
-                  <Zap className="w-3.5 h-3.5 text-[#00D9FF]" />
+                  <Zap className="w-3.5 h-3.5 text-sky-400" />
                 </Link>
               </div>
             </div>
@@ -447,30 +427,24 @@ export default function Home() {
 
             {/* Bottom Trust Indicators (Mobile / Tablet) */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full max-w-md">
-              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0b1328]/60 border border-slate-800">
-                <div className="w-7 h-7 rounded-full bg-[#00D9FF]/10 border border-[#00D9FF]/30 flex items-center justify-center text-[#00D9FF] shrink-0">
-                  <Users className="w-3.5 h-3.5" />
-                </div>
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0b1328]/60 border border-slate-800">
+                <Users className="w-5 h-5 text-sky-400 shrink-0" />
                 <div>
                   <div className="text-xs font-bold text-white">12,500+</div>
                   <div className="text-[10px] text-slate-400">{t('hero_stat_users', 'Active Tech Users')}</div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0b1328]/60 border border-slate-800">
-                <div className="w-7 h-7 rounded-full bg-[#00D9FF]/10 border border-[#00D9FF]/30 flex items-center justify-center text-[#00D9FF] shrink-0">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                </div>
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0b1328]/60 border border-slate-800">
+                <ShieldCheck className="w-5 h-5 text-sky-400 shrink-0" />
                 <div>
                   <div className="text-xs font-bold text-white">100%</div>
                   <div className="text-[10px] text-slate-400">{t('hero_stat_genuine', 'Genuine Guaranteed')}</div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0b1328]/60 border border-slate-800">
-                <div className="w-7 h-7 rounded-full bg-[#00D9FF]/10 border border-[#00D9FF]/30 flex items-center justify-center text-[#00D9FF] shrink-0">
-                  <Zap className="w-3.5 h-3.5" />
-                </div>
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0b1328]/60 border border-slate-800">
+                <Zap className="w-5 h-5 text-sky-400 shrink-0" />
                 <div>
                   <div className="text-xs font-bold text-white">3-Hour</div>
                   <div className="text-[10px] text-slate-400">{t('hero_stat_delivery', 'Express Delivery')}</div>
@@ -624,22 +598,21 @@ export default function Home() {
 
       {/* 4. PROMOTIONAL SHOWCASE BANNER */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950 p-8 sm:p-12 lg:p-14 text-white shadow-2xl border border-blue-500/20">
-          {/* Ambient Lighting */}
-          <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/15 blur-[120px] rounded-full pointer-events-none animate-pulse-glow" />
-          <div className="absolute -bottom-10 left-10 w-[350px] h-[350px] bg-blue-600/15 blur-[100px] rounded-full pointer-events-none" />
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-8 sm:p-12 lg:p-14 text-white shadow-2xl border border-slate-800">
+          {/* Subtle Ambient Lighting */}
+          <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 bg-blue-600/10 blur-3xl rounded-full pointer-events-none" />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
             {/* Left Column: Promotion Info */}
             <div className="lg:col-span-7 flex flex-col items-start text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 font-mono text-xs font-bold uppercase tracking-wider mb-4">
-                <Zap className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-400 mb-3">
+                <Zap className="w-4 h-4 text-sky-400" />
                 <span>{t('promo_badge', 'Exclusive Developer Promotion')}</span>
               </div>
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-4 text-white leading-tight">
                 {t('promo_title_1', 'Supercharge Your Desk with')} <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500">
                   {t('promo_title_2', 'GaN 100W Fast Power.')}
                 </span>
               </h2>
@@ -661,7 +634,7 @@ export default function Home() {
                 <Link to="/shop?category=Power+%26+Mobile">
                   <button
                     type="button"
-                    className="inline-flex items-center justify-center font-bold px-7 py-3.5 rounded-xl text-sm bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                    className="inline-flex items-center justify-center font-bold px-7 py-3.5 rounded-xl text-sm bg-blue-600 hover:bg-blue-500 text-white shadow-md hover:shadow-blue-500/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                   >
                     <span>{t('promo_btn_shop', 'Shop Power & Mobile')}</span>
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -670,7 +643,7 @@ export default function Home() {
                 <Link to="/shop">
                   <button
                     type="button"
-                    className="inline-flex items-center justify-center font-bold px-6 py-3.5 rounded-xl text-sm text-slate-200 bg-slate-800/80 hover:bg-slate-800 hover:text-white border border-slate-700/80 backdrop-blur-md transition-all shadow-sm"
+                    className="inline-flex items-center justify-center font-bold px-6 py-3.5 rounded-xl text-sm text-slate-200 bg-slate-800/80 hover:bg-slate-800 hover:text-white border border-slate-700/80 backdrop-blur-md transition-all shadow-sm cursor-pointer"
                   >
                     <span>{t('promo_btn_deals', 'Explore All Deals')}</span>
                   </button>
@@ -679,67 +652,30 @@ export default function Home() {
 
               {/* Feature Pills */}
               <div className="flex flex-wrap gap-2.5 sm:gap-3 text-xs font-semibold text-slate-300">
-                <span className="px-3 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-sky-400" />
                   {t('promo_feature_1', '100W Power Delivery 3.0')}
                 </span>
-                <span className="px-3 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm flex items-center gap-1.5">
+                <span className="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 flex items-center gap-1.5">
                   <Droplets className="w-3.5 h-3.5 text-sky-400" />
                   {t('promo_feature_2', 'Zero Heat Dissipation')}
                 </span>
-                <span className="px-3 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span className="px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-blue-400" />
                   {t('promo_feature_3', '4-Port Matrix Output')}
                 </span>
               </div>
             </div>
 
-            {/* Right Column: Animated Power Splash Charger Image */}
+            {/* Right Column: Clean GaN Charger Showcase */}
             <div className="lg:col-span-5 relative flex items-center justify-center py-4">
-              {/* Rotating Ambient Energy Rings */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-[300px] h-[300px] sm:w-[380px] sm:h-[380px] rounded-full border border-cyan-500/20 animate-energy-spin" />
-                <div className="absolute w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] rounded-full border border-blue-500/25" />
-              </div>
-
-              {/* Animated Float Image */}
               <div className="relative z-10 w-full max-w-sm flex items-center justify-center group">
                 <Link to="/product/prod-009" className="block relative">
                   <img
                     src="/images/banners/promo-gan-charger.png"
-                    alt="100W GaN Fast Charger — Electric Power Splash"
-                    className="w-full h-auto max-h-[380px] sm:max-h-[420px] object-contain drop-shadow-[0_20px_45px_rgba(6,182,212,0.4)] group-hover:scale-105 transition-transform duration-700 ease-out animate-float-slow"
+                    alt="100W GaN Fast Charger"
+                    className="w-full h-auto max-h-[380px] sm:max-h-[420px] object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-500 ease-out"
                   />
-                </Link>
-
-                {/* Floating Badge 1: 100W HyperGaN */}
-                <div className="absolute -top-3 -right-2 sm:-right-4 z-20 bg-slate-900/90 backdrop-blur-xl border border-cyan-500/30 px-3.5 py-2 rounded-2xl shadow-xl flex items-center gap-2 pointer-events-none">
-                  <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-cyan-300" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-extrabold text-white">100W HyperGaN™</div>
-                    <div className="text-[9px] text-cyan-200/80 font-medium">{t('promo_badge_density', '3x Power Density')}</div>
-                  </div>
-                </div>
-
-                {/* Floating Badge 2: Product Link & Price */}
-                <Link
-                  to="/product/prod-009"
-                  className="absolute -bottom-3 -left-2 sm:-left-4 z-20 bg-slate-900/90 hover:bg-slate-900 backdrop-blur-xl border border-slate-700/80 hover:border-cyan-500/50 px-3.5 py-2 rounded-2xl shadow-xl flex items-center gap-2.5 transition-all group/badge"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center">
-                    <BatteryCharging className="w-4 h-4 text-cyan-400" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-extrabold text-white group-hover/badge:text-cyan-300 transition-colors">
-                      GaN Fast 100W
-                    </div>
-                    <div className="text-[9px] text-slate-400 font-medium">
-                      <span className="font-bold text-white">$59.99</span> · {t('promo_badge_discount', '-10% with TECH10')}
-                    </div>
-                  </div>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover/badge:text-cyan-400 group-hover/badge:translate-x-0.5 transition-all" />
                 </Link>
               </div>
             </div>
@@ -776,20 +712,16 @@ export default function Home() {
 
       {/* 6. WHY CHOOSE TECHTONIC */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 p-8 sm:p-12 lg:p-16 text-white shadow-2xl border border-slate-800/80">
-          {/* Ambient Lighting Background */}
-          <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-blue-600/10 blur-[130px] rounded-full pointer-events-none" />
-          <div className="absolute bottom-0 right-1/4 w-[450px] h-[300px] bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none" />
-
+        <div className="relative rounded-3xl overflow-hidden bg-slate-900/90 p-8 sm:p-12 lg:p-16 text-white shadow-xl border border-slate-800">
           {/* Section Header */}
           <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 relative z-10">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-300 font-mono text-xs font-bold uppercase tracking-wider mb-4">
-              <Award className="w-3.5 h-3.5 text-cyan-400" />
+            <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-400 mb-3">
+              <Award className="w-4 h-4 text-blue-400" />
               <span>{t('why_tag', 'Engineered For Excellence')}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
               {t('why_title_1', 'Why Technology Leaders')} <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500">
                 {t('why_title_2', 'Choose TechTonic')}
               </span>
             </h2>

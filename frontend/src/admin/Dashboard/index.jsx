@@ -194,12 +194,12 @@ export default function AdminDashboard() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 font-mono">
-              Live Production Telemetry
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+              Live Store Analytics
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Executive Command Center
+            Admin Executive Dashboard
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Real-time financial performance, inventory velocity, and fulfillment logistics in Cambodia.
@@ -910,7 +910,7 @@ export default function AdminDashboard() {
         <Modal
           isOpen={true}
           onClose={() => setIsExportModalOpen(false)}
-          title="Export Financial Telemetry Report"
+          title="Export Financial Report"
         >
           <div className="space-y-4 text-xs">
             <p className="text-slate-600">

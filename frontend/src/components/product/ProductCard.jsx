@@ -167,10 +167,10 @@ export default function ProductCard({ product }) {
               ? translateSubcategory(product.subcategory, language)
               : translateCategory(product.categoryName || product.category, language)}
           </span>
-          <div className="flex items-center gap-1 text-slate-800 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 text-xs font-bold">
-            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+          <div className="flex items-center gap-1 text-slate-700 text-xs font-semibold">
+            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
             <span>{product.rating}</span>
-            <span className="text-[10px] text-slate-400 font-normal">({product.reviewsCount || 24})</span>
+            <span className="text-[11px] text-slate-400 font-normal">({product.reviewsCount || 24})</span>
           </div>
         </div>
 

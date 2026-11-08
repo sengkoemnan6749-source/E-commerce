@@ -391,13 +391,10 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                 />
               </div>
 
-              <div className="mt-4 flex items-center gap-2">
-                <span className="text-[11px] font-bold text-slate-300 bg-white/10 px-3 py-1 rounded-full border border-white/15">
-                  {activeTab === 'signin' ? 'TechTonic ANC Pro' : 'Viper Ultralight 49g'}
-                </span>
-                <span className="text-[11px] font-bold text-orange-400 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">
-                  {activeTab === 'signin' ? 'Hi-Res Certified' : '8000Hz Polling'}
-                </span>
+              <div className="mt-4 flex items-center gap-3 text-xs font-semibold text-slate-300">
+                <span>{activeTab === 'signin' ? 'TechTonic ANC Pro' : 'Viper Ultralight 49g'}</span>
+                <span className="text-slate-500">&bull;</span>
+                <span className="text-orange-400">{activeTab === 'signin' ? 'Hi-Res Certified' : '8000Hz Polling'}</span>
               </div>
             </div>
 
@@ -407,7 +404,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <span>{activeTab === 'signin' ? 'End-to-End Encrypted Access' : 'Official Hardware Protection'}</span>
               </span>
-              <span className="text-orange-400 font-semibold">{activeTab === 'signin' ? 'v2.4 Core' : '24M Warranty'}</span>
+              <span className="text-orange-400 font-semibold">{activeTab === 'signin' ? 'Official Store' : '24M Warranty'}</span>
             </div>
           </div>
 

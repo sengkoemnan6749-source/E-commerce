@@ -143,7 +143,7 @@ export default function AdminLayout() {
               <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
                   <span className="text-xs font-bold text-white uppercase tracking-wider">
-                    System Telemetry Alerts
+                    System Notifications
                   </span>
                   <span className="text-[10px] text-blue-400 font-semibold">Live Feed</span>
                 </div>

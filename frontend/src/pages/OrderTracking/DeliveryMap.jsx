@@ -298,7 +298,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
               }`}
             >
               <Moon className="w-3.5 h-3.5" />
-              <span>Cyber Dark</span>
+              <span>Dark Map</span>
             </button>
             <button
               type="button"
@@ -310,7 +310,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
               }`}
             >
               <Sun className="w-3.5 h-3.5" />
-              <span>Clean City Map</span>
+              <span>Light Map</span>
             </button>
           </div>
 
@@ -383,7 +383,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
               </span>
             </div>
             <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-400">Telemetry:</span>
+              <span className="text-slate-400">Live Distance:</span>
               <span className="text-slate-200 font-semibold">{telemetry.distance} • {telemetry.speed}</span>
             </div>
             <div className="pt-2 border-t border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-1.5">

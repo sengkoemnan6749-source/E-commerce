@@ -85,7 +85,7 @@ export default function OrderTracking() {
         <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3 text-xs text-slate-600">
           <Clock className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
           <div>
-            <span className="font-bold text-slate-900 block">Dispatch Telemetry Update:</span>
+            <span className="font-bold text-slate-900 block">Live Shipment Update:</span>
             {order.status === 'delivered' ? (
               <p className="text-emerald-700 font-semibold mt-0.5">
                 Package successfully delivered and signed by customer.
