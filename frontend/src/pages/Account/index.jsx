@@ -59,22 +59,20 @@ export default function AccountOverview() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         
         {/* Total Orders Card */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-blue-50/80 via-blue-50/30 to-white border border-blue-200/80 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group">
+        <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between group">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-blue-900">
-              Total Hardware Orders
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Total Orders
             </span>
-            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-              <Package className="w-4 h-4" />
-            </div>
+            <Package className="w-5 h-5 text-blue-600" />
           </div>
           <div>
             <div className="text-3xl font-black text-slate-900 tracking-tight">
               {orders.length}
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-500 mt-2 pt-2 border-t border-blue-100">
-              <span>Recorded purchases</span>
-              <Link to="/account/orders" className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-0.5">
+            <div className="flex items-center justify-between text-xs text-slate-500 mt-2 pt-2 border-t border-slate-100">
+              <span>Completed purchases</span>
+              <Link to="/account/orders" className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-0.5">
                 <span>View</span>
                 <ChevronRight className="w-3 h-3" />
               </Link>
@@ -83,56 +81,51 @@ export default function AccountOverview() {
         </div>
 
         {/* Total Spent Card */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-emerald-50/80 via-emerald-50/30 to-white border border-emerald-200/80 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group">
+        <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between group">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-900">
-              Hardware Investment
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Total Spent
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-              <TrendingUp className="w-4 h-4" />
-            </div>
+            <TrendingUp className="w-5 h-5 text-blue-600" />
           </div>
           <div>
             <div className="text-3xl font-black text-slate-900 tracking-tight">
               {formatUSD(totalSpent)}
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-500 mt-2 pt-2 border-t border-emerald-100">
-              <span>Genuine investments</span>
-              <span className="font-bold text-emerald-700">5% Cashback</span>
+            <div className="flex items-center justify-between text-xs text-slate-500 mt-2 pt-2 border-t border-slate-100">
+              <span>All confirmed orders</span>
+              <span className="font-semibold text-emerald-700">Rewards Active</span>
             </div>
           </div>
         </div>
 
         {/* Warranty Status Card */}
-        <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-purple-50/80 via-purple-50/30 to-white border border-purple-200/80 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group">
+        <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between group">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-purple-900">
-              Serialized Warranty
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Warranty Status
             </span>
-            <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
+            <ShieldCheck className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <div className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <span>Active</span>
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="text-3xl font-black text-slate-900 tracking-tight">
+              Active
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-500 mt-2 pt-2 border-t border-purple-100">
+            <div className="flex items-center justify-between text-xs text-slate-500 mt-2 pt-2 border-t border-slate-100">
               <span>1-Year Official Coverage</span>
-              <span className="font-bold text-purple-700">Phnom Penh Lab</span>
+              <span className="font-semibold text-slate-700">Phnom Penh Flagship</span>
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* 2. RECENT HARDWARE ORDERS (Visual Cards with Thumbnails) */}
+      {/* 2. RECENT ORDERS (Visual Cards with Thumbnails) */}
       <div>
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
           <div>
             <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <span>Recent Hardware Orders</span>
+              <span>Recent Orders</span>
               <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
                 {orders.length} Total
               </span>
@@ -349,19 +342,17 @@ export default function AccountOverview() {
         )}
       </div>
 
-      {/* 4. FAST HARDWARE SHORTCUTS */}
+      {/* 4. ACCOUNT SHORTCUTS */}
       <div className="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Link
           to="/shop"
-          className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-sm transition-all group flex items-center justify-between"
+          className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-2xs transition-all group flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <ShoppingBag className="w-4 h-4" />
-            </div>
+            <ShoppingBag className="w-5 h-5 text-blue-600 shrink-0" />
             <div>
               <span className="text-xs font-bold text-slate-900 block">Catalog Browse</span>
-              <span className="text-[11px] text-slate-500">Explore new gear</span>
+              <span className="text-[11px] text-slate-500">Explore products</span>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
@@ -369,34 +360,30 @@ export default function AccountOverview() {
 
         <Link
           to="/account/invoices"
-          className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-sm transition-all group flex items-center justify-between"
+          className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-2xs transition-all group flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <FileText className="w-4 h-4" />
-            </div>
+            <FileText className="w-5 h-5 text-blue-600 shrink-0" />
             <div>
               <span className="text-xs font-bold text-slate-900 block">Tax Receipts</span>
               <span className="text-[11px] text-slate-500">Download PDF bills</span>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
         </Link>
 
         <a
           href="mailto:warranty@techtonic.dev"
-          className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-sm transition-all group flex items-center justify-between"
+          className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-2xs transition-all group flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
+            <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0" />
             <div>
               <span className="text-xs font-bold text-slate-900 block">Warranty Claim</span>
-              <span className="text-[11px] text-slate-500">Serial TT-88204</span>
+              <span className="text-[11px] text-slate-500">Official Flagship Hub</span>
             </div>
           </div>
-          <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-all" />
+          <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
         </a>
       </div>
 
