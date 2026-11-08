@@ -143,56 +143,6 @@ export default function Home() {
               
               {/* Left Column: Typography, CTAs & Statistics */}
               <div className="col-span-12 lg:col-span-6 xl:col-span-6 z-20 flex flex-col items-start text-left relative">
-                {/* Floating 3D Geometric Crystal Accent (Matching Mockup) */}
-                <div className="hidden xl:block absolute -right-6 top-8 w-28 h-28 pointer-events-none opacity-80 z-0 animate-float-slow">
-                  <svg viewBox="0 0 120 120" className="w-full h-full drop-shadow-[0_0_20px_rgba(168,85,247,0.35)]">
-                    <defs>
-                      <linearGradient id="crystalFacet1" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#818cf8" stopOpacity="0.8" />
-                        <stop offset="100%" stopColor="#3730a3" stopOpacity="0.6" />
-                      </linearGradient>
-                      <linearGradient id="crystalFacet2" x1="1" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#c084fc" stopOpacity="0.85" />
-                        <stop offset="100%" stopColor="#581c87" stopOpacity="0.6" />
-                      </linearGradient>
-                      <linearGradient id="crystalFacet3" x1="0" y1="1" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#00D9FF" stopOpacity="0.75" />
-                        <stop offset="100%" stopColor="#1e3a8a" stopOpacity="0.5" />
-                      </linearGradient>
-                      <linearGradient id="crystalFacet4" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f472b6" stopOpacity="0.6" />
-                        <stop offset="100%" stopColor="#831843" stopOpacity="0.4" />
-                      </linearGradient>
-                    </defs>
-                    <polygon points="60,10 105,35 105,85 60,110 15,85 15,35" fill="none" stroke="#818cf8" strokeWidth="1" opacity="0.6" />
-                    <polygon points="60,10 105,35 60,60" fill="url(#crystalFacet1)" stroke="#a5b4fc" strokeWidth="0.75" />
-                    <polygon points="105,35 105,85 60,60" fill="url(#crystalFacet2)" stroke="#d8b4fe" strokeWidth="0.75" />
-                    <polygon points="105,85 60,110 60,60" fill="url(#crystalFacet3)" stroke="#7dd3fc" strokeWidth="0.75" />
-                    <polygon points="60,110 15,85 60,60" fill="url(#crystalFacet1)" stroke="#a5b4fc" strokeWidth="0.75" />
-                    <polygon points="15,85 15,35 60,60" fill="url(#crystalFacet4)" stroke="#f472b6" strokeWidth="0.75" />
-                    <polygon points="15,35 60,10 60,60" fill="url(#crystalFacet2)" stroke="#c084fc" strokeWidth="0.75" />
-                    <polygon points="60,30 85,75 35,75" fill="none" stroke="#00D9FF" strokeWidth="0.75" opacity="0.8" />
-                    <circle cx="60" cy="10" r="2.5" fill="#00D9FF" />
-                    <circle cx="105" cy="35" r="2" fill="#c084fc" />
-                    <circle cx="105" cy="85" r="2" fill="#818cf8" />
-                    <circle cx="60" cy="110" r="2.5" fill="#00D9FF" />
-                    <circle cx="15" cy="85" r="2" fill="#c084fc" />
-                    <circle cx="15" cy="35" r="2" fill="#818cf8" />
-                    <circle cx="60" cy="60" r="3" fill="#ffffff" />
-                  </svg>
-                </div>
-
-                {/* Cyber Data Metric Accent (113, grid) */}
-                <div className="hidden xl:flex flex-col items-end absolute -right-2 top-36 pointer-events-none opacity-70 font-mono text-[10px] text-sky-400 select-none">
-                  <span className="font-bold tracking-widest text-[#00D9FF]">113</span>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <span className="w-1.5 h-1.5 rounded-2xs bg-[#00D9FF]/80" />
-                    <span className="w-5 h-0.5 bg-[#00D9FF]/60" />
-                    <span className="w-1.5 h-1.5 rounded-2xs bg-[#00D9FF]/80" />
-                  </div>
-                </div>
-
-
 
                 {/* Headline */}
                 <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.65rem] font-black tracking-tight leading-[1.12] sm:leading-[1.08] mb-4 sm:mb-5 text-white drop-shadow-md relative z-10">
