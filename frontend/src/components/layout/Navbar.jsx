@@ -240,8 +240,8 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                 alt="TechTonic"
                 className="h-6 sm:h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
               />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hidden sm:inline">
-                Store
+              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-600 text-white shadow-xs">
+                STORE
               </span>
             </div>
           </Link>
