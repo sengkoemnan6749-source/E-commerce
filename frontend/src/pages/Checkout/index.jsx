@@ -138,6 +138,28 @@ export default function Checkout() {
         paymentResult = await paymentService.verifyKHQRPayment('mock_khqr_hash');
       }
 
+      const partnerId = shippingData.deliveryPartner || 'vireak_buntham';
+      const carrierInfo = partnerId === 'vireak_buntham'
+        ? {
+            partnerName: 'Vireak Buntham Express (VET)',
+            partnerWebsite: 'https://vireakbuntham.com/',
+            trackingNumber: `VET-KH-${Math.floor(100000 + Math.random() * 900000)}`,
+            estimatedDelivery: 'Within 24-48 Hours (Vireak Buntham Express)'
+          }
+        : partnerId === 'jt_express'
+        ? {
+            partnerName: 'J&T Express Cambodia',
+            partnerWebsite: 'https://www.jtexpresskh.com/',
+            trackingNumber: `JTH${Math.floor(10000000 + Math.random() * 90000000)}`,
+            estimatedDelivery: 'Within 24-36 Hours (J&T Express Door-to-Door)'
+          }
+        : {
+            partnerName: 'GrabExpress Cambodia',
+            partnerWebsite: 'https://www.grab.com/kh/express/',
+            trackingNumber: `GRAB-PP-${Math.floor(1000 + Math.random() * 9000)}`,
+            estimatedDelivery: 'Today by 5:30 PM (GrabExpress Phnom Penh)'
+          };
+
       // Create new persistent Order tied to the authenticated user
       const newOrder = orderService.createOrder({
         userId: user?.id || null,
@@ -145,6 +167,9 @@ export default function Checkout() {
         customerPhone: shippingData.phone || user?.phone || '012 345 678',
         customerEmail: user?.email || 'customer@techtonic.store',
         shippingAddress: shippingData,
+        deliveryPartner: carrierInfo.partnerName,
+        carrierWebsite: carrierInfo.partnerWebsite,
+        trackingNumber: carrierInfo.trackingNumber,
         items: items,
         subtotal: subtotal,
         shippingFee: shippingFee,
@@ -155,7 +180,7 @@ export default function Checkout() {
         paymentStatus: 'PAID',
         transactionId: paymentResult.transactionId,
         status: 'confirmed',
-        estimatedDelivery: 'Today by 5:30 PM (GrabExpress)'
+        estimatedDelivery: carrierInfo.estimatedDelivery
       });
 
       // Clear shopping cart

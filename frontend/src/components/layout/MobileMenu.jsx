@@ -315,7 +315,7 @@ export function MobileMenu({ isOpen, onClose }) {
               </span>
             </div>
             <Link
-              to="/admin"
+              to="/TechTonicAdmin"
               onClick={onClose}
               className="flex items-center justify-between p-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-md group"
             >
@@ -324,7 +324,7 @@ export function MobileMenu({ isOpen, onClose }) {
                   <LayoutDashboard className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-xs font-black block">Admin Management Console</span>
+                  <span className="text-xs font-black block">TechTonicAdmin Console</span>
                   <span className="text-[10px] text-slate-400">Inventory, orders & analytics</span>
                 </div>
               </div>

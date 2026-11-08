@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Truck, ArrowLeft, RefreshCw, MapPin, Phone, ShieldCheck, Clock, CheckCircle2 } from 'lucide-react';
+import { Truck, ArrowLeft, RefreshCw, MapPin, Phone, ShieldCheck, Clock, CheckCircle2, ExternalLink } from 'lucide-react';
 import { orderService } from '../../services/orderService';
 import { productService } from '../../services/productService';
 import OrderStepper from '../../components/order/OrderStepper';
@@ -114,8 +114,73 @@ export default function OrderTracking() {
       {/* Live Phnom Penh Courier Radar & Map Telemetry */}
       <DeliveryMap orderStatus={order.status} shippingAddress={order.shippingAddress} />
 
-      {/* Items & Shipping Details Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Cambodia Logistics Partner & Shipping Recipient Details */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Logistics Courier Partner Card (Teacher Delivery Requirement) */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                <Truck className="w-3.5 h-3.5 text-blue-600" />
+                <span>Delivery Logistics Service</span>
+              </h4>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Active Courier
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 mb-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                <span className="text-sm font-extrabold text-slate-900">
+                  {order.deliveryPartner || order.tracking?.courier || 'Vireak Buntham Express (VET)'}
+                </span>
+                <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                  {order.trackingNumber || order.tracking?.trackingCode || 'VET-KH-889210'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600">
+                <strong>Schedule:</strong> {order.estimatedDelivery || order.tracking?.estimatedDelivery || 'Within 24-48 Hours'}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                href={order.carrierWebsite || (order.deliveryPartner?.includes('J&T') ? 'https://www.jtexpresskh.com/' : 'https://vireakbuntham.com/')}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-xs"
+              >
+                <span>Track on Carrier Website</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              <a
+                href="https://vireakbuntham.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold transition"
+              >
+                VET Portal
+              </a>
+              <a
+                href="https://www.jtexpresskh.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold transition"
+              >
+                J&T Express
+              </a>
+            </div>
+          </div>
+
+          <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+            <span>Nationwide 25 Provinces Delivery</span>
+            <span className="text-emerald-600 font-semibold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live Gateway Synced
+            </span>
+          </div>
+        </div>
+
         {/* Shipping Recipient */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
           <div>
@@ -141,6 +206,10 @@ export default function OrderTracking() {
             <span>Driver verified with contact-free delivery</span>
           </div>
         </div>
+      </div>
+
+      {/* Items Grid */}
+      <div className="grid grid-cols-1 gap-6">
 
         {/* Ordered Hardware Items */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">

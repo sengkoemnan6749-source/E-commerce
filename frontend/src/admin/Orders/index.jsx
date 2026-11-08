@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Eye, Truck, FileText, CheckCircle2 } from 'lucide-react';
+import { Search, Eye, Truck, FileText, CheckCircle2, ExternalLink } from 'lucide-react';
 import { orderService } from '../../services/orderService';
 import { formatUSD } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
@@ -91,6 +91,7 @@ export default function AdminOrders() {
               <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-400 uppercase text-[10px] tracking-wider">
                 <th className="py-3 px-4">Order ID</th>
                 <th className="py-3 px-4">Customer</th>
+                <th className="py-3 px-4">Courier Service</th>
                 <th className="py-3 px-4">Date</th>
                 <th className="py-3 px-4">Payment</th>
                 <th className="py-3 px-4">Total</th>
@@ -114,6 +115,21 @@ export default function AdminOrders() {
                   <td className="py-3.5 px-4">
                     <span className="font-bold text-slate-900 block">{ord.customerName}</span>
                     <span className="text-[10px] text-slate-400">{ord.customerPhone}</span>
+                  </td>
+
+                  <td className="py-3.5 px-4">
+                    <span className="font-semibold text-slate-800 block text-[11px]">
+                      {ord.deliveryPartner || ord.tracking?.courier || 'Vireak Buntham (VET)'}
+                    </span>
+                    <a
+                      href={ord.carrierWebsite || (ord.deliveryPartner?.includes('J&T') ? 'https://www.jtexpresskh.com/' : 'https://vireakbuntham.com/')}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] text-blue-600 hover:underline inline-flex items-center gap-1 font-mono"
+                    >
+                      <span>{ord.trackingNumber || ord.tracking?.trackingCode || 'VET-KH-889210'}</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </a>
                   </td>
 
                   <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap">
@@ -186,16 +202,31 @@ export default function AdminOrders() {
 
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  Delivery Destination
+                  Delivery Destination & Courier
                 </span>
-                <p className="text-slate-800">{selectedOrder.shippingAddress?.address}</p>
-                <p className="text-slate-800">
-                  {selectedOrder.shippingAddress?.city}, {selectedOrder.shippingAddress?.province}{' '}
-                  {selectedOrder.shippingAddress?.postalCode}
+                <p className="text-slate-800">{selectedOrder.shippingAddress?.address || 'Street 310, BKK1'}</p>
+                <p className="text-slate-600 text-xs">
+                  {selectedOrder.shippingAddress?.city || 'Phnom Penh'}, {selectedOrder.shippingAddress?.province || 'Phnom Penh'}
                 </p>
-                <p className="text-blue-600 font-semibold mt-1">
-                  Carrier: {selectedOrder.carrier || 'GrabExpress Toul Kork Hub'}
-                </p>
+                <div className="mt-2.5 p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-slate-900 block">
+                      {selectedOrder.deliveryPartner || selectedOrder.tracking?.courier || 'Vireak Buntham (VET)'}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-500">
+                      Tracking: {selectedOrder.trackingNumber || selectedOrder.tracking?.trackingCode || 'VET-KH-889210'}
+                    </span>
+                  </div>
+                  <a
+                    href={selectedOrder.carrierWebsite || (selectedOrder.deliveryPartner?.includes('J&T') ? 'https://www.jtexpresskh.com/' : 'https://vireakbuntham.com/')}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 underline"
+                  >
+                    <span>Carrier Link</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </div>
             </div>
 

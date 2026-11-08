@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
@@ -31,6 +31,10 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const { addToast } = useToast();
 
+  const location = useLocation();
+  const isTechTonicAdminRoute = location.pathname.toLowerCase().startsWith('/techtonicadmin');
+  const adminBase = isTechTonicAdminRoute ? '/TechTonicAdmin' : '/admin';
+
   const products = productService.getProducts();
   const orders = orderService.getOrders();
   const lowStockCount = products.filter((p) => p.stock <= 5).length;
@@ -48,11 +52,11 @@ export default function AdminLayout() {
   }, []);
 
   const adminNav = [
-    { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true, badge: null },
-    { to: '/admin/products', label: 'Products', icon: Package, badge: lowStockCount > 0 ? `${lowStockCount} low` : null, badgeColor: 'bg-amber-500/20 text-amber-400 border border-amber-500/30' },
-    { to: '/admin/categories', label: 'Categories', icon: FolderTree, badge: null },
-    { to: '/admin/orders', label: 'Orders', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} new` : null, badgeColor: 'bg-blue-500/20 text-blue-400 border border-blue-500/30' },
-    { to: '/admin/customers', label: 'Customers', icon: Users, badge: null }
+    { to: adminBase, label: 'Dashboard', icon: LayoutDashboard, end: true, badge: null },
+    { to: `${adminBase}/products`, label: 'Products', icon: Package, badge: lowStockCount > 0 ? `${lowStockCount} low` : null, badgeColor: 'bg-amber-500/20 text-amber-400 border border-amber-500/30' },
+    { to: `${adminBase}/categories`, label: 'Categories', icon: FolderTree, badge: null },
+    { to: `${adminBase}/orders`, label: 'Orders', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} new` : null, badgeColor: 'bg-blue-500/20 text-blue-400 border border-blue-500/30' },
+    { to: `${adminBase}/customers`, label: 'Customers', icon: Users, badge: null }
   ];
 
   const handleSearchSubmit = (e) => {
@@ -77,7 +81,7 @@ export default function AdminLayout() {
             />
           </div>
 
-          <Link to="/admin" className="flex items-center gap-2.5 group">
+          <Link to={adminBase} className="flex items-center gap-2.5 group">
             <div className="w-9 h-9 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img
                 src="/images/logo/techtonic-crest.png"
@@ -93,7 +97,7 @@ export default function AdminLayout() {
                   className="h-7 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
                 />
                 <span className="text-[10px] font-black uppercase text-lime-400 bg-lime-400/10 px-2 py-0.5 rounded-full border border-lime-400/20 font-mono">
-                  Console v2.5
+                  TechTonicAdmin
                 </span>
               </div>
             </div>
@@ -199,8 +203,8 @@ export default function AdminLayout() {
               AD
             </div>
             <div className="hidden xl:flex flex-col text-left">
-              <span className="text-xs font-bold text-white leading-tight">Admin Executive</span>
-              <span className="text-[10px] text-slate-400">Superuser</span>
+              <span className="text-xs font-bold text-white leading-tight">Alex Vance</span>
+              <span className="text-[10px] text-emerald-400 font-mono font-bold">Role: TechTonicAdmin</span>
             </div>
           </div>
         </div>

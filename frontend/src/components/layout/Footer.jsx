@@ -281,9 +281,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/admin" className="text-slate-400 hover:text-white flex items-center gap-2 transition group py-0.5">
+                <Link to="/TechTonicAdmin" className="text-slate-400 hover:text-white flex items-center gap-2 transition group py-0.5" title="Direct URL for TechTonicAdmin">
                   <LayoutDashboard className="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 transition-colors" />
-                  <span className="group-hover:translate-x-1 transition-transform">{t('footer_admin', 'Admin Portal')}</span>
+                  <span className="group-hover:translate-x-1 transition-transform">TechTonicAdmin Console</span>
                 </Link>
               </li>
               <li>

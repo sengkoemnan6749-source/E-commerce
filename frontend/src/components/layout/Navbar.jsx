@@ -538,16 +538,16 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                       {/* Admin Console - ONLY shown to admin role */}
                       {user?.role === 'admin' && (
                         <Link
-                          to="/admin"
+                          to="/TechTonicAdmin"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="flex items-center justify-between px-4 py-2.5 text-xs font-semibold text-purple-300 hover:bg-purple-950/40 border-t border-slate-800/80 transition"
                         >
                           <div className="flex items-center gap-2.5">
                             <LayoutDashboard className="w-4 h-4 text-purple-400" />
-                            <span>{t('nav_admin_console', 'Admin Console')}</span>
+                            <span>TechTonicAdmin Console</span>
                           </div>
                           <span className="text-[9px] font-black uppercase tracking-wider bg-purple-500/30 text-purple-200 border border-purple-400/40 px-1.5 py-0.5 rounded">
-                            Portal &rarr;
+                            Role: Admin &rarr;
                           </span>
                         </Link>
                       )}
@@ -564,7 +564,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                           onClick={() => {
                             loginAsCustomer();
                             setIsUserMenuOpen(false);
-                            if (location.pathname.startsWith('/admin')) {
+                            if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/TechTonicAdmin')) {
                               navigate('/account');
                             }
                           }}
@@ -595,7 +595,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                         onClick={() => {
                           setIsUserMenuOpen(false);
                           logout();
-                          if (location.pathname.startsWith('/account') || location.pathname.startsWith('/admin')) {
+                          if (location.pathname.startsWith('/account') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/TechTonicAdmin')) {
                             navigate('/');
                           }
                         }}

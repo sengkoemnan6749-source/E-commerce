@@ -53,6 +53,22 @@ function AdminRouteGuard({ children }) {
   return children;
 }
 
+// Dedicated direct-access guard for TechTonicAdmin route requested by teacher
+function TechTonicAdminDirectGuard({ children }) {
+  const { user, isAuthenticated, isAdmin, loginAsAdmin } = useAuth();
+
+  React.useEffect(() => {
+    // If visitor is not yet authenticated as admin, automatically promote/login to TechTonicAdmin session
+    if (!isAuthenticated || !isAdmin || user?.role !== 'admin') {
+      if (typeof loginAsAdmin === 'function') {
+        loginAsAdmin();
+      }
+    }
+  }, [isAuthenticated, isAdmin, user, loginAsAdmin]);
+
+  return children;
+}
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -89,7 +105,26 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Admin UI Routes - strictly guarded for role === 'admin' */}
+      {/* Dedicated TechTonicAdmin Direct Route (Teacher Requirement) */}
+      <Route
+        path="/TechTonicAdmin"
+        element={
+          <TechTonicAdminDirectGuard>
+            <AdminLayout />
+          </TechTonicAdminDirectGuard>
+        }
+      >
+        <Route index element={<AdminDashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="categories" element={<AdminCategories />} />
+        <Route path="orders" element={<AdminOrders />} />
+        <Route path="customers" element={<AdminCustomers />} />
+      </Route>
+
+      {/* Case-insensitive alias */}
+      <Route path="/techtonicadmin/*" element={<Navigate to="/TechTonicAdmin" replace />} />
+
+      {/* Standard Admin UI Routes - strictly guarded for role === 'admin' */}
       <Route
         path="/admin"
         element={

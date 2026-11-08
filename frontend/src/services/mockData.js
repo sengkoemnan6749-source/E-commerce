@@ -2236,8 +2236,9 @@ export const INITIAL_ORDERS = [
       }
     ],
     tracking: {
-      courier: 'TechTonic Same-Day Express',
-      trackingCode: 'TT-EXP-88921',
+      courier: 'Vireak Buntham Express (VET)',
+      courierWebsite: 'https://vireakbuntham.com/',
+      trackingCode: 'VET-KH-889210',
       estimatedDelivery: 'Today, 2:30 PM – 4:00 PM',
       driverName: 'Sokha Rith',
       driverPhone: '012 998 771'
@@ -2275,7 +2276,8 @@ export const INITIAL_ORDERS = [
     ],
     tracking: {
       courier: 'J&T Express Cambodia',
-      trackingCode: 'JT-KH-441092',
+      courierWebsite: 'https://www.jtexpresskh.com/',
+      trackingCode: 'JTH-8890-4410',
       estimatedDelivery: 'Delivered on Sep 21, 2026',
       driverName: 'Chann Dara',
       driverPhone: '098 554 112'
