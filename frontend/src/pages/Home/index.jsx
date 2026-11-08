@@ -192,11 +192,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Pill Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-950/80 via-indigo-950/70 to-purple-950/60 border border-sky-400/40 text-sky-300 text-xs font-semibold shadow-[0_0_20px_rgba(0,217,255,0.2)] mb-5 backdrop-blur-md relative z-10">
-                  <Zap className="w-3.5 h-3.5 text-[#00D9FF] fill-[#00D9FF]" />
-                  <span>{t('hero_tag', 'Engineered for the Modern Digital Lifestyle')}</span>
-                </div>
+
 
                 {/* Headline */}
                 <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.65rem] font-black tracking-tight leading-[1.12] sm:leading-[1.08] mb-4 sm:mb-5 text-white drop-shadow-md relative z-10">
@@ -393,11 +389,7 @@ export default function Home() {
           <div className="lg:hidden relative w-full px-4 sm:px-6 pt-4 sm:pt-6 pb-6 sm:pb-8 flex flex-col items-center">
             {/* Top Text & CTAs */}
             <div className="w-full max-w-lg flex flex-col items-center text-center mb-4 sm:mb-6">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-blue-950/80 via-indigo-950/70 to-purple-950/60 border border-sky-400/40 text-sky-300 text-[11px] font-semibold shadow-md mb-3 backdrop-blur-md">
-                <Zap className="w-3 h-3 text-[#00D9FF] fill-[#00D9FF]" />
-                <span>{t('hero_tag', 'Engineered for the Modern Digital Lifestyle')}</span>
-              </div>
+
 
               {/* Headline */}
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-[1.15] mb-2.5 sm:mb-3.5 text-white">
