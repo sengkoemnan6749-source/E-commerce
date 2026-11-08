@@ -70,29 +70,29 @@ export default function Home() {
       icon: Headphones,
       badge: t('cat_badge_audio', 'Beryllium Acoustics'),
       image: '/images/products/prod-001-main.png',
-      tagColor: 'text-blue-600 bg-blue-50 border-blue-200/80',
-      gradient: 'from-blue-600/10 via-cyan-500/5 to-transparent'
+      tagColor: 'text-blue-700 bg-blue-50/90 border-blue-200/70',
+      gradient: 'from-blue-600/5 via-slate-50/50 to-transparent'
     },
     wearables: {
       icon: Watch,
       badge: t('cat_badge_wearables', 'AMOLED & Biosensors'),
       image: '/images/products/prod-004-silver.png',
-      tagColor: 'text-cyan-600 bg-cyan-50 border-cyan-200/80',
-      gradient: 'from-cyan-500/10 via-blue-500/5 to-transparent'
+      tagColor: 'text-blue-700 bg-blue-50/90 border-blue-200/70',
+      gradient: 'from-blue-600/5 via-slate-50/50 to-transparent'
     },
     workspace: {
       icon: Keyboard,
       badge: t('cat_badge_workspace', 'CNC & Mechanical'),
       image: '/images/products/prod-006-main.png',
-      tagColor: 'text-indigo-600 bg-indigo-50 border-indigo-200/80',
-      gradient: 'from-indigo-600/10 via-purple-500/5 to-transparent'
+      tagColor: 'text-blue-700 bg-blue-50/90 border-blue-200/70',
+      gradient: 'from-blue-600/5 via-slate-50/50 to-transparent'
     },
     power: {
       icon: BatteryCharging,
       badge: t('cat_badge_power', '100W GaN III Fast'),
       image: '/images/products/prod-009-charger.png',
-      tagColor: 'text-amber-600 bg-amber-50 border-amber-200/80',
-      gradient: 'from-amber-500/10 via-orange-500/5 to-transparent'
+      tagColor: 'text-blue-700 bg-blue-50/90 border-blue-200/70',
+      gradient: 'from-blue-600/5 via-slate-50/50 to-transparent'
     }
   };
 
@@ -101,8 +101,8 @@ export default function Home() {
       icon: Headphones,
       badge: t('cat_section_tag', 'Curated Hardware'),
       image: cat.image || '/images/products/prod-001-main.png',
-      tagColor: 'text-blue-600 bg-blue-50 border-blue-200/80',
-      gradient: 'from-blue-600/10 to-transparent'
+      tagColor: 'text-blue-700 bg-blue-50/90 border-blue-200/70',
+      gradient: 'from-blue-600/5 to-transparent'
     };
   };
 
@@ -145,9 +145,9 @@ export default function Home() {
               <div className="col-span-12 lg:col-span-6 xl:col-span-6 z-20 flex flex-col items-start text-left relative">
 
                 {/* Headline */}
-                <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.65rem] font-black tracking-tight leading-[1.12] sm:leading-[1.08] mb-4 sm:mb-5 text-white drop-shadow-md relative z-10">
+                <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.65rem] font-black tracking-tight leading-[1.12] sm:leading-[1.08] mb-4 sm:mb-5 text-white drop-shadow-sm relative z-10">
                   {t('hero_title_1', 'Next-Gen Electronics.')} <br />
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00D9FF] via-[#1769FF] to-[#8B5CF6] drop-shadow-[0_0_30px_rgba(0,217,255,0.4)]">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500">
                     {t('hero_title_2', 'Engineered for the Elements.')}
                   </span>
                 </h1>
@@ -344,7 +344,7 @@ export default function Home() {
               {/* Headline */}
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-[1.15] mb-2.5 sm:mb-3.5 text-white">
                 {t('hero_title_1', 'Next-Gen Electronics.')} <br />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00D9FF] via-[#1769FF] to-[#8B5CF6]">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500">
                   {t('hero_title_2', 'Engineered for the Elements.')}
                 </span>
               </h1>
@@ -807,17 +807,17 @@ export default function Home() {
           {/* 4 Premium Value Prop Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
             {/* 1. Warranty */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-cyan-500/50 shadow-lg hover:shadow-cyan-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
+            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-blue-500/40 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
               <div>
                 <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-cyan-300 border border-blue-500/30 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-md">
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/25 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-md">
                     <ShieldCheck className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-300 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/20">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-300 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
                     {t('why_card_1_badge', 'Official SLA')}
                   </span>
                 </div>
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-cyan-300 transition-colors">
+                <h3 className="text-lg font-black text-white mb-2 group-hover:text-blue-300 transition-colors">
                   {t('why_card_1_title', '1-Year Full Warranty')}
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
@@ -825,23 +825,23 @@ export default function Home() {
                 </p>
               </div>
               <div className="pt-4 mt-5 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-bold text-slate-300">
-                <CheckCircle className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span>{t('why_card_1_footer', 'Flagship Service Store Hub')}</span>
               </div>
             </div>
 
             {/* 2. Dispatch */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-emerald-500/50 shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
+            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-blue-500/40 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
               <div>
                 <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-md">
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/25 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-md">
                     <Truck className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-300 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
                     {t('why_card_2_badge', 'Same-Day < 2PM')}
                   </span>
                 </div>
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-emerald-300 transition-colors">
+                <h3 className="text-lg font-black text-white mb-2 group-hover:text-blue-300 transition-colors">
                   {t('why_card_2_title', 'Express City Dispatch')}
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
@@ -849,23 +849,23 @@ export default function Home() {
                 </p>
               </div>
               <div className="pt-4 mt-5 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-bold text-slate-300">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span>{t('why_card_2_footer', 'Real-time GPS Tracking')}</span>
               </div>
             </div>
 
             {/* 3. Swap */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-indigo-500/50 shadow-lg hover:shadow-indigo-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
+            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-blue-500/40 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
               <div>
                 <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-md">
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/25 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-md">
                     <RotateCcw className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-300 bg-indigo-500/10 px-2.5 py-1 rounded-full border border-indigo-500/20">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-300 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
                     {t('why_card_3_badge', 'Zero Risk')}
                   </span>
                 </div>
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-indigo-300 transition-colors">
+                <h3 className="text-lg font-black text-white mb-2 group-hover:text-blue-300 transition-colors">
                   {t('why_card_3_title', '30-Day Hassle-Free Swap')}
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
@@ -873,23 +873,23 @@ export default function Home() {
                 </p>
               </div>
               <div className="pt-4 mt-5 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-bold text-slate-300">
-                <CheckCircle className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span>{t('why_card_3_footer', '0% Restocking Deduction')}</span>
               </div>
             </div>
 
             {/* 4. KHQR */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-amber-500/50 shadow-lg hover:shadow-amber-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
+            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-blue-500/40 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
               <div>
                 <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all shadow-md">
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/25 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-md">
                     <QrCode className="w-6 h-6" />
                   </div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-300 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
                     {t('why_card_4_badge', 'NBC Standard')}
                   </span>
                 </div>
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-amber-300 transition-colors">
+                <h3 className="text-lg font-black text-white mb-2 group-hover:text-blue-300 transition-colors">
                   {t('why_card_4_title', 'Bakong KHQR Integrated')}
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
@@ -897,7 +897,7 @@ export default function Home() {
                 </p>
               </div>
               <div className="pt-4 mt-5 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-bold text-slate-300">
-                <CheckCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span>{t('why_card_4_footer', 'Zero Processing Fee · Instant')}</span>
               </div>
             </div>
