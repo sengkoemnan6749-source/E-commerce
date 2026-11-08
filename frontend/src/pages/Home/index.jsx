@@ -182,9 +182,7 @@ export default function Home() {
                 {/* Trust stats row with subtle vertical dividers */}
                 <div className="hidden sm:flex items-center gap-4 xl:gap-6 pt-5 border-t border-slate-800/80 w-full">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#00D9FF]/10 border border-[#00D9FF]/40 flex items-center justify-center text-[#00D9FF] shadow-[0_0_12px_rgba(0,217,255,0.25)] shrink-0">
-                      <Users className="w-4 h-4" />
-                    </div>
+                    <Users className="w-5 h-5 text-sky-400 shrink-0" />
                     <div>
                       <div className="text-sm font-bold text-white tracking-tight">12,500+</div>
                       <div className="text-[11px] text-slate-400 font-medium whitespace-nowrap">{t('hero_stat_users', 'Active Tech Users')}</div>
@@ -194,9 +192,7 @@ export default function Home() {
                   <div className="h-7 w-[1px] bg-slate-800 shrink-0" />
 
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#00D9FF]/10 border border-[#00D9FF]/40 flex items-center justify-center text-[#00D9FF] shadow-[0_0_12px_rgba(0,217,255,0.25)] shrink-0">
-                      <ShieldCheck className="w-4 h-4" />
-                    </div>
+                    <ShieldCheck className="w-5 h-5 text-sky-400 shrink-0" />
                     <div>
                       <div className="text-sm font-bold text-white tracking-tight">100%</div>
                       <div className="text-[11px] text-slate-400 font-medium whitespace-nowrap">{t('hero_stat_genuine', 'Genuine Guaranteed')}</div>
@@ -206,9 +202,7 @@ export default function Home() {
                   <div className="h-7 w-[1px] bg-slate-800 shrink-0" />
 
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#00D9FF]/10 border border-[#00D9FF]/40 flex items-center justify-center text-[#00D9FF] shadow-[0_0_12px_rgba(0,217,255,0.25)] shrink-0">
-                      <Zap className="w-4 h-4" />
-                    </div>
+                    <Zap className="w-5 h-5 text-sky-400 shrink-0" />
                     <div>
                       <div className="text-sm font-bold text-white tracking-tight">3-Hour</div>
                       <div className="text-[11px] text-slate-400 font-medium whitespace-nowrap">{t('hero_stat_delivery', 'Express Delivery')}</div>
@@ -807,96 +801,88 @@ export default function Home() {
           {/* 4 Premium Value Prop Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
             {/* 1. Warranty */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-blue-500/40 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
+            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 shadow-md transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 backdrop-blur-md">
               <div>
                 <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/25 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-md">
-                    <ShieldCheck className="w-6 h-6" />
-                  </div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-300 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
+                  <ShieldCheck className="w-7 h-7 text-blue-400 group-hover:text-sky-300 transition-colors" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     {t('why_card_1_badge', 'Official SLA')}
                   </span>
                 </div>
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-blue-300 transition-colors">
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">
                   {t('why_card_1_title', '1-Year Full Warranty')}
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   {t('why_card_1_desc', 'Official serialized warranty backed by our physical flagship service store at Toul Kork, Phnom Penh.')}
                 </p>
               </div>
-              <div className="pt-4 mt-5 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-bold text-slate-300">
+              <div className="pt-4 mt-5 border-t border-slate-850 flex items-center gap-2 text-[11px] font-bold text-slate-400">
                 <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span>{t('why_card_1_footer', 'Flagship Service Store Hub')}</span>
               </div>
             </div>
 
             {/* 2. Dispatch */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-blue-500/40 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
+            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 shadow-md transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 backdrop-blur-md">
               <div>
                 <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/25 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-md">
-                    <Truck className="w-6 h-6" />
-                  </div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-300 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
+                  <Truck className="w-7 h-7 text-blue-400 group-hover:text-sky-300 transition-colors" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     {t('why_card_2_badge', 'Same-Day < 2PM')}
                   </span>
                 </div>
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-blue-300 transition-colors">
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">
                   {t('why_card_2_title', 'Express City Dispatch')}
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   {t('why_card_2_desc', 'Orders placed before 2:00 PM are delivered same-day across Phnom Penh via GrabExpress & Cambodia Post.')}
                 </p>
               </div>
-              <div className="pt-4 mt-5 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-bold text-slate-300">
+              <div className="pt-4 mt-5 border-t border-slate-850 flex items-center gap-2 text-[11px] font-bold text-slate-400">
                 <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span>{t('why_card_2_footer', 'Real-time GPS Tracking')}</span>
               </div>
             </div>
 
             {/* 3. Swap */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-blue-500/40 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
+            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 shadow-md transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 backdrop-blur-md">
               <div>
                 <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/25 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-md">
-                    <RotateCcw className="w-6 h-6" />
-                  </div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-300 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
+                  <RotateCcw className="w-7 h-7 text-blue-400 group-hover:text-sky-300 transition-colors" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     {t('why_card_3_badge', 'Zero Risk')}
                   </span>
                 </div>
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-blue-300 transition-colors">
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">
                   {t('why_card_3_title', '30-Day Hassle-Free Swap')}
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   {t('why_card_3_desc', 'Not fully satisfied with keyboard switches or headphone fit? Enjoy smooth exchanges with zero fuss.')}
                 </p>
               </div>
-              <div className="pt-4 mt-5 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-bold text-slate-300">
+              <div className="pt-4 mt-5 border-t border-slate-850 flex items-center gap-2 text-[11px] font-bold text-slate-400">
                 <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span>{t('why_card_3_footer', '0% Restocking Deduction')}</span>
               </div>
             </div>
 
             {/* 4. KHQR */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-blue-500/40 shadow-lg hover:shadow-blue-500/10 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 backdrop-blur-md">
+            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 shadow-md transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 backdrop-blur-md">
               <div>
                 <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/25 flex items-center justify-center group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-md">
-                    <QrCode className="w-6 h-6" />
-                  </div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-300 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
+                  <QrCode className="w-7 h-7 text-blue-400 group-hover:text-sky-300 transition-colors" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                     {t('why_card_4_badge', 'NBC Standard')}
                   </span>
                 </div>
-                <h3 className="text-lg font-black text-white mb-2 group-hover:text-blue-300 transition-colors">
+                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">
                   {t('why_card_4_title', 'Bakong KHQR Integrated')}
                 </h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   {t('why_card_4_desc', 'Scan seamlessly with ABA Mobile, Wing Bank, ACLEDA, or any National Bank of Cambodia compliant app.')}
                 </p>
               </div>
-              <div className="pt-4 mt-5 border-t border-slate-800/80 flex items-center gap-2 text-[11px] font-bold text-slate-300">
+              <div className="pt-4 mt-5 border-t border-slate-850 flex items-center gap-2 text-[11px] font-bold text-slate-400">
                 <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span>{t('why_card_4_footer', 'Zero Processing Fee · Instant')}</span>
               </div>

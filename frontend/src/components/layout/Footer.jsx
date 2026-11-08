@@ -48,13 +48,11 @@ export function Footer() {
     <footer className="relative bg-[#070b14] text-slate-300 border-t border-slate-800/80 mt-16">
       
       {/* 1. TRUST VALUE PROPOSITIONS BAR */}
-      <div className="border-b border-slate-800/70 bg-slate-900/40">
-        <div className="max-w-7xl xl:max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="border-b border-slate-800/70 bg-slate-900/30">
+        <div className="max-w-7xl xl:max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center shrink-0">
-                <Truck className="w-5 h-5" />
-              </div>
+              <Truck className="w-6 h-6 text-blue-400 shrink-0" />
               <div>
                 <h5 className="text-xs font-bold text-white tracking-tight">Express Delivery</h5>
                 <p className="text-[11px] text-slate-400 mt-0.5">Phnom Penh & 25 Provinces</p>
@@ -62,9 +60,7 @@ export function Footer() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
+              <ShieldCheck className="w-6 h-6 text-blue-400 shrink-0" />
               <div>
                 <h5 className="text-xs font-bold text-white tracking-tight">1-Year Warranty</h5>
                 <p className="text-[11px] text-slate-400 mt-0.5">100% Genuine Guaranteed</p>
@@ -72,9 +68,7 @@ export function Footer() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center shrink-0">
-                <RotateCcw className="w-5 h-5" />
-              </div>
+              <RotateCcw className="w-6 h-6 text-blue-400 shrink-0" />
               <div>
                 <h5 className="text-xs font-bold text-white tracking-tight">30-Day Returns</h5>
                 <p className="text-[11px] text-slate-400 mt-0.5">Hassle-Free Exchange</p>
@@ -82,9 +76,7 @@ export function Footer() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center shrink-0">
-                <CreditCard className="w-5 h-5" />
-              </div>
+              <CreditCard className="w-6 h-6 text-blue-400 shrink-0" />
               <div>
                 <h5 className="text-xs font-bold text-white tracking-tight">Bakong KHQR & ABA</h5>
                 <p className="text-[11px] text-slate-400 mt-0.5">Instant & Secure Payment</p>
