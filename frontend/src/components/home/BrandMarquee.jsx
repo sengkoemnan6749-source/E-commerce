@@ -191,7 +191,7 @@ export default function BrandMarquee() {
       onMouseLeave={() => {
         isHoveringRef.current = false;
       }}
-      className="relative w-full bg-transparent border-y border-slate-200/80 py-8 sm:py-10 overflow-hidden select-none"
+      className="relative w-full bg-transparent py-8 sm:py-10 overflow-hidden select-none"
     >
       <style>{`
         .brand-item {
@@ -219,10 +219,6 @@ export default function BrandMarquee() {
 
         {/* Sharp Luminous Laser Line */}
         <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1.5px] bg-gradient-to-b from-transparent via-blue-500 via-sky-400 to-transparent shadow-[0_0_12px_rgba(59,130,246,0.85)]" />
-
-        {/* Top & Bottom Optical Scanner Nodes */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
       </div>
 
       {/* 2. Top Header (Clean Centered Title) */}
