@@ -201,7 +201,7 @@ export default function Home() {
               <div className="col-span-12 lg:col-span-5 xl:col-span-5 z-10 relative flex items-center justify-center">
                 <div className="relative w-full max-w-[340px] sm:max-w-md lg:max-w-xl 2xl:max-w-2xl select-none mx-auto mt-2 lg:mt-0">
                   
-                  {/* Clean Smartwatch & Water Splash with Rotating Water Vortex ("ទឹកវិល") */}
+                  {/* Clean Smartwatch & Water Splash with Animations strictly on the Watches */}
                   <div
                     className="relative select-none overflow-hidden rounded-full"
                     style={{
@@ -209,26 +209,10 @@ export default function Home() {
                       maskImage: 'radial-gradient(circle at 50% 50%, black 66%, rgba(0,0,0,0.8) 82%, transparent 96%)',
                     }}
                   >
-                    {/* Rotating Water Vortex Ring ("ទឹកវិល" - 360° Continuous Liquid Motion) */}
-                    <div
-                      className="absolute inset-0 select-none pointer-events-none"
-                      style={{
-                        animation: 'spin 22s linear infinite',
-                        transformOrigin: '50% 50%'
-                      }}
-                    >
-                      <img
-                        src="/images/mockup_assets/hero_water_vortex_ring.png"
-                        alt="Rotating Water Vortex"
-                        className="w-full h-full object-contain select-none"
-                      />
-                    </div>
-
-                    {/* Stationary Smartwatches Center Layer */}
                     <img
-                      src="/images/mockup_assets/hero_smartwatches_center.png"
+                      src="/images/mockup_assets/smartwatch_clean_water.jpg"
                       alt="TechTonic Pulse Ultra Dual Smartwatch Showcase"
-                      className="relative z-10 w-full h-auto object-contain select-none drop-shadow-[0_20px_50px_rgba(0,217,255,0.3)]"
+                      className="w-full h-auto object-contain select-none drop-shadow-[0_20px_50px_rgba(0,217,255,0.3)]"
                     />
 
                     {/* --- ADVANCED ANIMATIONS ON WATCHES --- */}
@@ -387,26 +371,10 @@ export default function Home() {
                   maskImage: 'radial-gradient(circle at 50% 50%, black 66%, rgba(0,0,0,0.8) 82%, transparent 96%)',
                 }}
               >
-                {/* Rotating Water Splash Vortex ("ទឹកវិល" - 360° Continuous Liquid Motion) */}
-                <div
-                  className="absolute inset-0 select-none pointer-events-none"
-                  style={{
-                    animation: 'spin 22s linear infinite',
-                    transformOrigin: '50% 50%'
-                  }}
-                >
-                  <img
-                    src="/images/mockup_assets/hero_water_vortex_ring.png"
-                    alt="Rotating Water Vortex"
-                    className="w-full h-full object-contain select-none"
-                  />
-                </div>
-
-                {/* Stationary Smartwatches Center Layer */}
                 <img
-                  src="/images/mockup_assets/hero_smartwatches_center.png"
+                  src="/images/mockup_assets/smartwatch_clean_water.jpg"
                   alt="TechTonic Premium Tech Gear Showcase"
-                  className="relative z-10 w-full h-auto object-contain select-none drop-shadow-[0_15px_30px_rgba(0,217,255,0.25)]"
+                  className="w-full h-auto object-contain select-none drop-shadow-[0_15px_30px_rgba(0,217,255,0.25)]"
                 />
 
                 {/* Precision Automatic Chronometer Second Hand (Runs around 360° smoothly) */}
