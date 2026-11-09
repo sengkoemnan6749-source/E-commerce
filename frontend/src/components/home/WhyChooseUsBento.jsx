@@ -1,78 +1,186 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ShieldCheck,
   Truck,
   RotateCcw,
-  QrCode
+  QrCode,
+  Award,
+  CheckCircle
 } from 'lucide-react';
 import { useLanguage } from '../../store/StoreContext';
 
 /**
- * Clean, compact e-commerce trust guarantees strip (Apple / Keychron style).
- * Replaces the heavy, oversized AI-template dark container with a lightweight,
- * human-crafted trust bar that puts products first.
+ * Framer-style Spotlight Card with interactive cursor tracking
+ * Uses the exact dark midnight navy background (#091022) specified by user
  */
-export default function WhyChooseUsBento() {
-  const { t, language } = useLanguage();
+function SpotlightCard({ children, className = '' }) {
+  const cardRef = useRef(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
 
-  const benefits = [
-    {
-      icon: ShieldCheck,
-      title: language === 'km' ? 'ការធានាផ្លូវការ ១ ឆ្នាំ' : '1-Year Official Warranty',
-      desc: language === 'km'
-        ? 'ធានាផ្ទាល់ពីរោងចក្រ និងសេវាកម្មជួសជុលនៅសាខាទួលគោក។'
-        : 'Official factory warranty with walk-in service at Toul Kork store.',
-    },
-    {
-      icon: Truck,
-      title: language === 'km' ? 'ដឹកជញ្ជូនរហ័សក្នុងថ្ងៃតែមួយ' : 'Same-Day Fast Dispatch',
-      desc: language === 'km'
-        ? 'ដឹកតាម GrabExpress ក្នុងភ្នំពេញ និង ២៥ ខេត្តក្រុងតាម VET។'
-        : 'Delivered via GrabExpress in Phnom Penh and nationwide via VET.',
-    },
-    {
-      icon: RotateCcw,
-      title: language === 'km' ? 'ប្តូរទំនិញងាយស្រួល ៣០ ថ្ងៃ' : '30-Day Easy Exchanges',
-      desc: language === 'km'
-        ? 'មិនពេញចិត្តកុងតាក់ ឬទំហំកាស? ប្តូរបានដោយមិនគិតសេវាបន្ថែម។'
-        : 'Not satisfied with switch feel or fit? Exchange with 0% fee.',
-    },
-    {
-      icon: QrCode,
-      title: language === 'km' ? 'ទូទាត់រហ័សតាម Bakong KHQR' : 'Bakong KHQR & Cards',
-      desc: language === 'km'
-        ? 'ស្កេនទូទាត់ជាមួយ ABA, Wing, ACLEDA ឬកាតឥណទានសុវត្ថិភាព។'
-        : 'Instant scan with ABA Mobile, Wing, ACLEDA, or Credit Cards.',
-    },
-  ];
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full my-2">
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-7 shadow-xs transition-all">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 divide-y sm:divide-y-0 lg:divide-x divide-slate-100">
-          {benefits.map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={idx}
-                className={`flex items-start gap-3.5 ${
-                  idx > 0 ? 'pt-4 sm:pt-0 lg:pl-6' : ''
-                }`}
-              >
-                <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-700 shrink-0 mt-0.5">
-                  <Icon className="w-4.5 h-4.5 text-slate-700" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900 tracking-tight mb-0.5">
-                    {item.title}
-                  </h4>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`group relative p-6 sm:p-7 rounded-2xl bg-[#0d162d]/90 hover:bg-[#111c38] border border-[#1a294d] hover:border-sky-500/50 shadow-lg transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 overflow-hidden ${className}`}
+    >
+      {/* Dynamic Cursor Spotlight Beam (Framer style) */}
+      <div
+        className="pointer-events-none absolute -inset-px transition-opacity duration-300"
+        style={{
+          opacity: isHovered ? 1 : 0,
+          background: `radial-gradient(450px circle at ${mousePos.x}px ${mousePos.y}px, rgba(56, 189, 248, 0.14), transparent 70%)`,
+        }}
+      />
+
+      {/* Dynamic Border Glow */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-300 border border-sky-400/30"
+        style={{
+          opacity: isHovered ? 1 : 0,
+          maskImage: `radial-gradient(180px circle at ${mousePos.x}px ${mousePos.y}px, black 20%, transparent 80%)`,
+          WebkitMaskImage: `radial-gradient(180px circle at ${mousePos.x}px ${mousePos.y}px, black 20%, transparent 80%)`,
+        }}
+      />
+
+      {/* Card Content */}
+      <div className="relative z-10 flex flex-col justify-between h-full">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export default function WhyChooseUsBento() {
+  const { t } = useLanguage();
+
+  return (
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full my-4">
+      {/* Outer Container with the exact deep midnight navy color (#091022) */}
+      <div className="relative rounded-3xl overflow-hidden bg-[#091022] p-8 sm:p-12 lg:p-14 text-white shadow-2xl border border-[#172545]">
+        
+        {/* Subtle Ambient Radial Highlight */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-56 bg-sky-500/10 blur-3xl pointer-events-none" />
+
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 relative z-10">
+          <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-400 mb-3">
+            <Award className="w-4 h-4 text-sky-400" />
+            <span>{t('why_tag', 'Engineered For Excellence')}</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+            {t('why_title_1', 'Why Technology Leaders')} <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500">
+              {t('why_title_2', 'Choose TechTonic')}
+            </span>
+          </h2>
+          <p className="text-sm sm:text-base text-slate-300 mt-3.5 leading-relaxed max-w-2xl mx-auto">
+            {t('why_desc', 'Every hardware unit in our inventory undergoes acoustic, ergonomic, and thermal benchmark tests before entering our catalog.')}
+          </p>
+        </div>
+
+        {/* 4 Premium Cards Grid (Exact Layout from Image 1) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 relative z-10">
+          
+          {/* 1. Warranty */}
+          <SpotlightCard>
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <ShieldCheck className="w-7 h-7 text-sky-400 group-hover:text-sky-300 transition-colors" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {t('why_card_1_badge', 'Official SLA')}
+                </span>
               </div>
-            );
-          })}
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-sky-300 transition-colors">
+                {t('why_card_1_title', '1-Year Full Warranty')}
+              </h3>
+              <p className="text-xs text-slate-300/80 leading-relaxed">
+                {t('why_card_1_desc', 'Official serialized warranty backed by our physical flagship service store at Toul Kork, Phnom Penh.')}
+              </p>
+            </div>
+            <div className="pt-4 mt-5 border-t border-[#1a294d] flex items-center gap-2 text-[11px] font-bold text-slate-400">
+              <CheckCircle className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <span>{t('why_card_1_footer', 'Flagship Service Store Hub')}</span>
+            </div>
+          </SpotlightCard>
+
+          {/* 2. Dispatch */}
+          <SpotlightCard>
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <Truck className="w-7 h-7 text-sky-400 group-hover:text-sky-300 transition-colors" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {t('why_card_2_badge', 'Same-Day < 2PM')}
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-sky-300 transition-colors">
+                {t('why_card_2_title', 'Express City Dispatch')}
+              </h3>
+              <p className="text-xs text-slate-300/80 leading-relaxed">
+                {t('why_card_2_desc', 'Orders placed before 2:00 PM are delivered same-day across Phnom Penh via GrabExpress & Cambodia Post.')}
+              </p>
+            </div>
+            <div className="pt-4 mt-5 border-t border-[#1a294d] flex items-center gap-2 text-[11px] font-bold text-slate-400">
+              <CheckCircle className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <span>{t('why_card_2_footer', 'Real-time GPS Tracking')}</span>
+            </div>
+          </SpotlightCard>
+
+          {/* 3. Swap */}
+          <SpotlightCard>
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <RotateCcw className="w-7 h-7 text-sky-400 group-hover:text-sky-300 transition-colors" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {t('why_card_3_badge', 'Zero Risk')}
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-sky-300 transition-colors">
+                {t('why_card_3_title', '30-Day Hassle-Free Swap')}
+              </h3>
+              <p className="text-xs text-slate-300/80 leading-relaxed">
+                {t('why_card_3_desc', 'Not fully satisfied with keyboard switches or headphone fit? Enjoy smooth exchanges with zero fuss.')}
+              </p>
+            </div>
+            <div className="pt-4 mt-5 border-t border-[#1a294d] flex items-center gap-2 text-[11px] font-bold text-slate-400">
+              <CheckCircle className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <span>{t('why_card_3_footer', '0% Restocking Deduction')}</span>
+            </div>
+          </SpotlightCard>
+
+          {/* 4. KHQR */}
+          <SpotlightCard>
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <QrCode className="w-7 h-7 text-sky-400 group-hover:text-sky-300 transition-colors" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {t('why_card_4_badge', 'NBC Standard')}
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-sky-300 transition-colors">
+                {t('why_card_4_title', 'Bakong KHQR Integrated')}
+              </h3>
+              <p className="text-xs text-slate-300/80 leading-relaxed">
+                {t('why_card_4_desc', 'Scan seamlessly with ABA Mobile, Wing Bank, ACLEDA, or any National Bank of Cambodia compliant app.')}
+              </p>
+            </div>
+            <div className="pt-4 mt-5 border-t border-[#1a294d] flex items-center gap-2 text-[11px] font-bold text-slate-400">
+              <CheckCircle className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+              <span>{t('why_card_4_footer', 'Zero Processing Fee · Instant')}</span>
+            </div>
+          </SpotlightCard>
+
         </div>
       </div>
     </section>
