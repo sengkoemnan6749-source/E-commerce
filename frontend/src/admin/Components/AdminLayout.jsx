@@ -82,45 +82,32 @@ export default function AdminLayout() {
           </div>
 
           <Link to={adminBase} className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+            <div className="w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img
                 src="/images/logo/techtonic-crest.png"
                 alt="TechTonic Logo"
                 className="w-full h-full object-contain"
               />
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <img
-                  src="/images/logo/techtonic-script-orange.png"
-                  alt="TechTonic"
-                  className="h-7 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
-                />
-                <span className="text-[10px] font-black uppercase text-lime-400 bg-lime-400/10 px-2 py-0.5 rounded-full border border-lime-400/20 font-mono">
-                  TechTonicAdmin
-                </span>
-              </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-base font-black text-white tracking-tight">TechTonic</span>
+              <span className="text-xs font-semibold text-slate-400">Admin</span>
             </div>
           </Link>
         </div>
 
-        {/* Search & Operational Telemetry Pill */}
-        <div className="hidden lg:flex items-center gap-6">
-          <form onSubmit={handleSearchSubmit} className="relative w-72">
+        {/* Global Search Bar */}
+        <div className="hidden lg:flex items-center">
+          <form onSubmit={handleSearchSubmit} className="relative w-80">
             <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search catalog, SKUs, or customer..."
+              placeholder="Search products, orders, or customers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
             />
           </form>
-
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/60 border border-slate-700/60 text-xs text-slate-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-medium text-[11px]">Toul Kork Central Hub • 100% Operational</span>
-          </div>
         </div>
 
         {/* Right Action Icons & Profile */}
@@ -248,27 +235,28 @@ export default function AdminLayout() {
             })}
           </nav>
 
-          {/* Quick Metrics Widget in Sidebar */}
-          <div className="mt-8 p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 text-xs space-y-2">
-            <div className="flex items-center justify-between text-slate-400 font-semibold">
-              <span className="text-[10px] uppercase tracking-wider">Store Health</span>
-              <span className="text-emerald-400 font-bold font-mono">99.8%</span>
-            </div>
-            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 rounded-full w-[99%]" />
-            </div>
-            <p className="text-[10px] text-slate-500 leading-normal">
-              Active Cambodian KHQR endpoints & GrabExpress courier webhooks synchronized.
-            </p>
-          </div>
+          {/* Sidebar Bottom Utilities */}
+          <div className="mt-auto pt-4 border-t border-slate-800 space-y-2">
+            <Link
+              to="/"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <Store className="w-4 h-4 text-blue-400" />
+                <span>View Live Store</span>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+            </Link>
 
-          {/* Footer Info */}
-          <div className="mt-auto pt-6 border-t border-slate-800 text-[11px] text-slate-500 px-3">
-            <div className="flex items-center justify-between font-semibold text-slate-400">
-              <span>TechTonic Engine</span>
-              <span className="font-mono text-[10px]">v2.5.0</span>
+            <div className="px-3 py-2 text-[11px] text-slate-500">
+              <div className="flex items-center justify-between font-medium text-slate-400">
+                <span>TechTonic Electronics</span>
+                <span className="text-[10px] text-emerald-400 font-medium">Online</span>
+              </div>
+              <p className="text-[10px] text-slate-600 mt-0.5">Phnom Penh, Cambodia</p>
             </div>
-            <p className="text-[10px] text-slate-500 mt-0.5">High-Performance E-Commerce SPA</p>
           </div>
         </aside>
 
