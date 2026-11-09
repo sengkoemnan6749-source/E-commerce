@@ -67,7 +67,7 @@ export default function AccountLayout() {
               </div>
 
               <p className="text-xs text-slate-400 font-medium">
-                {user?.email || 'sara.meng@techtonic.dev'}
+                {user?.email || 'sara.student@techtonic.com'}
               </p>
 
               <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">

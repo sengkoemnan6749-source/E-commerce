@@ -56,9 +56,8 @@ export default function CardPayment({ cardData, onChange, errors = {} }) {
 
       <div className="space-y-4 pt-2">
         <Input
-          label="Cardholder Name *"
-          placeholder="SARA MENG"
-          icon={User}
+          label="Cardholder name *"
+          placeholder="e.g. SARA MENG"
           value={cardData.cardholderName || ''}
           onChange={handleName}
           error={errors.cardholderName}
@@ -66,9 +65,8 @@ export default function CardPayment({ cardData, onChange, errors = {} }) {
         />
 
         <Input
-          label="Card Number *"
+          label="Card number *"
           placeholder="4532 0123 4567 8910"
-          icon={CreditCard}
           value={cardData.cardNumber || ''}
           onChange={handleCardNumber}
           maxLength={19}
@@ -78,9 +76,8 @@ export default function CardPayment({ cardData, onChange, errors = {} }) {
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Expiry Date *"
+            label="Expiry date *"
             placeholder="MM/YY"
-            icon={Calendar}
             value={cardData.expiryDate || ''}
             onChange={handleExpiry}
             maxLength={5}
@@ -89,9 +86,8 @@ export default function CardPayment({ cardData, onChange, errors = {} }) {
           />
 
           <Input
-            label="CVV / CVC *"
+            label="Security code (CVV) *"
             placeholder="123"
-            icon={Lock}
             type="password"
             value={cardData.cvv || ''}
             onChange={handleCvv}

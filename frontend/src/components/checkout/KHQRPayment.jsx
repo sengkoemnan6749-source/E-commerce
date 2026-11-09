@@ -165,7 +165,7 @@ export default function KHQRPayment({ totalAmount = 0, onSimulateSuccess }) {
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             <Smartphone className="w-3.5 h-3.5 mr-1.5" />
-            <span>Simulate Mobile Scan & Pay</span>
+            <span>Confirm Mobile Payment</span>
           </Button>
         </div>
       </div>

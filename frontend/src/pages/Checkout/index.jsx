@@ -198,50 +198,36 @@ export default function Checkout() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      {/* 2-Step Stepper Header */}
-      <div className="max-w-xl mx-auto mb-10 text-center">
-        <div className="flex items-center justify-center gap-4 sm:gap-8">
-          {/* Step 1 Pill */}
-          <button
-            type="button"
-            onClick={() => setCurrentStep(1)}
-            className={`flex items-center gap-2 text-xs sm:text-sm font-bold transition-colors ${
-              currentStep === 1 ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
+      {/* 2-Step Breadcrumb Navigation */}
+      <nav aria-label="Checkout Steps" className="max-w-md mx-auto mb-8 text-center">
+        <ol className="flex items-center justify-center gap-3 text-xs sm:text-sm font-medium">
+          <li>
+            <button
+              type="button"
+              onClick={() => setCurrentStep(1)}
+              className={`transition-colors ${
                 currentStep === 1
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                  : 'bg-emerald-100 text-emerald-800'
+                  ? 'font-bold text-blue-600'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
-              {currentStep > 1 ? <CheckCircle2 className="w-5 h-5 text-emerald-600" /> : '1'}
-            </div>
-            <span>1. Shipping Information</span>
-          </button>
-
-          <div className="w-8 sm:w-16 h-0.5 bg-slate-200" />
-
-          {/* Step 2 Pill */}
-          <div
-            className={`flex items-center gap-2 text-xs sm:text-sm font-bold ${
-              currentStep === 2 ? 'text-blue-600' : 'text-slate-400'
-            }`}
-          >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${
+              1. Shipping
+            </button>
+          </li>
+          <li className="text-slate-300">/</li>
+          <li>
+            <span
+              className={`${
                 currentStep === 2
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                  : 'bg-slate-200 text-slate-500'
+                  ? 'font-bold text-blue-600'
+                  : 'text-slate-400'
               }`}
             >
-              2
-            </div>
-            <span>2. Secure Payment</span>
-          </div>
-        </div>
-      </div>
+              2. Payment
+            </span>
+          </li>
+        </ol>
+      </nav>
 
       {/* Main 2-Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -252,43 +238,25 @@ export default function Checkout() {
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
                 <div>
-                  <h2 className="text-lg font-black text-slate-900">Delivery Address</h2>
+                  <h2 className="text-base font-bold text-slate-900">Delivery address</h2>
                   <p className="text-xs text-slate-500">
-                    Where should we dispatch your TechTonic devices?
+                    Where should we deliver your order?
                   </p>
                 </div>
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                  Step 1 of 2
-                </span>
               </div>
 
-              {/* Logged In Member Profile Card */}
-              <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 border border-blue-200/70 flex items-center justify-between shadow-2xs">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-blue-500/20">
-                    {(user?.fullName || user?.name || 'U').charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-extrabold text-slate-900">
-                        {user?.fullName || user?.name}
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        Verified Account
-                      </span>
-                    </div>
-                    <span className="text-xs text-slate-500 font-medium block">
-                      {user?.email} • {user?.phone || 'TechTonic Member'}
-                    </span>
-                  </div>
+              {/* Account Context Bar */}
+              <div className="mb-6 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs text-slate-600">
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-400">Account:</span>
+                  <span className="font-semibold text-slate-900">{user?.fullName || user?.name}</span>
+                  <span className="text-slate-400">({user?.email})</span>
                 </div>
-
                 <Link
                   to="/login?redirect=/checkout"
-                  className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs hover:shadow-xs transition-all"
+                  className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
                 >
-                  Switch Account
+                  Switch account
                 </Link>
               </div>
 
@@ -318,14 +286,11 @@ export default function Checkout() {
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
                 <div>
-                  <h2 className="text-lg font-black text-slate-900">Payment Method</h2>
+                  <h2 className="text-base font-bold text-slate-900">Payment method</h2>
                   <p className="text-xs text-slate-500">
-                    Select KHQR Bakong or enter mock Credit/Debit card details.
+                    All transactions are secure and encrypted
                   </p>
                 </div>
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                  Step 2 of 2
-                </span>
               </div>
 
               <div className="space-y-6">

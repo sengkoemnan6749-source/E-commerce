@@ -5,15 +5,15 @@ export default function PaymentMethod({ selectedMethod, onSelectMethod }) {
   const methods = [
     {
       id: 'khqr',
-      title: 'KHQR (Bakong / ABA / Wing / ACLEDA)',
-      subtitle: 'Instant mobile scan & pay with any Cambodian banking app',
+      title: 'KHQR (Bakong, ABA, Wing, ACLEDA)',
+      subtitle: 'Scan and pay using any Cambodian mobile banking app',
       icon: QrCode,
-      badge: 'Most Popular in Cambodia'
+      badge: 'Recommended'
     },
     {
       id: 'card',
       title: 'Credit / Debit Card',
-      subtitle: 'Visa, MasterCard, JCB, UnionPay (Mock 256-bit encryption)',
+      subtitle: 'Visa, Mastercard, JCB, UnionPay',
       icon: CreditCard,
       badge: null
     }
