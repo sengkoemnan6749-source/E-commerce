@@ -48,7 +48,7 @@ export default function LanguageSwitcher({ variant = 'navbar', className = '' })
   // Mobile segmented toggle variant
   if (variant === 'segmented') {
     return (
-      <div className={`inline-flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200 ${className}`}>
+      <div className={`inline-flex items-center p-0.5 bg-slate-100 rounded-lg ${className}`}>
         {languages.map((l) => {
           const isActive = language === l.code;
           return (
@@ -56,19 +56,18 @@ export default function LanguageSwitcher({ variant = 'navbar', className = '' })
               key={l.code}
               type="button"
               onClick={() => setLanguage(l.code)}
-              className={`px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 sm:gap-2 ${
+              className={`px-2 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1.5 ${
                 isActive
-                  ? 'bg-white text-blue-600 shadow-xs border border-slate-200/80'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <img
                 src={l.flag}
                 alt={l.label}
-                className="w-4 h-3 rounded-xs object-cover border border-slate-300/60 shrink-0 shadow-2xs"
+                className="w-3.5 h-2.5 rounded-xs object-cover border border-slate-300/60 shrink-0"
               />
               <span>{l.badge}</span>
-              <span className="text-[10px] sm:text-[11px] font-medium opacity-80">({l.nativeLabel})</span>
             </button>
           );
         })}
