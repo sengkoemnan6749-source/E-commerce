@@ -5,7 +5,7 @@ import { productService } from '../../services/productService';
 
 export default function OrderSummary({ items = [], subtotal = 0, shippingFee = 0, discountAmount = 0, total = 0, appliedCoupon = null }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm flex flex-col gap-5">
+    <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col gap-5">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 className="text-base font-extrabold text-slate-900">Your Order</h3>
         <span className="text-xs font-semibold text-slate-500">
