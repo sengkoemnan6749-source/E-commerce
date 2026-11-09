@@ -258,16 +258,6 @@ export default function Home() {
                         >
                           <Phone className="w-[50%] h-[50%] animate-ringing" />
                         </button>
-
-                        {/* Caller Avatar Pulse Aura */}
-                        <div className="absolute left-[71.8%] top-[38.6%] -translate-x-1/2 -translate-y-1/2 w-[9%] h-[9%] rounded-full ring-1 ring-emerald-400/50 animate-pulse pointer-events-none" />
-
-                        {/* Calling Soundwave Telemetry */}
-                        <div className="absolute left-[71.8%] top-[46.2%] -translate-x-1/2 -translate-y-1/2 flex items-center gap-[2px] pointer-events-none opacity-85">
-                          <span className="w-[1.5px] h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                          <span className="w-[1.5px] h-3 bg-emerald-400 rounded-full animate-pulse [animation-delay:150ms]" />
-                          <span className="w-[1.5px] h-2 bg-emerald-400 rounded-full animate-pulse [animation-delay:300ms]" />
-                        </div>
                       </>
                     ) : (
                       /* Active Connected Call Screen Overlay */
