@@ -118,7 +118,7 @@ export function MobileMenu({ isOpen, onClose }) {
             <div className="relative flex-1">
               <button
                 type="submit"
-                className="w-4 h-4 text-slate-400 hover:text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2 cursor-pointer transition"
+                className="w-4 h-4 text-slate-400 hover:text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2 cursor-pointer transition z-10 flex items-center justify-center"
                 title="Search"
                 aria-label="Submit search"
               >
@@ -129,13 +129,13 @@ export function MobileMenu({ isOpen, onClose }) {
                 placeholder={t('search_placeholder', 'Search products...')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9.5 pr-8 py-2 text-xs bg-white rounded-xl border border-slate-200/90 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
+                className="w-full pl-10 pr-9 py-2 text-xs bg-white rounded-xl border border-slate-200/90 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 transition"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 z-10"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
