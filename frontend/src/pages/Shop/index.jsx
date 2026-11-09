@@ -443,10 +443,7 @@ export default function Shop() {
       {/* Header Banner */}
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
-            Hardware Catalog
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-2.5">
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
             Engineered Hardware & Gear
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
