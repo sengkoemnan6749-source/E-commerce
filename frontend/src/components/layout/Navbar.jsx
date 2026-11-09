@@ -205,9 +205,9 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
   };
 
   const navItemClass = ({ isActive }) =>
-    `relative text-sm font-semibold transition-all duration-150 px-3.5 py-1.5 rounded-full whitespace-nowrap ${
+    `text-sm font-medium transition-all duration-150 px-3.5 py-1.5 rounded-full whitespace-nowrap ${
       isActive
-        ? 'text-sky-400 font-bold after:content-[""] after:absolute after:-bottom-2.5 after:left-1/2 after:-translate-x-1/2 after:w-6 after:h-0.5 after:bg-sky-400 after:rounded-full after:shadow-[0_0_10px_#38bdf8]'
+        ? 'text-white bg-slate-800/90 font-semibold'
         : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
     }`;
 
@@ -265,9 +265,9 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
               <button
                 type="button"
                 onClick={() => setIsCategoryOpen(prev => !prev)}
-                className={`flex items-center gap-1.5 text-sm font-semibold transition-all duration-150 px-3 py-1.5 rounded-full whitespace-nowrap ${
+                className={`flex items-center gap-1.5 text-sm font-medium transition-all duration-150 px-3.5 py-1.5 rounded-full whitespace-nowrap ${
                   isCategoryOpen
-                    ? 'text-sky-400 bg-slate-800/60 font-bold'
+                    ? 'text-white bg-slate-800/90 font-semibold'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
                 }`}
                 aria-expanded={isCategoryOpen}
