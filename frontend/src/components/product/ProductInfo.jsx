@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, ShieldCheck, Truck, RotateCcw, Plus, Minus, ShoppingBag, Zap, Heart } from 'lucide-react';
+import { Star, ShieldCheck, Truck, RotateCcw, Plus, Minus, ShoppingBag, Zap, Heart, Check } from 'lucide-react';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
 import { useCart, useWishlist, useToast, useAuth } from '../../store/StoreContext';
 import Button from '../common/Button';
@@ -13,7 +13,7 @@ export default function ProductInfo({
   activeImage
 }) {
   const navigate = useNavigate();
-  const { addToCart, openDrawer } = useCart();
+  const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToast } = useToast();
   const { user } = useAuth();
@@ -48,8 +48,7 @@ export default function ProductInfo({
     setAdding(true);
     addToCart(product, quantity, selectedVariant, activeImage);
     addToast(`Added ${quantity}x "${product.name}" (${selectedVariant}) to cart`, 'success');
-    openDrawer();
-    setTimeout(() => setAdding(false), 500);
+    setTimeout(() => setAdding(false), 1200);
   };
 
   const handleBuyNow = () => {
@@ -216,8 +215,17 @@ export default function ProductInfo({
             disabled={product.stock === 0 || adding}
             onClick={handleAddToCart}
           >
-            <ShoppingBag className="w-5 h-5 mr-2" />
-            Add to Cart
+            {adding ? (
+              <>
+                <Check className="w-5 h-5 mr-2 text-emerald-300" />
+                Added to Cart!
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-5 h-5 mr-2" />
+                Add to Cart
+              </>
+            )}
           </Button>
 
           {/* Wishlist Button */}

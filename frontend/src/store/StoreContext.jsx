@@ -252,8 +252,6 @@ export function StoreProvider({ children }) {
         ];
       }
     });
-
-    setIsCartDrawerOpen(true);
   };
 
   const updateQuantity = (itemId, variantOrQty, possibleQty) => {
@@ -422,7 +420,6 @@ export function StoreProvider({ children }) {
     setWishlist([]);
     showToast(`Moved ${wishlist.length} saved items to your cart!`, 'success');
     setIsWishlistDrawerOpen(false);
-    setIsCartDrawerOpen(true);
   };
 
   const isWishlisted = (productId) => wishlist.some(item => item.id === productId);
