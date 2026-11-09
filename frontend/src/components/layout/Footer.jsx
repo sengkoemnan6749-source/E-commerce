@@ -234,7 +234,7 @@ export function Footer() {
             </h4>
             <ul className="space-y-3 text-xs">
               <li>
-                <Link to="/account/orders" className="text-slate-400 hover:text-white flex items-center gap-2.5 transition-colors group">
+                <Link to="/track" className="text-slate-400 hover:text-white flex items-center gap-2.5 transition-colors group">
                   <Package className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
                   <span>Track My Order</span>
                 </Link>

@@ -82,6 +82,10 @@ export default function AppRoutes() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success" element={<OrderSuccess />} />
         <Route path="/orders/:id" element={<OrderTracking />} />
+        <Route path="/orders" element={<OrderTracking />} />
+        <Route path="/track/:id" element={<OrderTracking />} />
+        <Route path="/track" element={<OrderTracking />} />
+        <Route path="/order-tracking" element={<OrderTracking />} />
         <Route path="/about" element={<About />} />
 
         {/* Customer Account Routes */}

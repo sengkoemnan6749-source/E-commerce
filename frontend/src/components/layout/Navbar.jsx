@@ -359,7 +359,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
               )}
             </div>
 
-            <NavLink to="/account/orders" className={navItemClass}>
+            <NavLink to="/track" className={navItemClass}>
               {t('nav_track_order', 'Track Order')}
             </NavLink>
           </nav>

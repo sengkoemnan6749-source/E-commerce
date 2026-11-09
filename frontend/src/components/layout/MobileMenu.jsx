@@ -237,7 +237,7 @@ export function MobileMenu({ isOpen, onClose }) {
               </Link>
 
               <Link
-                to="/account/orders"
+                to="/track"
                 onClick={onClose}
                 className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-bold text-xs transition-colors group"
               >

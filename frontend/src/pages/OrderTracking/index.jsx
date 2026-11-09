@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Truck, ArrowLeft, RefreshCw, MapPin, Phone, ShieldCheck, Clock, CheckCircle2, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Truck, ArrowLeft, RefreshCw, MapPin, Phone, ShieldCheck, Clock, CheckCircle2, ExternalLink, Search } from 'lucide-react';
 import { orderService } from '../../services/orderService';
 import { productService } from '../../services/productService';
 import OrderStepper from '../../components/order/OrderStepper';
@@ -9,31 +9,93 @@ import DeliveryMap from './DeliveryMap';
 import Button from '../../components/common/Button';
 import { formatUSD } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
-import { useToast } from '../../store/StoreContext';
+import { useToast, useAuth } from '../../store/StoreContext';
 
 const STATUS_OPTIONS = ['confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered'];
 
+const FALLBACK_ORDER = {
+  id: 'ORD-20260924-0001',
+  status: 'Out for Delivery',
+  createdAt: '2026-09-24T09:30:00.000Z',
+  customerName: 'Sara Meng',
+  customerPhone: '+855 12 345 678',
+  shippingAddress: {
+    fullName: 'Sara Meng',
+    phone: '+855 12 345 678',
+    address: 'Street 310, Building 24',
+    city: 'Phnom Penh',
+    province: 'Phnom Penh',
+    postalCode: '120101'
+  },
+  items: [
+    {
+      id: 'prod-001',
+      name: 'TechTonic ANC Pro Headphones',
+      price: 109.99,
+      quantity: 1,
+      selectedVariant: 'Titanium Black'
+    }
+  ],
+  total: 109.99,
+  deliveryPartner: 'Vireak Buntham Express (VET)',
+  trackingNumber: 'VET-KH-889210',
+  carrier: 'GrabExpress Delivery Phnom Penh',
+  estimatedDelivery: 'Today by 5:30 PM'
+};
+
 export default function OrderTracking() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { addToast } = useToast();
+  const { isAuthenticated } = useAuth();
+
+  const allOrders = useMemo(() => {
+    const list = orderService.getOrders();
+    return list.length > 0 ? list : [FALLBACK_ORDER];
+  }, []);
+
+  const [searchInput, setSearchInput] = useState('');
 
   const [order, setOrder] = useState(() => {
-    return orderService.getOrderById(id) || orderService.getOrders()[0] || null;
+    if (id) {
+      const found = orderService.getOrderById(id);
+      if (found) return found;
+    }
+    return orderService.getOrders()[0] || FALLBACK_ORDER;
   });
 
-  if (!order) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Order Not Found</h2>
-        <p className="text-xs text-slate-500 mb-6">No order matching "{id}" could be located.</p>
-        <Link to="/account/orders">
-          <Button variant="primary">View My Orders</Button>
-        </Link>
-      </div>
-    );
-  }
+  // Keep order synchronized whenever the route param id changes
+  useEffect(() => {
+    if (id) {
+      const found = orderService.getOrderById(id);
+      if (found) {
+        setOrder(found);
+        return;
+      }
+    }
+    const first = orderService.getOrders()[0];
+    if (first) {
+      setOrder(first);
+    }
+  }, [id]);
 
-  // Interactive status switcher for UI demonstration
+  // Handle manual order search
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const q = searchInput.trim();
+    if (!q) return;
+
+    const found = orderService.getOrderById(q);
+    if (found) {
+      setOrder(found);
+      addToast(`Showing tracking for order ${found.id}`, 'success');
+      navigate(`/orders/${found.id}`);
+    } else {
+      addToast(`Order "${q}" not found. Showing default sample order.`, 'info');
+    }
+  };
+
+  // Interactive status switcher for demonstration
   const handleUpdateStatus = (newStatus) => {
     const updated = orderService.updateOrderStatus(order.id, newStatus);
     setOrder({ ...updated });
@@ -42,23 +104,23 @@ export default function OrderTracking() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-      {/* Top Breadcrumb Header */}
-      <div className="flex items-center justify-between mb-6">
+      {/* Top Navigation & Order Lookup Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <Link
-          to="/account/orders"
+          to={isAuthenticated ? '/account/orders' : '/shop'}
           className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to All Orders</span>
+          <span>{isAuthenticated ? 'Back to My Orders' : 'Back to Store'}</span>
         </Link>
 
         {/* Demo Stage Switcher Bar */}
-        <div className="flex items-center gap-1.5 bg-blue-50 px-2.5 py-1 rounded-xl border border-blue-100 text-xs">
-          <span className="text-[11px] font-semibold text-blue-900 hidden sm:inline">
+        <div className="flex items-center gap-1.5 bg-blue-50 px-2.5 py-1 rounded-xl border border-blue-100 text-xs self-start sm:self-auto">
+          <span className="text-[11px] font-semibold text-blue-900">
             Simulate Stage:
           </span>
           <select
-            value={order.status.toLowerCase().replace(/\s+/g, '_')}
+            value={(order.status || '').toLowerCase().replace(/\s+/g, '_')}
             onChange={(e) => handleUpdateStatus(e.target.value)}
             className="text-[11px] font-bold text-blue-700 bg-transparent border-none focus:outline-none cursor-pointer"
           >
@@ -68,6 +130,50 @@ export default function OrderTracking() {
             <option value="out_for_delivery">4. Out for Delivery</option>
             <option value="delivered">5. Delivered</option>
           </select>
+        </div>
+      </div>
+
+      {/* Quick Order Lookup Form */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-6 shadow-xs">
+        <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Enter Order ID (e.g. ORD-20260924-0001)..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-xs"
+          >
+            Track Order
+          </button>
+        </form>
+
+        {/* Quick Sample Order Pills */}
+        <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-[11px] text-slate-400 font-semibold">Sample Orders:</span>
+          {allOrders.slice(0, 3).map((ord) => (
+            <button
+              key={ord.id}
+              type="button"
+              onClick={() => {
+                setOrder(ord);
+                navigate(`/orders/${ord.id}`);
+              }}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold transition ${
+                order.id === ord.id
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              {ord.id} ({ord.status})
+            </button>
+          ))}
         </div>
       </div>
 
@@ -86,19 +192,19 @@ export default function OrderTracking() {
           <Clock className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
           <div>
             <span className="font-bold text-slate-900 block">Live Shipment Update:</span>
-            {order.status === 'delivered' ? (
+            {(order.status || '').toLowerCase().includes('deliver') ? (
               <p className="text-emerald-700 font-semibold mt-0.5">
                 Package successfully delivered and signed by customer.
               </p>
-            ) : order.status === 'out_for_delivery' ? (
+            ) : (order.status || '').toLowerCase().includes('out') ? (
               <p className="text-blue-700 font-semibold mt-0.5">
-                Driver is currently in transit in Chamkarmon area. Expect delivery within 35 minutes.
+                Driver is currently in transit in Chamkarmon / BKK1 area. Expect delivery within 35 minutes.
               </p>
-            ) : order.status === 'shipped' ? (
+            ) : (order.status || '').toLowerCase().includes('ship') ? (
               <p className="mt-0.5">
-                Package departed TechTonic Toul Kork Central Hub via GrabExpress Courier.
+                Package departed TechTonic Toul Kork Central Hub via courier service.
               </p>
-            ) : order.status === 'processing' ? (
+            ) : (order.status || '').toLowerCase().includes('process') ? (
               <p className="mt-0.5">
                 Quality inspection and serialized warranty barcode scanning in progress.
               </p>
@@ -111,12 +217,12 @@ export default function OrderTracking() {
         </div>
       </div>
 
-      {/* Live Phnom Penh Courier Radar & Map Telemetry */}
+      {/* Live Phnom Penh Courier Route & Map */}
       <DeliveryMap orderStatus={order.status} shippingAddress={order.shippingAddress} />
 
       {/* Cambodia Logistics Partner & Shipping Recipient Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Logistics Courier Partner Card (Teacher Delivery Requirement) */}
+        {/* Logistics Courier Partner Card */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -176,7 +282,7 @@ export default function OrderTracking() {
             <span>Nationwide 25 Provinces Delivery</span>
             <span className="text-emerald-600 font-semibold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live Gateway Synced
+              Courier Synced
             </span>
           </div>
         </div>
@@ -189,14 +295,14 @@ export default function OrderTracking() {
               <span>Recipient Information</span>
             </h4>
             <div className="space-y-1 text-xs text-slate-700">
-              <p className="font-bold text-sm text-slate-900">{order.shippingAddress?.fullName}</p>
+              <p className="font-bold text-sm text-slate-900">{order.shippingAddress?.fullName || order.customerName || 'Customer'}</p>
               <p className="flex items-center gap-1.5 text-slate-500">
                 <Phone className="w-3 h-3" />
-                <span>{order.shippingAddress?.phone}</span>
+                <span>{order.shippingAddress?.phone || order.customerPhone || '012 345 678'}</span>
               </p>
               <p className="pt-2 text-slate-600 leading-relaxed">
-                {order.shippingAddress?.address}, {order.shippingAddress?.city},{' '}
-                {order.shippingAddress?.province} {order.shippingAddress?.postalCode}
+                {order.shippingAddress?.address || 'Street 310, Building 24'}, {order.shippingAddress?.city || 'Phnom Penh'},{' '}
+                {order.shippingAddress?.province || 'Phnom Penh'} {order.shippingAddress?.postalCode || '120101'}
               </p>
             </div>
           </div>
@@ -210,7 +316,6 @@ export default function OrderTracking() {
 
       {/* Items Grid */}
       <div className="grid grid-cols-1 gap-6">
-
         {/* Ordered Hardware Items */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
