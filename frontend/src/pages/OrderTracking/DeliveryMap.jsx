@@ -262,7 +262,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm mb-6 transition-all">
+    <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs transition-all">
       {/* Dynamic Tile Styling Rules */}
       <style>{`
         .dark-tiles .leaflet-tile {
