@@ -263,53 +263,41 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
 
   return (
     <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs">
-      {/* Header Bar */}
-      <div className="p-4 px-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/70">
+      {/* Clean Header Bar */}
+      <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between gap-3 bg-white">
         <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold text-slate-900">
-              Delivery Route & Courier Progress
-            </h3>
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-300/60">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Google Earth View
-            </span>
-          </div>
+          <h3 className="text-sm font-bold text-slate-900">
+            Delivery Route
+          </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            {telemetry.statusText} • {telemetry.subtext}
+            {telemetry.statusText}
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          {/* Map Layer Switcher: Google Earth Satellite vs Standard Map */}
-          <div className="inline-flex items-center p-1 rounded-xl bg-slate-200/80 text-xs font-semibold">
-            <button
-              type="button"
-              onClick={() => setMapMode('satellite')}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                mapMode === 'satellite'
-                  ? 'bg-white text-slate-900 shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              🛰️ Satellite (Google Earth)
-            </button>
-            <button
-              type="button"
-              onClick={() => setMapMode('streets')}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                mapMode === 'streets'
-                  ? 'bg-white text-slate-900 shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              🗺️ Street Map
-            </button>
-          </div>
-
-          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-            ETA: {telemetry.eta}
-          </span>
+        {/* Clean Map Switcher: Satellite vs Map */}
+        <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 text-xs">
+          <button
+            type="button"
+            onClick={() => setMapMode('satellite')}
+            className={`px-3 py-1 rounded-md transition-all font-medium ${
+              mapMode === 'satellite'
+                ? 'bg-white text-slate-900 shadow-xs font-semibold'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            Satellite
+          </button>
+          <button
+            type="button"
+            onClick={() => setMapMode('streets')}
+            className={`px-3 py-1 rounded-md transition-all font-medium ${
+              mapMode === 'streets'
+                ? 'bg-white text-slate-900 shadow-xs font-semibold'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            Map
+          </button>
         </div>
       </div>
 
@@ -318,13 +306,13 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
         {/* Leaflet Anchor */}
         <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-        {/* Floating Minimalist Zoom & Recenter Controls (Bottom-Right) */}
-        <div className="absolute bottom-4 right-4 flex flex-col gap-1.5 z-[400] bg-slate-900/90 backdrop-blur-md rounded-xl shadow-xl border border-white/20 p-1 text-white">
+        {/* Minimalist Floating Zoom & Recenter Controls (Bottom-Right) */}
+        <div className="absolute bottom-4 right-4 flex flex-col gap-1.5 z-[400] bg-slate-900/90 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-1 text-white">
           <button
             type="button"
             onClick={handleZoomIn}
             className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center text-white transition"
-            title="Zoom In (See Homes & Buildings)"
+            title="Zoom In"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -344,22 +332,6 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
-        </div>
-
-        {/* Clean Bottom Route Legend (Google Earth Glass Style) */}
-        <div className="absolute bottom-4 left-4 z-[400] bg-slate-900/90 backdrop-blur-md border border-white/20 rounded-xl px-3.5 py-2 shadow-xl flex items-center gap-4 text-xs font-semibold text-white">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-blue-300" />
-            <span>Toul Kork Hub</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-sky-400 ring-2 ring-sky-200 animate-pulse" />
-            <span>Courier</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-emerald-200" />
-            <span>Destination</span>
-          </div>
         </div>
       </div>
     </div>

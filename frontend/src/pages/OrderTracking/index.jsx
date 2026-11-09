@@ -350,13 +350,9 @@ export default function OrderTracking() {
               </p>
             </div>
 
-            <div className="flex flex-col items-start md:items-end gap-2 shrink-0">
-              <span className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold border ${statusInfo.badgeColor} shadow-xs`}>
-                <span className={`w-2 h-2 rounded-full ${statusInfo.dotColor}`} />
-                <span className="capitalize">{order.status || 'Processing'}</span>
-              </span>
-              <span className="text-[11px] font-mono text-slate-400">
-                Partner: {order.deliveryPartner || 'GrabExpress Phnom Penh'}
+            <div className="flex flex-col items-start md:items-end gap-1 shrink-0">
+              <span className="text-xs text-slate-500">
+                Courier: <strong className="text-slate-800 font-semibold">{order.deliveryPartner || 'GrabExpress Phnom Penh'}</strong>
               </span>
             </div>
           </div>
@@ -364,15 +360,6 @@ export default function OrderTracking() {
           {/* Stepper Component */}
           <div className="py-2">
             <OrderStepper currentStatus={order.status} />
-          </div>
-
-          {/* Live Status Callout Banner */}
-          <div className={`mt-3 p-4 rounded-2xl border flex items-start sm:items-center gap-3 text-xs ${statusInfo.alertBg}`}>
-            <Clock className={`w-4 h-4 flex-shrink-0 mt-0.5 sm:mt-0 ${statusInfo.alertIconColor}`} />
-            <div className="flex-1">
-              <strong className="block sm:inline font-bold mr-1">Live Shipment Status:</strong>
-              <span>{statusInfo.subtext}</span>
-            </div>
           </div>
         </div>
 
