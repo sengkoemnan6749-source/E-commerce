@@ -120,23 +120,13 @@ export default function BrandMarquee() {
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_6px_#3b82f6]" />
       </div>
 
-      {/* 2. Top Technical Meta Bar (Edge-to-Edge Monospace Header) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left relative z-10">
-        <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-slate-500">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>{language === 'km' ? 'ម៉ាកយីហោផ្លូវការ' : 'DIRECT HARDWARE ECOSYSTEM'}</span>
-        </div>
-
-        <p className="text-xs sm:text-sm font-semibold tracking-wider text-slate-600 uppercase">
+      {/* 2. Top Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8 text-center relative z-10">
+        <p className="text-xs sm:text-sm font-semibold tracking-wider text-slate-500 uppercase">
           {language === 'km'
             ? 'ម៉ាកយីហោឈានមុខគេលើពិភពលោក នៅកន្លែងតែមួយ'
             : t('brand_strip_title', "The world's leading brands, all in one place.")}
         </p>
-
-        <div className="hidden sm:flex items-center gap-2 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-slate-500">
-          <span className="text-blue-600 font-bold">9</span>
-          <span>{language === 'km' ? 'ដៃគូសកលមានការបញ្ជាក់' : 'VERIFIED GLOBAL PARTNERS'}</span>
-        </div>
       </div>
 
       {/* 3. Infinite Seamless Scrolling Marquee Container */}
