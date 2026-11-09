@@ -135,6 +135,122 @@ html.lang-kh button {
   animation: energy-spin 28s linear infinite;
 }
 
+/* Electric Surge & Lightning Flicker Animation */
+@keyframes gan-levitate {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(1.5deg);
+  }
+}
+
+.animate-gan-levitate {
+  animation: gan-levitate 4.5s ease-in-out infinite;
+}
+
+@keyframes lightning-zap {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.96);
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
+  }
+  14% {
+    opacity: 1;
+    transform: scale(1.12) rotate(1deg);
+    filter: drop-shadow(0 0 30px rgba(56, 189, 248, 1)) drop-shadow(0 0 50px rgba(14, 165, 233, 0.9));
+  }
+  20% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 0.95;
+    transform: scale(1.15) rotate(-1deg);
+    filter: drop-shadow(0 0 36px rgba(56, 189, 248, 1)) drop-shadow(0 0 60px rgba(255, 255, 255, 0.85));
+  }
+  32% {
+    opacity: 0.2;
+    transform: scale(0.98);
+  }
+  68% {
+    opacity: 0.25;
+  }
+  80% {
+    opacity: 0.9;
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 28px rgba(56, 189, 248, 0.9));
+  }
+  86% {
+    opacity: 0.4;
+  }
+}
+
+.animate-lightning-zap {
+  animation: lightning-zap 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes electric-shockwave {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.animate-shockwave-pulse {
+  animation: electric-shockwave 3s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+@keyframes ion-sparkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: translateY(0px) scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-12px) scale(1.25);
+    filter: drop-shadow(0 0 8px #38bdf8);
+  }
+}
+
+.animate-ion-sparkle {
+  animation: ion-sparkle 2.2s ease-in-out infinite;
+}
+
+@keyframes electric-flicker {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.96);
+    filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.4));
+  }
+  25% {
+    opacity: 0.95;
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 28px rgba(56, 189, 248, 0.9));
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(1);
+    filter: drop-shadow(0 0 16px rgba(14, 165, 233, 0.5));
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 32px rgba(56, 189, 248, 1));
+  }
+}
+
+.animate-electric-flicker {
+  animation: electric-flicker 2.5s ease-in-out infinite;
+}
+
 /* Infinite Marquee Animations */
 @keyframes marquee-scroll-left {
   0% {

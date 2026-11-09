@@ -677,16 +677,84 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right Column: Clean GaN Charger Showcase */}
-            <div className="lg:col-span-5 relative flex items-center justify-center py-4">
-              <div className="relative z-10 w-full max-w-sm flex items-center justify-center group">
-                <Link to="/product/prod-009" className="block relative">
+            {/* Right Column: Animated GaN Charger Energy Showcase */}
+            <div className="lg:col-span-5 relative flex items-center justify-center py-6 sm:py-8 select-none">
+              
+              {/* Radial Energy Background Aura & Pulsing Shockwaves */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-64 h-64 sm:w-84 sm:h-84 rounded-full bg-gradient-to-tr from-sky-500/25 via-blue-600/35 to-cyan-400/25 blur-3xl animate-pulse-glow" />
+                <div
+                  className="absolute w-56 h-56 sm:w-72 sm:h-72 rounded-full border border-sky-400/40 animate-shockwave-pulse"
+                />
+                <div
+                  className="absolute w-44 h-44 sm:w-60 sm:h-60 rounded-full border border-cyan-300/30 animate-shockwave-pulse"
+                  style={{ animationDelay: '1.4s' }}
+                />
+              </div>
+
+              {/* Floating GaN Charger Unit with Smooth Zero-G Levitation */}
+              <div className="relative z-10 w-full max-w-sm flex items-center justify-center animate-gan-levitate group">
+                <Link to="/product/prod-009" className="block relative cursor-pointer" title="TechTonic 100W GaN Fast Charger">
+                  
+                  {/* Dynamic Lightning Bolt Sparks Over Image */}
+                  {/* 1. Top-Right Lightning Strike Flare */}
+                  <div className="absolute top-[12%] right-[22%] pointer-events-none z-20 animate-lightning-zap">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-tr from-sky-400/50 via-cyan-300/60 to-white/80 blur-md" />
+                    <Zap className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 text-white fill-cyan-200 drop-shadow-[0_0_12px_#38bdf8]" />
+                  </div>
+
+                  {/* 2. Left-Side Lightning Strike Flare */}
+                  <div
+                    className="absolute top-[46%] left-[22%] pointer-events-none z-20 animate-lightning-zap"
+                    style={{ animationDelay: '1.3s' }}
+                  >
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-blue-500/40 via-sky-400/50 to-white/70 blur-md" />
+                    <Zap className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 sm:w-8 sm:h-8 text-white fill-sky-200 drop-shadow-[0_0_10px_#0ea5e9]" />
+                  </div>
+
+                  {/* 3. Floating Ion Sparkle Particles around Water Splash */}
+                  <div className="absolute top-[22%] left-[16%] w-2 h-2 rounded-full bg-cyan-300 shadow-[0_0_8px_#67e8f9] animate-ion-sparkle pointer-events-none" />
+                  <div className="absolute top-[8%] right-[38%] w-2 h-2 rounded-full bg-sky-300 shadow-[0_0_8px_#38bdf8] animate-ion-sparkle pointer-events-none" style={{ animationDelay: '0.8s' }} />
+                  <div className="absolute bottom-[28%] right-[16%] w-2 h-2 rounded-full bg-cyan-200 shadow-[0_0_8px_#a5f3fc] animate-ion-sparkle pointer-events-none" style={{ animationDelay: '1.5s' }} />
+                  <div className="absolute bottom-[36%] left-[14%] w-1.5 h-1.5 rounded-full bg-sky-200 shadow-[0_0_6px_#bae6fd] animate-ion-sparkle pointer-events-none" style={{ animationDelay: '0.4s' }} />
+
+                  {/* Main Product Showcase Image */}
                   <img
                     src="/images/banners/promo-gan-charger.png"
                     alt="100W GaN Fast Charger"
-                    className="w-full h-auto max-h-[380px] sm:max-h-[420px] object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-500 ease-out"
+                    className="w-full h-auto max-h-[380px] sm:max-h-[440px] object-contain drop-shadow-[0_20px_50px_rgba(14,165,233,0.35)] group-hover:scale-105 group-hover:drop-shadow-[0_25px_60px_rgba(56,189,248,0.6)] transition-all duration-500 ease-out"
+                  />
+
+                  {/* Active 100W Power Indicator LED on USB-C1 Port */}
+                  <div
+                    className="absolute top-[42.2%] right-[38.8%] -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399] animate-pulse pointer-events-none z-20"
+                    title="100W GaN Power Live"
+                  >
+                    <div className="absolute -inset-1 rounded-full bg-emerald-400/40 animate-ping" />
+                  </div>
+
+                  {/* Active Power Accent on USB-A Port */}
+                  <div
+                    className="absolute top-[61.8%] right-[38.8%] -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#fbbf24] pointer-events-none z-20 opacity-80"
+                    title="USB-A QuickCharge 3.0"
                   />
                 </Link>
+
+                {/* Floating Tech Chip 1: Top Right */}
+                <div className="absolute -top-3 -right-2 sm:right-2 z-20 animate-float-reverse pointer-events-none">
+                  <div className="px-3 py-1.5 rounded-full bg-slate-900/95 backdrop-blur-md border border-sky-400/50 shadow-[0_4px_16px_rgba(14,165,233,0.25)] flex items-center gap-1.5 text-[11px] font-bold text-sky-300">
+                    <Zap className="w-3.5 h-3.5 text-sky-400 fill-sky-400 animate-pulse" />
+                    <span>100W GaN III Active</span>
+                  </div>
+                </div>
+
+                {/* Floating Tech Chip 2: Bottom Left */}
+                <div className="absolute -bottom-3 -left-2 sm:left-2 z-20 animate-float-slow pointer-events-none" style={{ animationDelay: '1.5s' }}>
+                  <div className="px-3 py-1.5 rounded-full bg-slate-900/95 backdrop-blur-md border border-cyan-400/50 shadow-[0_4px_16px_rgba(6,182,212,0.25)] flex items-center gap-1.5 text-[11px] font-bold text-cyan-300">
+                    <Droplets className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>CoolFlow &bull; 28&deg;C</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
