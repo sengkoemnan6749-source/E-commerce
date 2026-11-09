@@ -181,12 +181,13 @@ export default function Shop() {
         // Search match
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
-          const matchesName = p.name.toLowerCase().includes(q);
+          const matchesName = (p.name || '').toLowerCase().includes(q);
+          const matchesBrand = (p.brand || '').toLowerCase().includes(q);
           const matchesCat = (p.category || '').toLowerCase().includes(q);
           const matchesSub = (p.subcategory || '').toLowerCase().includes(q);
           const matchesDesc = (p.description || '').toLowerCase().includes(q);
           const matchesTag = (p.tagline || '').toLowerCase().includes(q);
-          if (!matchesName && !matchesCat && !matchesSub && !matchesDesc && !matchesTag) return false;
+          if (!matchesName && !matchesBrand && !matchesCat && !matchesSub && !matchesDesc && !matchesTag) return false;
         }
         // Price match
         if (p.price > maxPrice) {
