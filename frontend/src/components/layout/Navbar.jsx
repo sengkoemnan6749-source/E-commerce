@@ -204,11 +204,55 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
     navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
+  const navContainerRef = useRef(null);
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0, opacity: 0 });
+
+  const syncPillToActive = () => {
+    if (!navContainerRef.current) return;
+    const activeEl = navContainerRef.current.querySelector('a.active, button.is-active');
+    if (activeEl) {
+      const containerRect = navContainerRef.current.getBoundingClientRect();
+      const elRect = activeEl.getBoundingClientRect();
+      setPillStyle({
+        left: elRect.left - containerRect.left,
+        width: elRect.width,
+        opacity: 1
+      });
+    } else {
+      setPillStyle(prev => ({ ...prev, opacity: 0 }));
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(syncPillToActive, 50);
+    const handleResize = () => syncPillToActive();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [location.pathname]);
+
+  const handleNavMouseEnter = (e) => {
+    if (!navContainerRef.current) return;
+    const containerRect = navContainerRef.current.getBoundingClientRect();
+    const elRect = e.currentTarget.getBoundingClientRect();
+    setPillStyle({
+      left: elRect.left - containerRect.left,
+      width: elRect.width,
+      opacity: 1
+    });
+  };
+
+  const handleNavMouseLeave = () => {
+    syncPillToActive();
+  };
+
   const navItemClass = ({ isActive }) =>
-    `text-sm font-medium transition-all duration-150 px-3.5 py-1.5 rounded-full whitespace-nowrap ${
+    `relative z-10 text-sm font-medium transition-colors duration-150 px-3.5 py-1.5 rounded-full whitespace-nowrap ${
       isActive
-        ? 'text-white bg-slate-800/90 font-semibold'
-        : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+        ? 'text-white font-semibold'
+        : 'text-slate-300 hover:text-white'
     }`;
 
   // Get user display first name or Sara
@@ -246,12 +290,26 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 shrink-0">
-            <NavLink to="/" className={navItemClass}>
+          {/* Desktop Navigation Links with Gliding Hover Animation */}
+          <nav
+            ref={navContainerRef}
+            onMouseLeave={handleNavMouseLeave}
+            className="hidden md:flex items-center gap-1 shrink-0 relative"
+          >
+            {/* Smooth Gliding Hover & Active Pill */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 h-8 rounded-full bg-slate-800/80 border border-slate-700/60 pointer-events-none transition-all duration-200 ease-out shadow-xs"
+              style={{
+                left: `${pillStyle.left}px`,
+                width: `${pillStyle.width}px`,
+                opacity: pillStyle.opacity,
+              }}
+            />
+
+            <NavLink to="/" end className={navItemClass} onMouseEnter={handleNavMouseEnter}>
               {t('nav_home', 'Home')}
             </NavLink>
-            <NavLink to="/shop" className={navItemClass}>
+            <NavLink to="/shop" className={navItemClass} onMouseEnter={handleNavMouseEnter}>
               {t('nav_shop', 'Shop')}
             </NavLink>
 
@@ -265,10 +323,11 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
               <button
                 type="button"
                 onClick={() => setIsCategoryOpen(prev => !prev)}
-                className={`flex items-center gap-1.5 text-sm font-medium transition-all duration-150 px-3.5 py-1.5 rounded-full whitespace-nowrap ${
+                onMouseEnter={handleNavMouseEnter}
+                className={`relative z-10 flex items-center gap-1.5 text-sm font-medium transition-colors duration-150 px-3.5 py-1.5 rounded-full whitespace-nowrap ${
                   isCategoryOpen
-                    ? 'text-white bg-slate-800/90 font-semibold'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                    ? 'text-white font-semibold is-active'
+                    : 'text-slate-300 hover:text-white'
                 }`}
                 aria-expanded={isCategoryOpen}
                 aria-haspopup="true"
@@ -356,7 +415,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
               )}
             </div>
 
-            <NavLink to="/track" className={navItemClass}>
+            <NavLink to="/track" className={navItemClass} onMouseEnter={handleNavMouseEnter}>
               {t('nav_track_order', 'Track Order')}
             </NavLink>
           </nav>
