@@ -359,18 +359,14 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
 
             {/* Poster Header */}
             <div className="relative z-10 transition-all duration-500 ease-out">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-orange-400 text-[11px] font-bold uppercase tracking-wider mb-4">
-                <Sparkles className="w-3.5 h-3.5 text-orange-400" />
-                <span>{activeTab === 'signin' ? 'Next-Gen Hardware Ecosystem' : 'Verified Member Privileges'}</span>
-              </div>
               <h2 className="text-2xl xl:text-3xl font-black text-white tracking-tight leading-snug">
                 {activeTab === 'signin'
                   ? 'Always believe that something wonderful is about to happen.'
-                  : 'Unlock the complete TechTonic hardware ecosystem.'}
+                  : 'Unlock the complete TechTonic hardware catalog.'}
               </h2>
-              <p className="text-xs text-slate-300/80 mt-2 leading-relaxed">
+              <p className="text-xs text-slate-300/80 mt-2.5 leading-relaxed">
                 {activeTab === 'signin'
-                  ? 'Precision acoustics, low-latency esports gear, and verified hardware protection under one unified identity.'
+                  ? 'Precision acoustics, esports gear, and fast checkout under one unified account.'
                   : 'Fast 1-click checkout, 1-year local warranty registration, and express courier tracking.'}
               </p>
             </div>
@@ -399,12 +395,9 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
             </div>
 
             {/* Poster Bottom Bar */}
-            <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
-              <span className="flex items-center gap-1.5 text-slate-300">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>{activeTab === 'signin' ? 'End-to-End Encrypted Access' : 'Official Hardware Protection'}</span>
-              </span>
-              <span className="text-orange-400 font-semibold">{activeTab === 'signin' ? 'Official Store' : '24M Warranty'}</span>
+            <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400 font-medium">
+              <span>TechTonic Store</span>
+              <span className="text-slate-400">{activeTab === 'signin' ? 'Official Store' : 'Phnom Penh Hub'}</span>
             </div>
           </div>
 
