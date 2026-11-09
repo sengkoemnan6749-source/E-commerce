@@ -3,21 +3,22 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../../store/StoreContext';
 
 /**
- * Scanline Strip — Static Row Edition ("Not Run")
+ * Scanline Strip — Running Marquee Edition with Laser Color Reveal
  * Inspired by Framer Marketplace: https://www.framer.com/marketplace/components/scanline-strip/
  * 
  * Features:
- * - Brands remain STATIC (NOT running / no marquee scroll) — completely eliminates ghosting and text overlap
- * - The vertical laser scanline sweeps smoothly back and forth across the static row
- * - When the scanline hits ANY brand ("ចំ brand ណា"), THAT brand instantly reveals its 100% full vibrant color & scales up
- * - Smooth transition back to resting grayscale when the scanline moves past
- * - Interactive mouse follow on hover
+ * - Brands RUN smoothly in an infinite marquee loop (Left to Right)
+ * - Single-track architecture: ZERO duplicate layers, ZERO ghosting, ZERO text overlapping
+ * - Dynamic moving vertical laser scanline sweeps across the strip
+ * - As any brand passes under or touches the laser beam ("ចំ brand ណា"), it instantly reveals its 100% full vibrant color and scales up
+ * - Smoothly transitions back to resting grayscale once it passes the laser
+ * - Interactive cursor-following on mouse hover
  */
 export default function BrandMarquee() {
   const { t, language } = useLanguage();
   const stripRef = useRef(null);
   const scannerRef = useRef(null);
-  const brandRefs = useRef({});
+  const brandElementsRef = useRef([]);
   const isHoveringRef = useRef(false);
   const targetXRef = useRef(0);
 
@@ -87,12 +88,12 @@ export default function BrandMarquee() {
     }
   ];
 
-  // 60 FPS Laser Scanner & Proximity Color Activation Loop
+  // 60 FPS Laser Scanner Beam & Running Brand Hit-Detection Loop
   useEffect(() => {
     let animId;
     let posX = -80;
     let direction = 1;
-    const speed = 2.6; // scanning velocity
+    const speed = 2.4; // scanning velocity
 
     const tick = () => {
       if (!stripRef.current) {
@@ -122,11 +123,14 @@ export default function BrandMarquee() {
         scannerRef.current.style.transform = `translate3d(${posX}px, 0, 0)`;
       }
 
-      // Check which brand the laser line is touching ("ចំ brand ណា")
-      brands.forEach((brand) => {
-        const el = brandRefs.current[brand.id];
-        if (!el) return;
+      // Check which running brand the laser line is currently hitting ("ចំ brand ណា")
+      const elements = brandElementsRef.current;
+      for (let i = 0; i < elements.length; i++) {
+        const el = elements[i];
+        if (!el) continue;
+
         const rect = el.getBoundingClientRect();
+        // Calculate center relative to strip container
         const elCenter = (rect.left + rect.right) / 2 - stripRect.left;
         const halfWidth = rect.width / 2 + 25; // hit threshold
 
@@ -136,7 +140,7 @@ export default function BrandMarquee() {
         } else {
           el.classList.remove('brand-scanned-active');
         }
-      });
+      }
 
       animId = requestAnimationFrame(tick);
     };
@@ -150,6 +154,32 @@ export default function BrandMarquee() {
     const rect = stripRef.current.getBoundingClientRect();
     targetXRef.current = e.clientX - rect.left;
   };
+
+  const renderBrandGroup = (startIndex = 0) => (
+    <div className="flex items-center gap-14 sm:gap-20 lg:gap-24 px-6 sm:px-12 shrink-0">
+      {brands.map((brand, idx) => {
+        const globalIdx = startIndex + idx;
+        return (
+          <Link
+            key={`brand-${globalIdx}-${brand.id}`}
+            to={`/shop?search=${encodeURIComponent(brand.query)}`}
+            ref={(el) => {
+              brandElementsRef.current[globalIdx] = el;
+            }}
+            className="brand-item group relative flex items-center justify-center shrink-0 p-2 cursor-pointer"
+            title={`Explore ${brand.name} official products`}
+          >
+            <img
+              src={brand.logo}
+              alt={`${brand.name} official logo`}
+              className={`${brand.heightClass} w-auto max-w-[120px] sm:max-w-[145px] object-contain select-none`}
+              loading="eager"
+            />
+          </Link>
+        );
+      })}
+    </div>
+  );
 
   return (
     <section
@@ -165,7 +195,7 @@ export default function BrandMarquee() {
     >
       <style>{`
         .brand-item {
-          transition: filter 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: filter 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
           filter: grayscale(100%) contrast(120%);
           opacity: 0.38;
           will-change: filter, opacity, transform;
@@ -204,27 +234,16 @@ export default function BrandMarquee() {
         </p>
       </div>
 
-      {/* 3. Static Brand Row (Not running, zero ghosting, perfectly spaced) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex items-center justify-between gap-4 sm:gap-8 overflow-x-auto lg:overflow-visible py-3 no-scrollbar">
-          {brands.map((brand) => (
-            <Link
-              key={brand.id}
-              to={`/shop?search=${encodeURIComponent(brand.query)}`}
-              ref={(el) => {
-                if (el) brandRefs.current[brand.id] = el;
-              }}
-              className="brand-item group relative flex items-center justify-center shrink-0 p-2"
-              title={`Explore ${brand.name} official products`}
-            >
-              <img
-                src={brand.logo}
-                alt={`${brand.name} official logo`}
-                className={`${brand.heightClass} w-auto max-w-[95px] sm:max-w-[130px] object-contain select-none`}
-                loading="eager"
-              />
-            </Link>
-          ))}
+      {/* 3. Single-Track Running Marquee (Zero Ghosting, Zero Overlap) */}
+      <div className="relative w-full overflow-hidden">
+        {/* Soft Fade Edge Gradients */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-20 sm:w-36 bg-gradient-to-r from-slate-50 via-slate-50/80 to-transparent z-20" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-20 sm:w-36 bg-gradient-to-l from-slate-50 via-slate-50/80 to-transparent z-20" />
+
+        {/* Infinite Running Marquee Track */}
+        <div className="flex animate-marquee-ltr items-center py-2">
+          {renderBrandGroup(0)}
+          {renderBrandGroup(9)}
         </div>
       </div>
     </section>
