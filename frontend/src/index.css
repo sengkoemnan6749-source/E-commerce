@@ -254,4 +254,43 @@
   animation-play-state: paused;
 }
 
+/* Framer Scanline Strip Laser Sweep Animation (Preset 4: Edge to Edge) */
+@keyframes scanline-sweep {
+  0% {
+    left: -6%;
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  48% {
+    left: 106%;
+    opacity: 1;
+  }
+  50% {
+    left: 106%;
+    opacity: 0;
+  }
+  52% {
+    left: 106%;
+    opacity: 0;
+  }
+  56% {
+    opacity: 1;
+  }
+  96% {
+    left: -6%;
+    opacity: 1;
+  }
+  100% {
+    left: -6%;
+    opacity: 0;
+  }
+}
+
+.animate-scanline-sweep {
+  animation: scanline-sweep 10s ease-in-out infinite;
+  will-change: left, opacity;
+}
+
 
