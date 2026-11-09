@@ -52,7 +52,6 @@ export default function ProductCard({ product }) {
 
     addToCart(product, 1, selectedVariant?.name || product.variants?.[0]?.name || null);
     setAdded(true);
-    addToast(language === 'km' ? `បានបញ្ចូល "${product.name}" ក្នុងកន្ត្រក` : `Added "${product.name}" to cart`, 'success');
     setTimeout(() => setAdded(false), 1500);
   };
 

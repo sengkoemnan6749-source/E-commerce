@@ -47,7 +47,6 @@ export default function ProductInfo({
     if (product.stock === 0) return;
     setAdding(true);
     addToCart(product, quantity, selectedVariant, activeImage);
-    addToast(`Added ${quantity}x "${product.name}" (${selectedVariant}) to cart`, 'success');
     setTimeout(() => setAdding(false), 1200);
   };
 
