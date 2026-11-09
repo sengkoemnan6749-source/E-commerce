@@ -230,10 +230,7 @@ export default function ProductInfo({
           {/* Wishlist Button */}
           <button
             type="button"
-            onClick={() => {
-              toggleWishlist(product);
-              if (!isFavorited) addToast('Saved to wishlist', 'info');
-            }}
+            onClick={() => toggleWishlist(product)}
             className={`p-3 rounded-xl border transition-all ${
               isFavorited
                 ? 'border-rose-200 bg-rose-50 text-rose-600'

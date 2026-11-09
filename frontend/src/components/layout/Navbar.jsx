@@ -89,7 +89,7 @@ const CATEGORIES = [
 export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen = false }) {
   const { cartCount, setIsCartDrawerOpen } = useCart();
   const { user, isAuthenticated, logout, isAdmin, loginAsCustomer, loginAsAdmin } = useAuth();
-  const { wishlist, openWishlistDrawer } = useWishlist();
+  const { wishlist } = useWishlist();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
@@ -493,10 +493,9 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
             {/* Language Switcher */}
             <LanguageSwitcher />
 
-            {/* Wishlist Button - accessible on mobile via drawer */}
-            <button
-              type="button"
-              onClick={openWishlistDrawer}
+            {/* Wishlist Link - goes directly to full Wishlist page */}
+            <Link
+              to="/wishlist"
               className="hidden sm:flex relative p-2 text-slate-300 hover:text-rose-400 hover:bg-slate-800/60 rounded-xl transition shrink-0"
               title={`Wishlist (${wishlist.length} saved)`}
               aria-label="Wishlist"
@@ -507,7 +506,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                   {wishlist.length}
                 </span>
               )}
-            </button>
+            </Link>
 
             {/* Account: User Profile / Sara - accessible on mobile via drawer */}
             {isAuthenticated && user ? (

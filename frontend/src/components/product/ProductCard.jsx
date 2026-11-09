@@ -59,9 +59,6 @@ export default function ProductCard({ product }) {
     e.preventDefault();
     e.stopPropagation();
     toggleWishlist(product);
-    if (!isFavorited) {
-      addToast(language === 'km' ? 'បានរក្សាទុកក្នុងបញ្ជីចង់បាន' : 'Saved to wishlist', 'info');
-    }
   };
 
   return (

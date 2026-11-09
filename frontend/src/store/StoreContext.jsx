@@ -377,7 +377,6 @@ export function StoreProvider({ children }) {
     setWishlist(prev => {
       const exists = prev.some(item => item.id === product.id);
       if (exists) {
-        showToast(`Removed "${product.name}" from wishlist.`, 'info');
         return prev.filter(item => item.id !== product.id);
       } else {
         const full = productService.getProductById(product.id) || product;
@@ -385,31 +384,22 @@ export function StoreProvider({ children }) {
           ...full,
           image: productService.getCleanProductImage(full)
         };
-        showToast(`Saved "${product.name}" to wishlist!`);
         return [...prev, clean];
       }
     });
   };
 
   const removeFromWishlist = (productId) => {
-    setWishlist(prev => {
-      const match = prev.find(item => item.id === productId);
-      if (match) {
-        showToast(`Removed "${match.name}" from wishlist.`, 'info');
-      }
-      return prev.filter(item => item.id !== productId);
-    });
+    setWishlist(prev => prev.filter(item => item.id !== productId));
   };
 
   const clearWishlist = () => {
     setWishlist([]);
-    showToast('Wishlist cleared.', 'info');
   };
 
   const moveToCart = (product, variant = null) => {
     addToCart(product, 1, variant);
     removeFromWishlist(product.id);
-    showToast(`Moved "${product.name}" to your cart!`, 'success');
   };
 
   const moveAllWishlistToCart = () => {
@@ -418,7 +408,6 @@ export function StoreProvider({ children }) {
       addToCart(item, 1);
     });
     setWishlist([]);
-    showToast(`Moved ${wishlist.length} saved items to your cart!`, 'success');
     setIsWishlistDrawerOpen(false);
   };
 

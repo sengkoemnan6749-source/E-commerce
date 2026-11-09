@@ -4,7 +4,6 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import MobileMenu from './MobileMenu';
 import CartDrawer from '../cart/CartDrawer';
-import WishlistDrawer from '../wishlist/WishlistDrawer';
 import ToastContainer from '../common/Toast';
 
 export default function CustomerLayout() {
@@ -37,9 +36,6 @@ export default function CustomerLayout() {
 
       {/* Slide-over Cart Drawer */}
       <CartDrawer />
-
-      {/* Slide-over Wishlist Drawer */}
-      <WishlistDrawer />
 
       {/* Main Content Area */}
       <main className="flex-1">
