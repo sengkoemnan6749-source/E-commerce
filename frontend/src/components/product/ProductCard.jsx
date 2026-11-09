@@ -107,22 +107,22 @@ export default function ProductCard({ product }) {
         {/* Floating Badges Overlay */}
         <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10 max-w-[70%] pointer-events-none">
           {discountPercent > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-sm">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold bg-rose-600 text-white">
               -{discountPercent}%
             </span>
           )}
           {product.badge && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-900/85 backdrop-blur-md text-white border border-white/20 shadow-xs">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-slate-900 text-white">
               {product.badge}
             </span>
           )}
           {product.stock <= 5 && product.stock > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/90 text-white shadow-xs">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-600 text-white">
               {language === 'km' ? `សល់តែ ${product.stock} ទៀត` : `Only ${product.stock} left`}
             </span>
           )}
           {product.stock === 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-400 text-white shadow-xs">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-slate-500 text-white">
               {t('card_sold_out')}
             </span>
           )}

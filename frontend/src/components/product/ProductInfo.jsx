@@ -67,7 +67,7 @@ export default function ProductInfo({
     <div className="flex flex-col">
       {/* Category & SKU */}
       <div className="flex items-center justify-between gap-2 mb-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">
+        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
           {product.category}
         </span>
         <span className="text-xs text-slate-400 font-mono">
@@ -82,24 +82,25 @@ export default function ProductInfo({
 
       {/* Rating & Stock Summary */}
       <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-5 pb-5 border-b border-slate-200">
-        <div className="flex items-center gap-1.5 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+        <div className="flex items-center gap-1.5">
           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-          <span className="font-bold text-sm text-amber-950">{product.rating}</span>
+          <span className="font-bold text-sm text-slate-900">{product.rating}</span>
           <span className="text-xs text-slate-500 font-medium">
-            ({product.reviewsCount || 24} customer reviews)
+            ({product.reviewsCount || 24} reviews)
           </span>
         </div>
 
         <div className="h-4 w-px bg-slate-200 hidden sm:block" />
 
         {product.stock > 0 ? (
-          <Badge variant="success" size="md">
-            In Stock ({product.stock} units available)
-          </Badge>
+          <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            In Stock ({product.stock} units)
+          </span>
         ) : (
-          <Badge variant="neutral" size="md">
-            Currently Out of Stock
-          </Badge>
+          <span className="text-xs font-semibold text-slate-400">
+            Out of Stock
+          </span>
         )}
       </div>
 
@@ -115,9 +116,9 @@ export default function ProductInfo({
             </span>
           )}
           {discountPercent > 0 && (
-            <Badge variant="danger" size="sm">
+            <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
               Save {discountPercent}%
-            </Badge>
+            </span>
           )}
         </div>
         <div className="mt-1 text-xs font-medium text-slate-500">
@@ -137,8 +138,8 @@ export default function ProductInfo({
             <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
               Color / Edition:
             </label>
-            <span className="text-xs font-bold text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
-              {selectedVariant}
+            <span className="text-xs text-slate-500">
+              Selected: <strong className="text-slate-900 font-semibold">{selectedVariant}</strong>
             </span>
           </div>
           <div className="flex flex-wrap gap-2.5">
@@ -245,8 +246,7 @@ export default function ProductInfo({
           disabled={product.stock === 0}
           onClick={handleBuyNow}
         >
-          <Zap className="w-5 h-5 mr-2 text-amber-400" />
-          Buy Now With 1-Click
+          Buy Now
         </Button>
       </div>
 

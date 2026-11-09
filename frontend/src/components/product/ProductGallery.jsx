@@ -60,30 +60,6 @@ export default function ProductGallery({
           alt={name}
           className="w-full h-full object-contain object-center transition-all duration-300 animate-fadeIn filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.12)] group-hover:scale-105"
         />
-
-        {/* Badges Overlay */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10 pointer-events-none">
-          {discountPercent > 0 && (
-            <Badge variant="danger" size="md" className="font-bold shadow-sm">
-              Save {discountPercent}%
-            </Badge>
-          )}
-          {badge && (
-            <Badge variant="primary" size="md" className="shadow-sm">
-              {badge}
-            </Badge>
-          )}
-        </div>
-
-        {/* Selected Variant Indicator Pill */}
-        {selectedVariant && (
-          <div className="absolute bottom-4 left-4 z-10 pointer-events-none">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/75 backdrop-blur-md text-white text-xs font-bold border border-white/20 shadow-lg animate-fadeIn">
-              <span className="w-2 h-2 rounded-full bg-white/90 animate-pulse" />
-              <span>{selectedVariant}</span>
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );

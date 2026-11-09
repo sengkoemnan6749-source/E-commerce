@@ -129,12 +129,12 @@ export default function ProductDetail() {
       {/* Detailed Technical Specifications & In The Box */}
       <div className="mb-16 sm:mb-20 pt-12 border-t border-slate-200">
         <div className="mb-8">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-            Engineered Anatomy
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
-            Technical Specifications & Details
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Technical Specifications
           </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Product specifications, dimensions, and box contents
+          </p>
         </div>
         <ProductSpecs
           specs={product.specs}
@@ -146,12 +146,12 @@ export default function ProductDetail() {
       {/* Verified Customer Reviews Section */}
       <div className="mb-16 sm:mb-20 pt-12 border-t border-slate-200">
         <div className="mb-8">
-          <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-            Field Reports
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
-            Customer Reviews & Ratings
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Customer Reviews
           </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Real feedback from verified purchasers
+          </p>
         </div>
         <ProductReviews
           rating={product.rating}

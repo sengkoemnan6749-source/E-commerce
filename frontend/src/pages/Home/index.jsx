@@ -493,10 +493,9 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-xs font-bold uppercase tracking-wider mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-              <span>{t('cat_section_tag', 'Curated Hardware')}</span>
-            </div>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">
+              {t('cat_section_tag', 'Curated Hardware')}
+            </span>
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               {t('cat_section_title', 'Curated Hardware Categories')}
             </h2>
