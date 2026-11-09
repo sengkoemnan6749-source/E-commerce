@@ -35,50 +35,52 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
   // Status-based telemetry calculations
   const getStageTelemetry = () => {
     const s = (orderStatus || '').toLowerCase().replace(/\s+/g, '_');
-    switch (s) {
-      case 'confirmed':
-        return {
-          coord: ROUTE_COORDINATES[0],
-          eta: 'Today by 5:30 PM',
-          statusText: 'Order Confirmed at Toul Kork Hub',
-          subtext: 'Package queued for dispatch',
-        };
-      case 'processing':
-        return {
-          coord: ROUTE_COORDINATES[1],
-          eta: 'Today by 5:15 PM',
-          statusText: 'Packaging & Quality Verified',
-          subtext: 'Assembled and packed at Toul Kork Service Center',
-        };
-      case 'shipped':
-        return {
-          coord: ROUTE_COORDINATES[3],
-          eta: 'In Transit (~35 mins)',
-          statusText: 'In Transit across Phnom Penh',
-          subtext: 'Dispatched via GrabExpress fleet',
-        };
-      case 'out_for_delivery':
-        return {
-          coord: ROUTE_COORDINATES[6],
-          eta: 'Arriving Shortly (~8 mins)',
-          statusText: 'Courier on Final Route',
-          subtext: 'Approaching BKK1 delivery destination',
-        };
-      case 'delivered':
-        return {
-          coord: ROUTE_COORDINATES[7],
-          eta: 'Delivered',
-          statusText: 'Successfully Delivered',
-          subtext: 'Received and signed by customer',
-        };
-      default:
-        return {
-          coord: ROUTE_COORDINATES[5],
-          eta: 'Arriving in 15 mins',
-          statusText: 'In Transit to Destination',
-          subtext: 'Delivery in progress across Phnom Penh',
-        };
+    if (s.includes('deliver') && !s.includes('out')) {
+      return {
+        coord: ROUTE_COORDINATES[7],
+        eta: 'Delivered',
+        statusText: 'Successfully Delivered',
+        subtext: 'Received and signed by customer',
+      };
     }
+    if (s.includes('out')) {
+      return {
+        coord: ROUTE_COORDINATES[6],
+        eta: 'Arriving Shortly (~8 mins)',
+        statusText: 'Courier on Final Route',
+        subtext: 'Approaching BKK1 delivery destination',
+      };
+    }
+    if (s.includes('ship')) {
+      return {
+        coord: ROUTE_COORDINATES[3],
+        eta: 'In Transit (~35 mins)',
+        statusText: 'In Transit across Phnom Penh',
+        subtext: 'Dispatched via GrabExpress fleet',
+      };
+    }
+    if (s.includes('process')) {
+      return {
+        coord: ROUTE_COORDINATES[1],
+        eta: 'Today by 5:15 PM',
+        statusText: 'Packaging & Quality Verified',
+        subtext: 'Assembled and packed at Toul Kork Service Center',
+      };
+    }
+    if (s.includes('confirm')) {
+      return {
+        coord: ROUTE_COORDINATES[0],
+        eta: 'Today by 5:30 PM',
+        statusText: 'Order Confirmed at Toul Kork Hub',
+        subtext: 'Package queued for dispatch',
+      };
+    }
+    return {
+      coord: ROUTE_COORDINATES[5],
+      eta: 'Arriving in 15 mins',
+      statusText: 'In Transit to Destination',
+      subtext: 'Delivery in progress across Phnom Penh',
+    };
   };
 
   const telemetry = getStageTelemetry();
@@ -102,10 +104,11 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
 
         mapInstanceRef.current = map;
 
-        // Clean, High-Reliability CARTO Voyager Map Tiles (Real Phnom Penh Roads & Buildings)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          subdomains: ['a', 'b', 'c', 'd'],
+        // Clean, High-Reliability Street Map Tiles (Real Phnom Penh Roads, Streets & Buildings - 100% Free, Zero Watermark, No API Key)
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 19,
+          maxNativeZoom: 18,
+          attribution: '&copy; Esri &mdash; Phnom Penh Logistics',
         }).addTo(map);
 
         // 1. Soft Shadow Outer Polyline
@@ -161,12 +164,13 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
         });
         L.marker(ROUTE_COORDINATES[ROUTE_COORDINATES.length - 1], { icon: destIcon }).addTo(map);
 
-        // 5. Courier Motorbike Marker
+        // 5. Courier Motorbike Marker (Apple Maps / Grab Delivery Style)
         const courierIcon = L.divIcon({
           className: 'custom-courier-icon',
           html: `
             <div style="position:relative; transform:translate(-50%, -50%); cursor:pointer;">
-              <div style="width:36px; height:36px; border-radius:50%; background:#2563eb; border:2.5px solid #ffffff; box-shadow:0 4px 12px rgba(37,99,235,0.45); display:flex; align-items:center; justify-content:center; color:#ffffff;">
+              <span style="position:absolute; inset:-5px; border-radius:50%; background:#2563eb; opacity:0.35; animation:ping 1.8s cubic-bezier(0,0,0.2,1) infinite;"></span>
+              <div style="position:relative; width:36px; height:36px; border-radius:50%; background:#2563eb; border:2.5px solid #ffffff; box-shadow:0 4px 14px rgba(37,99,235,0.45); display:flex; align-items:center; justify-content:center; color:#ffffff;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1 .4-1 1v4"></path><circle cx="7" cy="17" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg>
               </div>
             </div>
@@ -184,9 +188,11 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
 
         // Trigger Leaflet layout recalculation so tiles load immediately
         setTimeout(() => {
-          map.invalidateSize();
-          setMapReady(true);
-        }, 120);
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+            setMapReady(true);
+          }
+        }, 150);
       }
     } catch (err) {
       console.warn('Map initialization notice:', err);
