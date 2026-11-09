@@ -123,11 +123,16 @@ export default function Home() {
             <div className="grid grid-cols-12 gap-8 xl:gap-12 items-center">
               
               {/* Left Column: Typography, CTAs & Statistics */}
-              <div className="col-span-12 lg:col-span-6 xl:col-span-6 z-20 flex flex-col items-start text-left relative">
+              <div className="col-span-12 lg:col-span-7 xl:col-span-7 z-20 flex flex-col items-start text-left relative">
 
                 {/* Headline */}
-                <h1 className="text-3xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.65rem] font-black tracking-tight leading-[1.12] sm:leading-[1.08] mb-4 sm:mb-5 text-white drop-shadow-sm relative z-10">
-                  {t('hero_title_1', 'Next-Gen Electronics.')} <br />
+                <h1 className={`font-black ${
+                  language === 'kh'
+                    ? 'text-2xl sm:text-4xl lg:text-[2.65rem] xl:text-[3rem] leading-[1.35] sm:leading-[1.3] tracking-normal'
+                    : 'text-3xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.65rem] tracking-tight leading-[1.12] sm:leading-[1.08]'
+                } mb-4 sm:mb-5 text-white drop-shadow-sm relative z-10`}>
+                  <span>{t('hero_title_1', 'Next-Gen Electronics.')}</span>{' '}
+                  <br className="hidden sm:inline" />
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500">
                     {t('hero_title_2', 'Engineered for the Elements.')}
                   </span>
@@ -193,7 +198,7 @@ export default function Home() {
               </div>
 
               {/* Right Column: Seamless Smartwatch Vortex Showcase + Refined Floating Cards */}
-              <div className="col-span-12 lg:col-span-6 xl:col-span-6 z-10 relative flex items-center justify-center">
+              <div className="col-span-12 lg:col-span-5 xl:col-span-5 z-10 relative flex items-center justify-center">
                 <div className="relative w-full max-w-[340px] sm:max-w-md lg:max-w-xl 2xl:max-w-2xl select-none mx-auto mt-2 lg:mt-0">
                   
                   {/* Clean Smartwatch & Water Splash with Animations strictly on the Watches */}
@@ -317,8 +322,13 @@ export default function Home() {
 
 
               {/* Headline */}
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-[1.15] mb-2.5 sm:mb-3.5 text-white">
-                {t('hero_title_1', 'Next-Gen Electronics.')} <br />
+              <h1 className={`font-black ${
+                language === 'kh'
+                  ? 'text-xl sm:text-2xl leading-[1.38] tracking-normal'
+                  : 'text-2xl sm:text-3xl tracking-tight leading-[1.15]'
+              } mb-2.5 sm:mb-3.5 text-white`}>
+                <span>{t('hero_title_1', 'Next-Gen Electronics.')}</span>{' '}
+                <br className="hidden sm:inline" />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500">
                   {t('hero_title_2', 'Engineered for the Elements.')}
                 </span>

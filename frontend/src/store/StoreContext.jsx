@@ -30,6 +30,19 @@ export function StoreProvider({ children }) {
     }
   };
 
+  // Sync HTML lang and class for typography optimization (Kantumruy Pro & relaxed line-height)
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const isKh = language === 'kh';
+      document.documentElement.lang = isKh ? 'km' : 'en';
+      if (isKh) {
+        document.documentElement.classList.add('lang-kh');
+      } else {
+        document.documentElement.classList.remove('lang-kh');
+      }
+    }
+  }, [language]);
+
   const t = (key, fallback = '') => getTranslation(language, key, fallback);
   // -------------------------------------------------------------
   // 1. Toast Notifications

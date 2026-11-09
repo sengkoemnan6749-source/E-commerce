@@ -12,6 +12,36 @@
   }
 }
 
+/* Khmer Language Typography Polish (Kantumruy Pro, zero negative tracking, balanced line-height) */
+html.lang-kh,
+.lang-kh {
+  font-family: 'Kantumruy Pro', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+}
+
+html.lang-kh .tracking-tight,
+html.lang-kh .tracking-tighter,
+html.lang-kh [class*="tracking-"] {
+  letter-spacing: 0 !important;
+}
+
+html.lang-kh {
+  line-height: 1.5;
+}
+
+html.lang-kh h1,
+html.lang-kh h2,
+html.lang-kh h3,
+html.lang-kh h4 {
+  line-height: 1.35 !important;
+}
+
+html.lang-kh p,
+html.lang-kh span,
+html.lang-kh a,
+html.lang-kh button {
+  line-height: 1.55;
+}
+
 /* Custom Utilities & Polish */
 .glass-panel {
   background: rgba(255, 255, 255, 0.85);
