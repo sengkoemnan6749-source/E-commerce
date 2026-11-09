@@ -29,7 +29,9 @@ const ROUTE_COORDINATES = [
 export default function DeliveryMap({ orderStatus = 'out_for_delivery', shippingAddress }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const tileLayerRef = useRef(null);
   const courierMarkerRef = useRef(null);
+  const [mapMode, setMapMode] = useState('satellite'); // Default to satellite (Google Earth) as requested
   const [mapReady, setMapReady] = useState(false);
 
   // Status-based telemetry calculations
@@ -104,18 +106,19 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
 
         mapInstanceRef.current = map;
 
-        // Clean, High-Reliability Street Map Tiles (Real Phnom Penh Roads, Streets & Buildings - 100% Free, Zero Watermark, No API Key)
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-          maxZoom: 19,
-          maxNativeZoom: 18,
-          attribution: '&copy; Esri &mdash; Phnom Penh Logistics',
+        // Initial Tile Layer: Google Earth Satellite Hybrid (Real Homes, Rooftops, Trees & Buildings)
+        tileLayerRef.current = L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+          subdomains: ['0', '1', '2', '3'],
+          maxZoom: 20,
+          maxNativeZoom: 20,
+          attribution: '&copy; Google Earth &bull; Maxar Imagery',
         }).addTo(map);
 
-        // 1. Soft Shadow Outer Polyline
+        // 1. Soft Glow Outer Polyline
         L.polyline(ROUTE_COORDINATES, {
-          color: '#3b82f6',
+          color: '#38bdf8',
           weight: 7,
-          opacity: 0.25,
+          opacity: 0.5,
           lineCap: 'round',
           lineJoin: 'round',
         }).addTo(map);
@@ -134,15 +137,15 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
           className: 'custom-hub-icon',
           html: `
             <div style="display:flex; align-items:center; gap:6px; transform:translate(-50%, -50%); cursor:pointer;">
-              <div style="width:32px; height:32px; border-radius:50%; background:#1e40af; border:2.5px solid #ffffff; box-shadow:0 3px 10px rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; color:#ffffff;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              <div style="width:34px; height:34px; border-radius:50%; background:#1e40af; border:2.5px solid #ffffff; box-shadow:0 3px 12px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; color:#ffffff;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
               </div>
-              <div style="background:#ffffff; border:1px solid #e2e8f0; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700; color:#0f172a; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.12);">
+              <div style="background:#ffffff; border:1px solid rgba(0,0,0,0.15); padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700; color:#0f172a; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.25);">
                 Toul Kork Hub
               </div>
             </div>
           `,
-          iconSize: [32, 32],
+          iconSize: [34, 34],
         });
         L.marker(ROUTE_COORDINATES[0], { icon: originIcon }).addTo(map);
 
@@ -152,15 +155,15 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
           className: 'custom-dest-icon',
           html: `
             <div style="display:flex; align-items:center; gap:6px; transform:translate(-50%, -50%); cursor:pointer;">
-              <div style="width:32px; height:32px; border-radius:50%; background:#059669; border:2.5px solid #ffffff; box-shadow:0 3px 10px rgba(0,0,0,0.25); display:flex; align-items:center; justify-content:center; color:#ffffff;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <div style="width:34px; height:34px; border-radius:50%; background:#059669; border:2.5px solid #ffffff; box-shadow:0 3px 12px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; color:#ffffff;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               </div>
-              <div style="background:#ffffff; border:1px solid #e2e8f0; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700; color:#0f172a; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.12);">
+              <div style="background:#ffffff; border:1px solid rgba(0,0,0,0.15); padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700; color:#0f172a; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.25);">
                 ${destName} • BKK1
               </div>
             </div>
           `,
-          iconSize: [32, 32],
+          iconSize: [34, 34],
         });
         L.marker(ROUTE_COORDINATES[ROUTE_COORDINATES.length - 1], { icon: destIcon }).addTo(map);
 
@@ -169,13 +172,13 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
           className: 'custom-courier-icon',
           html: `
             <div style="position:relative; transform:translate(-50%, -50%); cursor:pointer;">
-              <span style="position:absolute; inset:-5px; border-radius:50%; background:#2563eb; opacity:0.35; animation:ping 1.8s cubic-bezier(0,0,0.2,1) infinite;"></span>
-              <div style="position:relative; width:36px; height:36px; border-radius:50%; background:#2563eb; border:2.5px solid #ffffff; box-shadow:0 4px 14px rgba(37,99,235,0.45); display:flex; align-items:center; justify-content:center; color:#ffffff;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1 .4-1 1v4"></path><circle cx="7" cy="17" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg>
+              <span style="position:absolute; inset:-5px; border-radius:50%; background:#38bdf8; opacity:0.6; animation:ping 1.8s cubic-bezier(0,0,0.2,1) infinite;"></span>
+              <div style="position:relative; width:38px; height:38px; border-radius:50%; background:#2563eb; border:2.5px solid #ffffff; box-shadow:0 4px 14px rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; color:#ffffff;">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1 .4-1 1v4"></path><circle cx="7" cy="17" r="3"></circle><circle cx="17" cy="17" r="3"></circle></svg>
               </div>
             </div>
           `,
-          iconSize: [36, 36],
+          iconSize: [38, 38],
         });
 
         const courierMarker = L.marker(telemetry.coord, { icon: courierIcon, zIndexOffset: 1000 }).addTo(map);
@@ -213,6 +216,33 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
     };
   }, []);
 
+  // Dynamic Basemap Switcher (Google Earth Satellite Hybrid vs Street Map)
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    if (tileLayerRef.current) {
+      mapInstanceRef.current.removeLayer(tileLayerRef.current);
+    }
+
+    if (mapMode === 'satellite') {
+      // High-Resolution Google Earth Satellite Hybrid (Real Homes, Rooftops & Buildings)
+      tileLayerRef.current = L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        subdomains: ['0', '1', '2', '3'],
+        maxZoom: 20,
+        maxNativeZoom: 20,
+        attribution: '&copy; Google Earth &bull; Maxar Imagery',
+      }).addTo(mapInstanceRef.current);
+    } else {
+      // Standard Clean Street Map
+      tileLayerRef.current = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        subdomains: ['0', '1', '2', '3'],
+        maxZoom: 20,
+        maxNativeZoom: 20,
+        attribution: '&copy; Google Maps',
+      }).addTo(mapInstanceRef.current);
+    }
+  }, [mapMode]);
+
   // Update Courier Position when Order Status changes
   useEffect(() => {
     if (!mapInstanceRef.current || !courierMarkerRef.current) return;
@@ -236,15 +266,47 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
       {/* Header Bar */}
       <div className="p-4 px-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/70">
         <div>
-          <h3 className="text-sm font-bold text-slate-900">
-            Delivery Route & Courier Progress
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-900">
+              Delivery Route & Courier Progress
+            </h3>
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-300/60">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Google Earth View
+            </span>
+          </div>
           <p className="text-xs text-slate-500 mt-0.5">
             {telemetry.statusText} • {telemetry.subtext}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
+          {/* Map Layer Switcher: Google Earth Satellite vs Standard Map */}
+          <div className="inline-flex items-center p-1 rounded-xl bg-slate-200/80 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setMapMode('satellite')}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                mapMode === 'satellite'
+                  ? 'bg-white text-slate-900 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              🛰️ Satellite (Google Earth)
+            </button>
+            <button
+              type="button"
+              onClick={() => setMapMode('streets')}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                mapMode === 'streets'
+                  ? 'bg-white text-slate-900 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              🗺️ Street Map
+            </button>
+          </div>
+
           <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
             ETA: {telemetry.eta}
           </span>
@@ -252,24 +314,24 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
       </div>
 
       {/* Real Interactive Map Canvas */}
-      <div className="relative w-full h-[360px] sm:h-[400px] bg-slate-100 overflow-hidden select-none">
+      <div className="relative w-full h-[380px] sm:h-[440px] bg-slate-900 overflow-hidden select-none">
         {/* Leaflet Anchor */}
         <div ref={mapContainerRef} className="w-full h-full z-0" />
 
         {/* Floating Minimalist Zoom & Recenter Controls (Bottom-Right) */}
-        <div className="absolute bottom-4 right-4 flex flex-col gap-1.5 z-[400] bg-white rounded-xl shadow-md border border-slate-200/80 p-1">
+        <div className="absolute bottom-4 right-4 flex flex-col gap-1.5 z-[400] bg-slate-900/90 backdrop-blur-md rounded-xl shadow-xl border border-white/20 p-1 text-white">
           <button
             type="button"
             onClick={handleZoomIn}
-            className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition"
-            title="Zoom In"
+            className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center text-white transition"
+            title="Zoom In (See Homes & Buildings)"
           >
             <Plus className="w-4 h-4" />
           </button>
           <button
             type="button"
             onClick={handleZoomOut}
-            className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition"
+            className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center text-white transition"
             title="Zoom Out"
           >
             <Minus className="w-4 h-4" />
@@ -277,25 +339,25 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
           <button
             type="button"
             onClick={handleRecenter}
-            className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-700 transition"
+            className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center text-white transition"
             title="Recenter Route"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Clean Bottom Route Legend (Apple Maps Style) */}
-        <div className="absolute bottom-4 left-4 z-[400] bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-xl px-3.5 py-2 shadow-sm flex items-center gap-4 text-xs font-medium text-slate-700">
+        {/* Clean Bottom Route Legend (Google Earth Glass Style) */}
+        <div className="absolute bottom-4 left-4 z-[400] bg-slate-900/90 backdrop-blur-md border border-white/20 rounded-xl px-3.5 py-2 shadow-xl flex items-center gap-4 text-xs font-semibold text-white">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-700 ring-2 ring-blue-100" />
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-blue-300" />
             <span>Toul Kork Hub</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 ring-2 ring-blue-100" />
+            <span className="w-2.5 h-2.5 rounded-full bg-sky-400 ring-2 ring-sky-200 animate-pulse" />
             <span>Courier</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 ring-2 ring-emerald-100" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-emerald-200" />
             <span>Destination</span>
           </div>
         </div>
