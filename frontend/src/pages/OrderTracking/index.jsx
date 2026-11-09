@@ -22,6 +22,7 @@ import {
 import { orderService } from '../../services/orderService';
 import { productService } from '../../services/productService';
 import OrderStepper from '../../components/order/OrderStepper';
+import DeliveryMap from './DeliveryMap';
 import { formatUSD } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
 import { useToast, useAuth } from '../../store/StoreContext';
@@ -378,9 +379,12 @@ export default function OrderTracking() {
         {/* 2-Column Responsive Body Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* Main Column: Activity Timeline (7 Columns) */}
+          {/* Main Column: Delivery Map + Activity Timeline (7 Columns) */}
           <div className="lg:col-span-7 space-y-6">
             
+            {/* Real Delivery Route Map */}
+            <DeliveryMap orderStatus={order.status} shippingAddress={order.shippingAddress} />
+
             {/* Shipment Activity Timeline */}
             <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6">
               <div className="pb-4 border-b border-slate-100 mb-6">
