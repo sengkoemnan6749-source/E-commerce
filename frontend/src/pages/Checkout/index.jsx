@@ -199,47 +199,39 @@ export default function Checkout() {
   return (
     <div className="bg-[#f8fafc] min-h-[calc(100vh-80px)] py-6 sm:py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Secure Checkout Header & Steps */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-slate-200/80 gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs border border-blue-100">
-              <Lock className="w-4 h-4 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-slate-900 leading-tight">
-                Secure Checkout
-              </h1>
-              <p className="text-xs text-slate-500">
-                Official TechTonic Flagship Store • Encrypted Gateway
-              </p>
-            </div>
+        {/* Checkout Header & Steps */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-slate-200 gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Checkout</h1>
+            <p className="text-xs text-slate-500 mt-0.5">Please review and enter your shipping details</p>
           </div>
 
-          {/* Sleek Step Navigation Tabs */}
-          <div className="flex items-center bg-white p-1 rounded-full border border-slate-200 shadow-2xs self-start sm:self-auto">
+          {/* Clean Step Navigation */}
+          <div className="flex items-center gap-1.5 text-xs font-semibold">
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+              className={`px-3.5 py-1.5 rounded-lg transition ${
                 currentStep === 1
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-slate-900 text-white font-bold'
+                  : 'text-slate-500 hover:text-slate-900 bg-slate-100'
               }`}
             >
-              1. Shipping Address
+              1. Shipping
             </button>
+            <span className="text-slate-300">/</span>
             <button
               type="button"
               onClick={() => {
                 if (validateStep1()) setCurrentStep(2);
               }}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+              className={`px-3.5 py-1.5 rounded-lg transition ${
                 currentStep === 2
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-400 hover:text-slate-600'
+                  ? 'bg-slate-900 text-white font-bold'
+                  : 'text-slate-400 hover:text-slate-700 bg-slate-100'
               }`}
             >
-              2. Payment Method
+              2. Payment
             </button>
           </div>
         </div>

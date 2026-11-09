@@ -268,15 +268,9 @@ export function Footer() {
 
           {/* Col 4: Store Location & Flagship (4 cols) */}
           <div className="md:col-span-6 lg:col-span-4">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                Store Location & Contact
-              </h4>
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                Open Today
-              </span>
-            </div>
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">
+              Store Location & Contact
+            </h4>
             
             <ul className="space-y-3 text-xs text-slate-400">
               <li className="flex items-start gap-3">

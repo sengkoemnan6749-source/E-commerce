@@ -378,7 +378,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
               <button
                 type="button"
                 onClick={() => setActiveDriverCall(true)}
-                className="w-8 h-8 rounded-xl bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/30 flex items-center justify-center transition-all shadow-sm"
+                className="w-8 h-8 rounded-full bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/30 flex items-center justify-center transition-all shadow-sm"
                 title="Call Courier"
               >
                 <Phone className="w-4 h-4" />
@@ -386,7 +386,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
               <button
                 type="button"
                 onClick={() => alert('Dispatch Message: "Driver is focusing on the road. Expected arrival shortly."')}
-                className="w-8 h-8 rounded-xl bg-blue-500/20 hover:bg-blue-500 text-blue-400 hover:text-white border border-blue-500/30 flex items-center justify-center transition-all shadow-sm"
+                className="w-8 h-8 rounded-full bg-blue-500/20 hover:bg-blue-500 text-blue-400 hover:text-white border border-blue-500/30 flex items-center justify-center transition-all shadow-sm"
                 title="Message Courier"
               >
                 <MessageSquare className="w-4 h-4" />

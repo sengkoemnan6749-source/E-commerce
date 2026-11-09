@@ -41,18 +41,18 @@ export default function OrderStepper({ currentStatus = 'processing' }) {
           return (
             <div key={stage.key} className="flex flex-col items-center relative z-10 text-center w-28 sm:w-32">
               <div
-                className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                   isCurrent
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 ring-4 ring-blue-100 scale-105'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 ring-4 ring-blue-100 scale-105'
                     : isCompleted
                     ? 'bg-blue-600 text-white'
                     : 'bg-white border-2 border-slate-200 text-slate-400'
                 }`}
               >
                 {idx < currentIndex ? (
-                  <Check className="w-5 h-5 stroke-[2.5]" />
+                  <Check className="w-4 h-4 stroke-[2.5]" />
                 ) : (
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4" />
                 )}
               </div>
               <span
@@ -84,7 +84,7 @@ export default function OrderStepper({ currentStatus = 'processing' }) {
           return (
             <div key={stage.key} className="relative">
               <div
-                className={`absolute -left-[37px] top-0.5 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
+                className={`absolute -left-[35px] top-0.5 w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                   isCurrent
                     ? 'bg-blue-600 text-white ring-4 ring-blue-100 shadow-sm'
                     : isCompleted
@@ -93,9 +93,9 @@ export default function OrderStepper({ currentStatus = 'processing' }) {
                 }`}
               >
                 {idx < currentIndex ? (
-                  <Check className="w-4 h-4 stroke-[2.5]" />
+                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                 ) : (
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-3.5 h-3.5" />
                 )}
               </div>
 

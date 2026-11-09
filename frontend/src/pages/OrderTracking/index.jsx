@@ -387,14 +387,9 @@ export default function OrderTracking() {
 
             {/* Shipment Activity Timeline */}
             <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Shipment Milestone History</h3>
-                  <p className="text-xs text-slate-500">Real-time gateway timestamps for Phnom Penh delivery route</p>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                  {milestones.length} Events Logged
-                </span>
+              <div className="pb-4 border-b border-slate-100 mb-6">
+                <h3 className="text-sm font-bold text-slate-900">Shipment Milestone History</h3>
+                <p className="text-xs text-slate-500">Real-time gateway timestamps for Phnom Penh delivery route</p>
               </div>
 
               <div className="relative pl-6 space-y-6 border-l-2 border-slate-100 ml-3">
@@ -503,23 +498,13 @@ export default function OrderTracking() {
                   {order.shippingAddress?.province || 'Cambodia'} {order.shippingAddress?.postalCode || '120101'}
                 </p>
               </div>
-
-              <div className="mt-4 pt-3.5 border-t border-slate-100 flex items-center gap-2 text-[11px] text-slate-500">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Contactless delivery protocol verified</span>
-              </div>
             </div>
 
             {/* Logistics Service Partner Card */}
             <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6">
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-                <div className="flex items-center gap-2">
-                  <Truck className="w-4 h-4 text-blue-600" />
-                  <h3 className="text-sm font-bold text-slate-900">Logistics Carrier</h3>
-                </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Active Partner
-                </span>
+              <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-100">
+                <Truck className="w-4 h-4 text-blue-600" />
+                <h3 className="text-sm font-bold text-slate-900">Logistics Carrier</h3>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 mb-4">

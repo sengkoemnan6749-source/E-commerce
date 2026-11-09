@@ -57,14 +57,9 @@ export default function AccountLayout() {
             </div>
 
             <div>
-              <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
-                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                  {userName}
-                </h1>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
-                  Verified Customer
-                </span>
-              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-1">
+                {userName}
+              </h1>
 
               <p className="text-xs text-slate-400 font-medium">
                 {user?.email || 'sara.student@techtonic.com'}

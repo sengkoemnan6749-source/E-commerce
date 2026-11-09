@@ -288,13 +288,10 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                   onMouseLeave={handleCategoryMouseLeave}
                 >
                   <div className="bg-[#091124] rounded-2xl shadow-2xl border border-slate-700/80 p-2 text-white backdrop-blur-xl">
-                    <div className="px-3 py-2 border-b border-slate-800 mb-1 flex items-center justify-between">
+                    <div className="px-3 py-2 border-b border-slate-800 mb-1">
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Product Categories & Subcategories
+                        Product Categories
                       </p>
-                      <span className="text-[10px] font-semibold text-sky-400 bg-sky-950/80 border border-sky-500/30 px-1.5 py-0.5 rounded">
-                        4 Collections
-                      </span>
                     </div>
                     <div className="space-y-1">
                       {CATEGORIES.map((cat) => {
@@ -485,19 +482,10 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-64 bg-[#091124] rounded-2xl shadow-2xl border border-slate-700/80 py-2 z-50 animate-fadeIn text-white divide-y divide-slate-800">
                     <div className="px-4 py-2.5">
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="mb-1">
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                           {t('nav_signed_in', 'Signed In')}
                         </p>
-                        {user.role === 'admin' ? (
-                          <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40 uppercase">
-                            Admin
-                          </span>
-                        ) : (
-                          <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40 uppercase">
-                            Customer
-                          </span>
-                        )}
                       </div>
                       <p className="text-sm font-bold text-white truncate">
                         {user.fullName || 'Customer'}

@@ -186,14 +186,11 @@ export function MobileMenu({ isOpen, onClose }) {
                 className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-bold text-xs transition-colors group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-cyan-50 border border-cyan-100 text-cyan-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <span>{t('nav_shop', 'Shop')}</span>
                 </div>
-                <span className="text-[10px] font-extrabold text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded-full border border-cyan-200">
-                  All Gear
-                </span>
               </Link>
 
               <Link
@@ -242,14 +239,11 @@ export function MobileMenu({ isOpen, onClose }) {
                 className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 text-slate-700 hover:text-slate-900 font-bold text-xs transition-colors group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                     <Truck className="w-4 h-4" />
                   </div>
                   <span>Track My Order</span>
                 </div>
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                  Live Dispatch
-                </span>
               </Link>
             </div>
           </div>

@@ -92,9 +92,8 @@ export default function AccountOverview() {
             <div className="text-3xl font-black text-slate-900 tracking-tight">
               {formatUSD(totalSpent)}
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-500 mt-2 pt-2 border-t border-slate-100">
+            <div className="text-xs text-slate-500 mt-2 pt-2 border-t border-slate-100">
               <span>All confirmed orders</span>
-              <span className="font-semibold text-emerald-700">Rewards Active</span>
             </div>
           </div>
         </div>
@@ -124,11 +123,8 @@ export default function AccountOverview() {
       <div>
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
           <div>
-            <h2 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <span>Recent Orders</span>
-              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
-                {orders.length} Total
-              </span>
+            <h2 className="text-lg font-black text-slate-900 tracking-tight">
+              Recent Orders
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               Live fulfillment status, hardware serials, and delivery progress.
@@ -273,12 +269,8 @@ export default function AccountOverview() {
       <div className="pt-4 border-t border-slate-100">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
-              <span>Primary Shipping Address</span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                <CheckCircle2 className="w-3 h-3" />
-                Verified Dispatch
-              </span>
+            <h2 className="text-base font-black text-slate-900 tracking-tight">
+              Primary Shipping Address
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               Default location used for 1-click checkout and express courier routing.
@@ -295,17 +287,15 @@ export default function AccountOverview() {
 
         {primaryAddress ? (
           <div className="p-5 sm:p-6 rounded-3xl bg-slate-50/90 border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
-                <MapPin className="w-5 h-5" />
-              </div>
+            <div className="flex items-start gap-3.5">
+              <MapPin className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black text-slate-900">
                     {primaryAddress.label || 'Work / Studio Lab'}
                   </span>
-                  <span className="text-[10px] font-extrabold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
-                    DEFAULT
+                  <span className="text-[10px] font-bold text-slate-500 bg-slate-200/70 px-2 py-0.5 rounded">
+                    Default
                   </span>
                 </div>
                 <p className="text-xs font-bold text-slate-800">
