@@ -34,6 +34,7 @@ import { productService } from '../../services/productService';
 import { useLanguage } from '../../store/StoreContext';
 import { translateCategory } from '../../utils/translations';
 import BrandMarquee from '../../components/home/BrandMarquee';
+import WhyChooseUsBento from '../../components/home/WhyChooseUsBento';
 
 export default function Home() {
   const { t, language } = useLanguage();
@@ -709,118 +710,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 6. WHY CHOOSE TECHTONIC */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="relative rounded-3xl overflow-hidden bg-slate-900/90 p-8 sm:p-12 lg:p-16 text-white shadow-xl border border-slate-800">
-          {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 relative z-10">
-            <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-400 mb-3">
-              <Award className="w-4 h-4 text-blue-400" />
-              <span>{t('why_tag', 'Engineered For Excellence')}</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-              {t('why_title_1', 'Why Technology Leaders')} <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500">
-                {t('why_title_2', 'Choose TechTonic')}
-              </span>
-            </h2>
-            <p className="text-sm sm:text-base text-slate-300 mt-3 leading-relaxed max-w-2xl mx-auto">
-              {t('why_desc', 'Every hardware unit in our inventory undergoes acoustic, ergonomic, and thermal benchmark tests before entering our catalog.')}
-            </p>
-          </div>
-
-          {/* 4 Premium Value Prop Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
-            {/* 1. Warranty */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 shadow-md transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 backdrop-blur-md">
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <ShieldCheck className="w-7 h-7 text-blue-400 group-hover:text-sky-300 transition-colors" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {t('why_card_1_badge', 'Official SLA')}
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">
-                  {t('why_card_1_title', '1-Year Full Warranty')}
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {t('why_card_1_desc', 'Official serialized warranty backed by our physical flagship service store at Toul Kork, Phnom Penh.')}
-                </p>
-              </div>
-              <div className="pt-4 mt-5 border-t border-slate-850 flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                <span>{t('why_card_1_footer', 'Flagship Service Store Hub')}</span>
-              </div>
-            </div>
-
-            {/* 2. Dispatch */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 shadow-md transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 backdrop-blur-md">
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <Truck className="w-7 h-7 text-blue-400 group-hover:text-sky-300 transition-colors" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {t('why_card_2_badge', 'Same-Day < 2PM')}
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">
-                  {t('why_card_2_title', 'Express City Dispatch')}
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {t('why_card_2_desc', 'Orders placed before 2:00 PM are delivered same-day across Phnom Penh via GrabExpress & Cambodia Post.')}
-                </p>
-              </div>
-              <div className="pt-4 mt-5 border-t border-slate-850 flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                <span>{t('why_card_2_footer', 'Real-time GPS Tracking')}</span>
-              </div>
-            </div>
-
-            {/* 3. Swap */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 shadow-md transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 backdrop-blur-md">
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <RotateCcw className="w-7 h-7 text-blue-400 group-hover:text-sky-300 transition-colors" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {t('why_card_3_badge', 'Zero Risk')}
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">
-                  {t('why_card_3_title', '30-Day Hassle-Free Swap')}
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {t('why_card_3_desc', 'Not fully satisfied with keyboard switches or headphone fit? Enjoy smooth exchanges with zero fuss.')}
-                </p>
-              </div>
-              <div className="pt-4 mt-5 border-t border-slate-850 flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                <span>{t('why_card_3_footer', '0% Restocking Deduction')}</span>
-              </div>
-            </div>
-
-            {/* 4. KHQR */}
-            <div className="p-6 sm:p-7 rounded-2xl bg-slate-900/80 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 shadow-md transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 backdrop-blur-md">
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <QrCode className="w-7 h-7 text-blue-400 group-hover:text-sky-300 transition-colors" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {t('why_card_4_badge', 'NBC Standard')}
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-300 transition-colors">
-                  {t('why_card_4_title', 'Bakong KHQR Integrated')}
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {t('why_card_4_desc', 'Scan seamlessly with ABA Mobile, Wing Bank, ACLEDA, or any National Bank of Cambodia compliant app.')}
-                </p>
-              </div>
-              <div className="pt-4 mt-5 border-t border-slate-850 flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                <CheckCircle className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                <span>{t('why_card_4_footer', 'Zero Processing Fee · Instant')}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* 6. WHY CHOOSE TECHTONIC - FRAMER-STYLE SPOTLIGHT BENTO GRID */}
+      <WhyChooseUsBento />
       </div>
 
       {/* 7. BRAND PARTNER MARQUEE (World's Leading Brands Loop) */}
