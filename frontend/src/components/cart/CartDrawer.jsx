@@ -55,30 +55,41 @@ export default function CartDrawer() {
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-blue-600" />
-              <h2 className="text-base font-bold text-slate-900">{t('cart_title', 'Your Shopping Cart')}</h2>
-              <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                {totalItems}
+              <ShoppingBag className="w-5 h-5 text-slate-700" />
+              <h2 className="text-base font-bold text-slate-900">
+                {t('cart_title', 'Your Shopping Cart')}
+              </h2>
+              <span className="text-sm font-medium text-slate-400">
+                ({totalItems})
               </span>
             </div>
             <button
               type="button"
               onClick={closeDrawer}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              aria-label="Close cart"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Free Shipping Alert */}
+          {/* Delivery Threshold Notice (Clean white + thin progress bar, no pastel banner) */}
           {items.length > 0 && (
-            <div className="bg-blue-50/80 px-5 py-2.5 border-b border-blue-100 text-xs text-blue-900 flex items-center gap-2">
-              <Truck className="w-4 h-4 text-blue-600 flex-shrink-0" />
-              <span>
-                {subtotal >= 100
-                  ? t('cart_free_shipping_eligible', 'You qualified for FREE express courier delivery!')
-                  : `Add ${formatUSD(100 - subtotal)} ${t('cart_free_shipping_remaining', 'more for free express shipping.')}`}
-              </span>
+            <div className="bg-white border-b border-slate-100">
+              <div className="px-5 py-2.5 text-xs text-slate-600 flex items-center gap-2">
+                <Truck className={`w-4 h-4 flex-shrink-0 ${subtotal >= 100 ? 'text-emerald-600' : 'text-slate-400'}`} />
+                <span className={subtotal >= 100 ? 'font-medium text-slate-700' : ''}>
+                  {subtotal >= 100
+                    ? t('cart_free_shipping_eligible', 'You unlocked Free Express Delivery!')
+                    : `Add ${formatUSD(100 - subtotal)} ${t('cart_free_shipping_remaining', 'away from Free Express Delivery')}`}
+                </span>
+              </div>
+              <div className="h-0.5 w-full bg-slate-100">
+                <div
+                  className={`h-full transition-all duration-300 ${subtotal >= 100 ? 'bg-emerald-500' : 'bg-blue-600'}`}
+                  style={{ width: `${Math.min(100, Math.round((subtotal / 100) * 100))}%` }}
+                />
+              </div>
             </div>
           )}
 
@@ -113,24 +124,24 @@ export default function CartDrawer() {
 
           {/* Footer with Subtotal and CTAs */}
           {items.length > 0 && (
-            <div className="p-5 border-t border-slate-100 bg-slate-50/50 space-y-3">
+            <div className="p-5 border-t border-slate-200/80 bg-white space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-500 font-medium">
+                <span className="text-sm text-slate-600 font-medium">
                   {t('cart_subtotal', 'Subtotal')}
                 </span>
-                <span className="text-lg font-extrabold text-slate-900">{formatUSD(subtotal)}</span>
+                <span className="text-lg font-bold text-slate-900 tabular-nums">{formatUSD(subtotal)}</span>
               </div>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-xs text-slate-400">
                 {t('cart_shipping_calc', 'Taxes, promos, and final delivery calculated at checkout.')}
               </p>
 
-              <div className="grid grid-cols-2 gap-2.5 pt-1">
-                <Button variant="outline" size="md" onClick={handleViewCart}>
-                  {t('cart_view_bag', 'View Cart')}
-                </Button>
-                <Button variant="primary" size="md" onClick={handleCheckout}>
+              <div className="flex flex-col gap-2 pt-1">
+                <Button variant="primary" size="md" className="w-full whitespace-nowrap" onClick={handleCheckout}>
                   <span>{t('cart_checkout', 'Proceed to Checkout')}</span>
                   <ArrowRight className="w-4 h-4 ml-1.5" />
+                </Button>
+                <Button variant="outline" size="md" className="w-full whitespace-nowrap" onClick={handleViewCart}>
+                  {t('cart_view_bag', 'View Bag')}
                 </Button>
               </div>
             </div>
