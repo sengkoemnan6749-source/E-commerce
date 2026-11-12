@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Eye, Truck, FileText, CheckCircle2, ExternalLink } from 'lucide-react';
-import { orderService } from '../../services/orderService';
+import { orderService, formatOrderStatus } from '../../services/orderService';
 import { formatUSD } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
 import Badge from '../../components/common/Badge';
@@ -23,11 +23,12 @@ export default function AdminOrders() {
   const handleStatusChange = (orderId, newStatus) => {
     orderService.updateOrderStatus(orderId, newStatus);
     refreshOrders();
-    addToast(`Order ${orderId} updated to ${newStatus}`, 'success');
+    addToast(`Order ${orderId} updated to ${formatOrderStatus(newStatus)}`, 'success');
   };
 
   const filtered = orders.filter((o) => {
-    if (statusFilter !== 'All' && o.status.toLowerCase() !== statusFilter.toLowerCase()) {
+    const normalizedStatus = (o.status || '').toLowerCase().replace(/\s+/g, '_');
+    if (statusFilter !== 'All' && normalizedStatus !== statusFilter.toLowerCase()) {
       return false;
     }
     if (searchTerm.trim()) {

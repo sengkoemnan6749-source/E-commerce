@@ -16,7 +16,7 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import { useAuth } from '../../store/StoreContext';
-import { orderService } from '../../services/orderService';
+import { orderService, formatOrderStatus } from '../../services/orderService';
 import { productService } from '../../services/productService';
 import { formatUSD } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
@@ -33,21 +33,28 @@ export default function AccountOverview() {
   const primaryAddress = user?.addresses?.[0] || user?.savedAddresses?.[0] || null;
 
   const getStatusBadge = (status = '') => {
-    const s = status.toLowerCase();
+    const label = formatOrderStatus(status);
+    const s = label.toLowerCase();
     if (s.includes('deliver') && !s.includes('out')) {
       return {
-        label: 'Delivered',
+        label,
         className: 'bg-emerald-50 text-emerald-700 border-emerald-200'
       };
     }
     if (s.includes('out') || s.includes('transit') || s.includes('shipped')) {
       return {
-        label: status,
+        label,
         className: 'bg-blue-50 text-blue-700 border-blue-200'
       };
     }
+    if (s.includes('cancel')) {
+      return {
+        label,
+        className: 'bg-rose-50 text-rose-700 border-rose-200'
+      };
+    }
     return {
-      label: status || 'Confirmed',
+      label,
       className: 'bg-amber-50 text-amber-700 border-amber-200'
     };
   };

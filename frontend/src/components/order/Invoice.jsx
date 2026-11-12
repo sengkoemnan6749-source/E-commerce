@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
+import { formatOrderStatus } from '../../services/orderService';
 import Button from '../common/Button';
 
 export default function Invoice({ order, onBack }) {
@@ -200,7 +201,7 @@ export default function Invoice({ order, onBack }) {
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Order Status:</span>
                 <span className="px-2 py-0.5 rounded-md font-bold text-[11px] bg-blue-100 text-blue-800 uppercase tracking-wide">
-                  {order.status || 'Confirmed'}
+                  {formatOrderStatus(order.status || 'Confirmed')}
                 </span>
               </div>
 

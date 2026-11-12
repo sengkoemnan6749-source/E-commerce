@@ -1,5 +1,6 @@
 import React from 'react';
 import Badge from '../common/Badge';
+import { formatOrderStatus } from '../../services/orderService';
 import { Truck, Calendar, Clock, MapPin } from 'lucide-react';
 
 export default function OrderStatus({ order }) {
@@ -20,8 +21,8 @@ export default function OrderStatus({ order }) {
             {order.id}
           </h2>
         </div>
-        <Badge variant={getBadgeVariant(order.status)} size="md" className="capitalize text-xs font-bold px-3 py-1">
-          {order.status || 'Processing'}
+        <Badge variant={getBadgeVariant(order.status)} size="md" className="text-xs font-bold px-3 py-1">
+          {formatOrderStatus(order.status || 'Processing')}
         </Badge>
       </div>
 

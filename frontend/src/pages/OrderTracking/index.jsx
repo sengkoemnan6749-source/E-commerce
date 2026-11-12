@@ -19,7 +19,7 @@ import {
   Headphones,
   Check
 } from 'lucide-react';
-import { orderService } from '../../services/orderService';
+import { orderService, formatOrderStatus } from '../../services/orderService';
 import { productService } from '../../services/productService';
 import OrderStepper from '../../components/order/OrderStepper';
 import DeliveryMap from './DeliveryMap';
@@ -306,7 +306,7 @@ export default function OrderTracking() {
               >
                 {allOrders.map((ord) => (
                   <option key={ord.id} value={ord.id}>
-                    {ord.id} ({ord.status})
+                    {ord.id} ({formatOrderStatus(ord.status)})
                   </option>
                 ))}
               </select>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Truck, FileText, Search, Package, Eye } from 'lucide-react';
-import { orderService } from '../../../services/orderService';
+import { orderService, formatOrderStatus } from '../../../services/orderService';
 import { productService } from '../../../services/productService';
 import { formatUSD } from '../../../utils/formatPrice';
 import { formatDate } from '../../../utils/formatDate';
@@ -107,17 +107,16 @@ export default function AccountOrders() {
                   </td>
                   <td className="py-3.5 px-3 whitespace-nowrap">
                     <Badge
-                      variant={
-                        ord.status === 'delivered'
-                          ? 'success'
-                          : ord.status === 'shipped' || ord.status === 'out_for_delivery'
-                          ? 'primary'
-                          : 'warning'
-                      }
+                      variant={(() => {
+                        const s = (ord.status || '').toLowerCase();
+                        if (s.includes('deliver') && !s.includes('out')) return 'success';
+                        if (s.includes('shipped') || s.includes('out') || s.includes('transit')) return 'primary';
+                        if (s.includes('cancel')) return 'danger';
+                        return 'warning';
+                      })()}
                       size="sm"
-                      className="capitalize"
                     >
-                      {ord.status}
+                      {formatOrderStatus(ord.status)}
                     </Badge>
                   </td>
                   <td className="py-3.5 px-3 text-right whitespace-nowrap">

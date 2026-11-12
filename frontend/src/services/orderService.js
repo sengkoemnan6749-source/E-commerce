@@ -2,6 +2,27 @@ import { INITIAL_ORDERS } from './mockData';
 
 const ORDERS_KEY = 'techtonic_orders';
 
+const ORDER_STATUS_LABELS = {
+  confirmed: 'Confirmed',
+  processing: 'Processing',
+  shipped: 'Shipped',
+  out_for_delivery: 'Out for Delivery',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+  pending: 'Pending'
+};
+
+/**
+ * Formats raw order status keys (e.g., 'confirmed', 'out_for_delivery') into consistent Title Case labels.
+ */
+export function formatOrderStatus(status = '') {
+  const key = String(status).trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if (ORDER_STATUS_LABELS[key]) return ORDER_STATUS_LABELS[key];
+  return String(status || 'Confirmed')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function getStoredOrders() {
   try {
     const raw = localStorage.getItem(ORDERS_KEY);
