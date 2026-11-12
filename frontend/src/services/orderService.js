@@ -23,6 +23,24 @@ export function formatOrderStatus(status = '') {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/**
+ * Returns formatted status label and subtle dot/text classes without pill background clutter.
+ */
+export function getOrderStatusMeta(status = '') {
+  const label = formatOrderStatus(status);
+  const s = label.toLowerCase();
+  if (s.includes('deliver') && !s.includes('out')) {
+    return { label, dotClass: 'bg-emerald-500', textClass: 'text-emerald-700' };
+  }
+  if (s.includes('out') || s.includes('transit') || s.includes('shipped')) {
+    return { label, dotClass: 'bg-blue-500', textClass: 'text-blue-700' };
+  }
+  if (s.includes('cancel')) {
+    return { label, dotClass: 'bg-rose-500', textClass: 'text-rose-700' };
+  }
+  return { label, dotClass: 'bg-amber-500', textClass: 'text-amber-700' };
+}
+
 function getStoredOrders() {
   try {
     const raw = localStorage.getItem(ORDERS_KEY);

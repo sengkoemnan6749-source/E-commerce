@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Truck, FileText, Search, Package, Eye } from 'lucide-react';
-import { orderService, formatOrderStatus } from '../../../services/orderService';
+import { Truck, FileText, Search, Package } from 'lucide-react';
+import { orderService, getOrderStatusMeta } from '../../../services/orderService';
 import { productService } from '../../../services/productService';
 import { formatUSD } from '../../../utils/formatPrice';
 import { formatDate } from '../../../utils/formatDate';
-import Badge from '../../../components/common/Badge';
 import Modal from '../../../components/common/Modal';
 import Invoice from '../../../components/order/Invoice';
 
@@ -91,11 +90,11 @@ export default function AccountOrders() {
                           {ord.items?.[0]?.name || 'TechTonic Hardware'}
                         </span>
                         {(ord.items?.length || 1) > 1 ? (
-                          <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                          <span className="text-[11px] font-medium text-blue-600">
                             +{ord.items.length - 1} more items
                           </span>
                         ) : (
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-[11px] text-slate-400">
                             1 Item
                           </span>
                         )}
@@ -106,18 +105,15 @@ export default function AccountOrders() {
                     {formatUSD(ord.total)}
                   </td>
                   <td className="py-3.5 px-3 whitespace-nowrap">
-                    <Badge
-                      variant={(() => {
-                        const s = (ord.status || '').toLowerCase();
-                        if (s.includes('deliver') && !s.includes('out')) return 'success';
-                        if (s.includes('shipped') || s.includes('out') || s.includes('transit')) return 'primary';
-                        if (s.includes('cancel')) return 'danger';
-                        return 'warning';
-                      })()}
-                      size="sm"
-                    >
-                      {formatOrderStatus(ord.status)}
-                    </Badge>
+                    {(() => {
+                      const statusMeta = getOrderStatusMeta(ord.status);
+                      return (
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${statusMeta.textClass}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusMeta.dotClass}`} />
+                          {statusMeta.label}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="py-3.5 px-3 text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-2">
