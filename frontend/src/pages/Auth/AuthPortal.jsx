@@ -6,14 +6,13 @@ import {
   Lock,
   Mail,
   User,
-  Phone,
   ArrowRight,
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
 import { useAuth, useToast, useLanguage } from '../../store/StoreContext';
 import { ToastContainer } from '../../components/common/Toast';
-import { validateEmail, validatePhone } from '../../utils/validation';
+import { validateEmail } from '../../utils/validation';
 
 export default function AuthPortal({ defaultMode = 'signin' }) {
   const navigate = useNavigate();
@@ -48,7 +47,6 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
   const [signUpData, setSignUpData] = useState({
     name: '',
     email: '',
-    phone: '',
     password: '',
     confirmPassword: ''
   });
@@ -80,7 +78,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
     setGeneralError('');
 
     if (!signInEmail.trim()) {
-      setGeneralError(language === 'kh' ? 'សូមបញ្ចូលអ៊ីមែល ឬលេខទូរស័ព្ទ' : 'Please enter your email or phone number');
+      setGeneralError(language === 'kh' ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល' : 'Please enter your email address');
       return;
     }
     if (!signInPassword.trim()) {
@@ -124,11 +122,6 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
       errs.email = language === 'kh' ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល' : 'Email address is required';
     } else if (!validateEmail(signUpData.email)) {
       errs.email = language === 'kh' ? 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ' : 'Please enter a valid email address';
-    }
-    if (!signUpData.phone.trim()) {
-      errs.phone = language === 'kh' ? 'សូមបញ្ចូលលេខទូរស័ព្ទ' : 'Phone number is required';
-    } else if (!validatePhone(signUpData.phone)) {
-      errs.phone = language === 'kh' ? 'លេខទូរស័ព្ទមិនត្រឹមត្រូវ (ឧ. 012 345 678)' : 'Enter valid phone number (e.g. 012 345 678)';
     }
     if (!signUpData.password || signUpData.password.length < 6) {
       errs.password = language === 'kh' ? 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៦ ខ្ទង់' : 'Password must be at least 6 characters';
@@ -330,8 +323,8 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">
                   {activeTab === 'signin'
-                    ? (language === 'kh' ? 'សូមបញ្ចូលអ៊ីមែល ឬលេខទូរស័ព្ទរបស់អ្នកដើម្បីបន្ត។' : 'Enter your credentials to access your orders and account.')
-                    : (language === 'kh' ? 'ចំណាយពេលត្រឹម ១ នាទីដើម្បីទទួលបានអត្ថប្រយោជន៍ពេញលេញ។' : 'Enter your details below to get started.')}
+                    ? (language === 'kh' ? 'សូមបញ្ចូលអ៊ីមែល និងពាក្យសម្ងាត់របស់អ្នកដើម្បីបន្ត។' : 'Enter your email and password to access your account.')
+                    : (language === 'kh' ? 'បញ្ចូលព័ត៌មានខាងក្រោមដើម្បីបង្កើតគណនី។' : 'Enter your details below to get started.')}
                 </p>
               </div>
 
@@ -360,17 +353,18 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
               {/* ================================================= */}
               {activeTab === 'signin' ? (
                 <form onSubmit={handleSignInSubmit} className="space-y-4">
-                  {/* Email / Identifier */}
+                  {/* Email Address */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      {language === 'kh' ? 'អ៊ីមែល ឬលេខទូរស័ព្ទ' : 'Email or Phone Number'}
+                      {language === 'kh' ? 'អាសយដ្ឋានអ៊ីមែល' : 'Email Address'}
                     </label>
                     <div className="relative">
                       <input
-                        type="text"
+                        type="email"
+                        autoComplete="email"
                         value={signInEmail}
                         onChange={(e) => setSignInEmail(e.target.value)}
-                        placeholder={language === 'kh' ? 'sara.meng@techtonic.dev ឬ 012 345 678' : 'you@example.com or phone'}
+                        placeholder={language === 'kh' ? 'you@domain.com' : 'you@example.com'}
                         className="w-full h-11 pl-10 pr-4 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-hidden font-medium"
                       />
                       <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -454,6 +448,8 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                     <div className="relative">
                       <input
                         type="text"
+                        name="name"
+                        autoComplete="name"
                         value={signUpData.name}
                         onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
                         placeholder={language === 'kh' ? 'ឧ. សារ៉ា ម៉េង' : 'e.g. Sara Meng'}
@@ -466,45 +462,26 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                     {signUpErrors.name && <span className="text-[11px] text-rose-600 font-medium pl-1 mt-0.5 block">{signUpErrors.name}</span>}
                   </div>
 
-                  {/* Email & Phone side by side */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        {language === 'kh' ? 'អ៊ីមែល' : 'Email Address'}
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="email"
-                          value={signUpData.email}
-                          onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
-                          placeholder="you@domain.com"
-                          className={`w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-hidden font-medium ${
-                            signUpErrors.email ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10'
-                          }`}
-                        />
-                        <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
-                      {signUpErrors.email && <span className="text-[11px] text-rose-600 font-medium pl-1 mt-0.5 block">{signUpErrors.email}</span>}
+                  {/* Email Address */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      {language === 'kh' ? 'អាសយដ្ឋានអ៊ីមែល' : 'Email Address'}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        name="email"
+                        autoComplete="email"
+                        value={signUpData.email}
+                        onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
+                        placeholder="you@domain.com"
+                        className={`w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-hidden font-medium ${
+                          signUpErrors.email ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10'
+                        }`}
+                      />
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        {language === 'kh' ? 'លេខទូរស័ព្ទ' : 'Phone Number'}
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={signUpData.phone}
-                          onChange={(e) => setSignUpData({ ...signUpData, phone: e.target.value })}
-                          placeholder="012 345 678"
-                          className={`w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-hidden font-medium ${
-                            signUpErrors.phone ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10'
-                          }`}
-                        />
-                        <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
-                      {signUpErrors.phone && <span className="text-[11px] text-rose-600 font-medium pl-1 mt-0.5 block">{signUpErrors.phone}</span>}
-                    </div>
+                    {signUpErrors.email && <span className="text-[11px] text-rose-600 font-medium pl-1 mt-0.5 block">{signUpErrors.email}</span>}
                   </div>
 
                   {/* Password & Confirm Password side by side */}
