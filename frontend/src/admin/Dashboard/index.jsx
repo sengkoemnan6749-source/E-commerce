@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   TrendingUp,
   ShoppingBag,
@@ -88,6 +88,8 @@ const TIMEFRAME_DATA = {
 export default function AdminDashboard() {
   const { addToast } = useToast();
   const { language } = useLanguage();
+  const location = useLocation();
+  const adminBase = location.pathname.toLowerCase().startsWith('/techtonicadmin') ? '/TechTonicAdmin' : '/admin';
   const [products, setProducts] = useState(productService.getProducts());
   const [orders, setOrders] = useState(orderService.getOrders());
 
@@ -260,7 +262,7 @@ export default function AdminDashboard() {
           </Button>
 
           {/* Quick Add Product */}
-          <Link to="/admin/products">
+          <Link to={`${adminBase}/products`}>
             <Button variant="primary" size="sm" className="shadow-xs shadow-blue-500/20">
               <Plus className="w-4 h-4 mr-1.5" />
               <span>{language === 'km' ? 'បន្ថែមផលិតផល' : 'Add Product'}</span>
@@ -362,7 +364,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+            <div className="text-2xl font-black text-slate-900 tabular-nums tracking-tight">
               {language === 'km' ? `${lowStockProducts.length} ផលិតផល` : `${lowStockProducts.length} Products`}
             </div>
             <div className="text-[11px] text-amber-600 font-semibold mt-0.5">
@@ -373,7 +375,7 @@ export default function AdminDashboard() {
             <span>
               {language === 'km' ? `សកម្ម ${products.length} ក្នុងកាតាឡុក` : `${products.length} active in catalog`}
             </span>
-            <Link to="/admin/products" className="text-blue-600 font-bold hover:underline">
+            <Link to={`${adminBase}/products`} className="text-blue-600 font-bold hover:underline">
               {language === 'km' ? 'ត្រួតពិនិត្យ →' : 'Audit →'}
             </Link>
           </div>
@@ -620,7 +622,7 @@ export default function AdminDashboard() {
                 : 'Ranked by total units ordered this month.'}
             </p>
           </div>
-          <Link to="/admin/products" className="text-xs font-bold text-blue-600 hover:text-blue-700">
+          <Link to={`${adminBase}/products`} className="text-xs font-bold text-blue-600 hover:text-blue-700">
             {language === 'km' ? 'មើលផលិតផលទាំងអស់ →' : 'View All Products →'}
           </Link>
         </div>
@@ -659,7 +661,7 @@ export default function AdminDashboard() {
                   {language === 'km' ? 'ស្តុក៖' : 'Stock:'}
                 </span>
                 <span
-                  className={`font-bold font-mono text-[11px] ${
+                  className={`font-bold tabular-nums text-[11px] ${
                     p.stock <= 5 ? 'text-amber-600' : 'text-emerald-600'
                   }`}
                 >
@@ -686,7 +688,7 @@ export default function AdminDashboard() {
                   : 'Update shipment stages instantly.'}
               </p>
             </div>
-            <Link to="/admin/orders" className="text-xs font-bold text-blue-600 hover:text-blue-700">
+            <Link to={`${adminBase}/orders`} className="text-xs font-bold text-blue-600 hover:text-blue-700">
               {language === 'km' ? 'ទំព័រការបញ្ជាទិញ →' : 'Orders Page →'}
             </Link>
           </div>
@@ -827,7 +829,7 @@ export default function AdminDashboard() {
             <span>
               {language === 'km' ? 'គ្រប់គ្រងបញ្ជីស្តុកពេញលេញក្នុងទំព័រផលិតផល' : 'Manage full stock list in Products'}
             </span>
-            <Link to="/admin/products" className="text-blue-600 font-bold hover:underline">
+            <Link to={`${adminBase}/products`} className="text-blue-600 font-bold hover:underline">
               {language === 'km' ? 'កាតាឡុកស្តុកទំនិញ →' : 'Inventory Catalog →'}
             </Link>
           </div>

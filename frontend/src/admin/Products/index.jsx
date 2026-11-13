@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, Package, Eye, Star } from 'lucide-react';
 import { productService } from '../../services/productService';
 import { formatUSD } from '../../utils/formatPrice';
@@ -15,8 +16,14 @@ export default function AdminProducts() {
   const { addToast } = useToast();
   const { language } = useLanguage();
 
-  const [search, setSearch] = useState('');
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get('q') || '');
   const [filterCat, setFilterCat] = useState('All');
+
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q !== null) setSearch(q);
+  }, [searchParams]);
 
   // Modal State
   const [modalMode, setModalMode] = useState(null); // 'add' | 'edit' | 'delete'
