@@ -729,22 +729,6 @@ export default function Home() {
                     title="USB-A QuickCharge 3.0"
                   />
                 </Link>
-
-                {/* Floating Tech Chip 1: Top Right */}
-                <div className="absolute -top-3 -right-2 sm:right-2 z-20 animate-float-reverse pointer-events-none">
-                  <div className="px-3 py-1.5 rounded-full bg-slate-900/95 backdrop-blur-md border border-sky-400/50 shadow-[0_4px_16px_rgba(14,165,233,0.25)] flex items-center gap-1.5 text-[11px] font-bold text-sky-300">
-                    <Zap className="w-3.5 h-3.5 text-sky-400 fill-sky-400 animate-pulse" />
-                    <span>100W GaN III Active</span>
-                  </div>
-                </div>
-
-                {/* Floating Tech Chip 2: Bottom Left */}
-                <div className="absolute -bottom-3 -left-2 sm:left-2 z-20 animate-float-slow pointer-events-none" style={{ animationDelay: '1.5s' }}>
-                  <div className="px-3 py-1.5 rounded-full bg-slate-900/95 backdrop-blur-md border border-cyan-400/50 shadow-[0_4px_16px_rgba(6,182,212,0.25)] flex items-center gap-1.5 text-[11px] font-bold text-cyan-300">
-                    <Droplets className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>CoolFlow &bull; 28&deg;C</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
