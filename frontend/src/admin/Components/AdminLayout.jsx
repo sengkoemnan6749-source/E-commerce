@@ -138,21 +138,23 @@ export default function AdminLayout() {
       {/* Desktop Dark Theme Left Sidebar Panel (per Design System Spec) */}
       <aside className="hidden md:flex flex-col w-64 shrink-0 bg-[#0f172a] text-slate-300 border-r border-slate-800/90 sticky top-0 h-screen z-30">
         {/* Sidebar Brand Header */}
-        <div className="h-14 px-5 flex items-center justify-between border-b border-slate-800/80 shrink-0">
-          <Link to={adminBase} className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-slate-950 border border-slate-800 p-1 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+        <div className="h-14 px-4 flex items-center justify-between border-b border-slate-800/80 shrink-0">
+          <Link to={adminBase} className="flex items-center gap-2 group min-w-0">
+            <div className="w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img
                 src="/images/logo/techtonic-crest.png"
                 alt="TechTonic Logo"
                 className="w-full h-full object-contain"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-white tracking-tight">TechTonic</span>
-              <span className="text-[11px] font-medium text-slate-300 bg-slate-800 border border-slate-700/80 px-2 py-0.5 rounded-md">
-                {language === 'km' ? 'អ្នកគ្រប់គ្រង' : 'Admin'}
-              </span>
-            </div>
+            <img
+              src="/images/logo/techtonic-script-orange.png"
+              alt="TechTonic"
+              className="h-7 w-auto object-contain shrink-0 group-hover:scale-105 transition-transform duration-200"
+            />
+            <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-[#cafc05] text-slate-950 shadow-sm shrink-0">
+              ADMIN
+            </span>
           </Link>
         </div>
 
@@ -202,14 +204,19 @@ export default function AdminLayout() {
           />
           <aside className="relative w-64 max-w-[80vw] h-full bg-[#0f172a] text-slate-300 border-r border-slate-800 flex flex-col z-10 shadow-2xl">
             <div className="h-14 px-4 flex items-center justify-between border-b border-slate-800">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 <img
                   src="/images/logo/techtonic-crest.png"
                   alt="TechTonic Logo"
-                  className="w-7 h-7 object-contain"
+                  className="w-7 h-7 object-contain shrink-0"
                 />
-                <span className="font-bold text-white text-sm">
-                  {language === 'km' ? 'ម៉ឺនុយគ្រប់គ្រង' : 'Admin Menu'}
+                <img
+                  src="/images/logo/techtonic-script-orange.png"
+                  alt="TechTonic"
+                  className="h-6 w-auto object-contain shrink-0"
+                />
+                <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-[#cafc05] text-slate-950 shrink-0">
+                  ADMIN
                 </span>
               </div>
               <button
