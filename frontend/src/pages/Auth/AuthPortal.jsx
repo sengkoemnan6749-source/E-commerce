@@ -202,21 +202,23 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
       <ToastContainer />
 
       {/* 1. TOP MINIMAL BRAND HEADER */}
-      <header className="w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-8 lg:px-12 py-3.5 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0c1b3a] to-[#050b1d] border border-blue-500/30 p-1.5 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+      <header className="w-full border-b border-slate-800/80 bg-[#060b18]/95 backdrop-blur-xl sticky top-0 z-30 px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 group">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
             <img
-              src="/images/logo/techtonic-icon.png"
+              src="/images/logo/techtonic-crest.png"
               alt="TechTonic Logo"
               className="w-full h-full object-contain"
             />
           </div>
-          <div className="flex flex-col">
-            <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-none">
-              TechTonic
-            </span>
-            <span className="text-[10px] text-slate-400 font-semibold tracking-wide uppercase mt-0.5">
-              Store Account
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <img
+              src="/images/logo/techtonic-script-orange.png"
+              alt="TechTonic"
+              className="h-6 sm:h-8 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+            />
+            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#cafc05] text-slate-950 shadow-sm">
+              STORE
             </span>
           </div>
         </Link>
@@ -225,7 +227,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
         <div className="flex items-center gap-3 sm:gap-5">
           <Link
             to="/shop"
-            className="text-xs font-semibold text-slate-600 hover:text-blue-600 transition-colors hidden sm:inline"
+            className="text-xs font-semibold text-slate-300 hover:text-white transition-colors hidden sm:inline"
           >
             {language === 'kh' ? 'ត្រឡប់ទៅហាង' : 'Continue Shopping'}
           </Link>
@@ -234,7 +236,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
           <button
             type="button"
             onClick={() => setLanguage(language === 'en' ? 'kh' : 'en')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/80 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-bold text-xs transition-colors cursor-pointer border border-slate-700"
             title="Toggle Language"
           >
             <span>{language === 'kh' ? '🇰🇭 ភាសាខ្មែរ' : '🇺🇸 EN'}</span>
