@@ -78,7 +78,7 @@ export function Footer() {
             <div className="flex items-center gap-3">
               <CreditCard className="w-6 h-6 text-blue-400 shrink-0" />
               <div>
-                <h5 className="text-xs font-bold text-white tracking-tight">{t('footer_trust_payment_title', 'Bakong KHQR & ABA')}</h5>
+                <h5 className="text-xs font-bold text-white tracking-tight">{t('footer_trust_payment_title', 'Bakong KHQR')}</h5>
                 <p className="text-[11px] text-slate-400 mt-0.5">{t('footer_trust_payment_desc', 'Instant & Secure Payment')}</p>
               </div>
             </div>
