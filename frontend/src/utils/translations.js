@@ -242,7 +242,83 @@ export const TRANSLATIONS = {
     lang_en: 'English (US)',
     lang_km: 'ភាសាខ្មែរ (Khmer)',
     lang_short_en: 'EN',
-    lang_short_km: 'ខ្មែរ'
+    lang_short_km: 'ខ្មែរ',
+
+    // Navbar & Category Dropdown Extras
+    nav_product_categories: 'Product Categories',
+    nav_browse_catalog: 'Browse Entire Catalog',
+    nav_saved_addresses: 'Saved Delivery Hubs',
+    nav_switch_view: 'Switch Account View:',
+    nav_switch_customer: 'Switch to Customer (Sara)',
+    nav_switch_admin: 'Switch to Admin (Alex)',
+    nav_found: 'found',
+    nav_cat_desc_audio: 'Studio ANC headphones, wireless buds & lossless sound',
+    nav_cat_desc_wearables: 'AMOLED fitness smartwatches & biometric rings',
+    nav_cat_desc_workspace: 'Mechanical tactile keyboards & precision desk gear',
+    nav_cat_desc_power: 'GaN III fast chargers, cables & magnetic power banks',
+    cat_desc_audio: 'Studio-grade noise cancellation, beryllium drivers, and lossless wireless acoustics.',
+    cat_desc_wearables: 'High-precision AMOLED displays, biosensors, and all-day health tracking.',
+    cat_desc_workspace: 'Custom mechanical switches, CNC aluminum frames, and ergonomic productivity gear.',
+    cat_desc_power: 'Gallium Nitride (GaN III) high-wattage charging, magnetic wireless power banks.',
+
+    // Mobile Menu
+    mobile_search_placeholder: 'Search headphones, watches...',
+    mobile_saved_wishlist: 'Saved Wishlist',
+    mobile_shopping_cart: 'Shopping Cart',
+    mobile_my_account_orders: 'My Account & Orders',
+    mobile_register: 'Register',
+
+    // Footer Extras
+    footer_trust_delivery_title: 'Express Delivery',
+    footer_trust_delivery_desc: 'Phnom Penh & 25 Provinces',
+    footer_trust_warranty_title: '1-Year Warranty',
+    footer_trust_warranty_desc: '100% Genuine Guaranteed',
+    footer_trust_returns_title: '30-Day Returns',
+    footer_trust_returns_desc: 'Hassle-Free Exchange',
+    footer_trust_payment_title: 'Bakong KHQR & ABA',
+    footer_trust_payment_desc: 'Instant & Secure Payment',
+    footer_newsletter_badge: 'Newsletter',
+    footer_newsletter_title: 'Subscribe to TechTonic Dispatch',
+    footer_newsletter_desc: 'Be the first to receive notifications on new audio gear, mechanical keyboard switches, and exclusive member discounts in Cambodia.',
+    footer_newsletter_no_spam: 'No spam. You can unsubscribe at any time with one click.',
+    footer_cod: 'Cash on Delivery',
+    footer_link_power_chargers: 'Power & Chargers',
+    footer_link_workspace_keyboards: 'Workspace Keyboards',
+    footer_link_signin_register: 'Sign In / Register',
+    footer_copyright: '© 2026 TechTonic Store. All rights reserved.',
+    footer_phnom_penh_flagship: 'Phnom Penh Flagship',
+
+    // Cart & Wishlist Pages
+    cart_page_title: 'Shopping Cart',
+    cart_clear: 'Clear Cart',
+    cart_clear_confirm: 'Are you sure you want to clear your entire cart?',
+    cart_cleared_toast: 'Cart cleared',
+    cart_empty_page_desc: "Looks like you haven't added any electronics to your bag yet. Check out our high-efficiency GaN chargers, ANC headphones, or mechanical keyboards.",
+    cart_guest_title: 'Have a TechTonic Account?',
+    cart_guest_desc: 'Sign in to automatically load your saved addresses, track deliveries, and complete checkout smoothly.',
+    cart_sign_in_now: 'Sign In Now',
+    cart_continue_shopping: 'Continue Shopping',
+    cart_order_summary: 'Order Summary',
+    cart_estimated_shipping: 'Estimated Shipping',
+    cart_free: 'FREE',
+    cart_total: 'Total',
+    cart_includes_vat: 'Includes all taxes and duties',
+    cart_discount_code: 'Discount Code',
+    cart_apply: 'Apply',
+    cart_remove: 'Remove',
+    cart_variant: 'Variant:',
+    cart_each: 'each',
+    cart_add_prefix: 'Add',
+    cart_sign_in_checkout_toast: 'Please sign in or register to proceed to checkout',
+
+    wishlist_badge: 'Saved Hardware',
+    wishlist_title: 'Your Wishlist',
+    wishlist_empty_title: 'Your Wishlist is Empty',
+    wishlist_empty_desc: "You haven't saved any hardware yet. Explore our studio acoustics, titanium wearables, and GaN fast chargers to start curating your setup.",
+    wishlist_explore: 'Explore Hardware Catalog',
+    wishlist_move_all: 'Move All ({count}) to Cart',
+    wishlist_clear: 'Clear Wishlist',
+    wishlist_move_to_cart: 'Move to Cart'
   },
 
   km: {
@@ -483,7 +559,83 @@ export const TRANSLATIONS = {
     lang_en: 'English (US)',
     lang_km: 'ភាសាខ្មែរ (Khmer)',
     lang_short_en: 'EN',
-    lang_short_km: 'ខ្មែរ'
+    lang_short_km: 'ខ្មែរ',
+
+    // Navbar & Category Dropdown Extras
+    nav_product_categories: 'ប្រភេទផលិតផល',
+    nav_browse_catalog: 'មើលកាតាឡុកទាំងអស់',
+    nav_saved_addresses: 'អាសយដ្ឋានដឹកជញ្ជូនដែលបានរក្សាទុក',
+    nav_switch_view: 'ប្តូរទិដ្ឋភាពគណនី៖',
+    nav_switch_customer: 'ប្តូរទៅអតិថិជន (Sara)',
+    nav_switch_admin: 'ប្តូរទៅអ្នកគ្រប់គ្រង (Alex)',
+    nav_found: 'រកឃើញ',
+    nav_cat_desc_audio: 'កាសកាត់បន្ថយសំឡេងរំខាន កាសឥតខ្សែ និងសំឡេងគុណភាពស្ទូឌីយោ',
+    nav_cat_desc_wearables: 'នាឡិកាឆ្លាតវៃ AMOLED និងចិញ្ចៀនតាមដានសុខភាព',
+    nav_cat_desc_workspace: 'ក្ដារចុចមេកានិក និងឧបករណ៍តុធ្វើការស្តង់ដារខ្ពស់',
+    nav_cat_desc_power: 'ឆ្នាំងសាកលឿន GaN III ខ្សែសាក និងថ្មជំនួយម៉ាញេទិក',
+    cat_desc_audio: 'ប្រព័ន្ធកាត់បន្ថយសំឡេងរំខានកម្រិតស្ទូឌីយោ ដ្រាយវ័រ Beryllium និងសំឡេងឥតខ្សែគុណភាពខ្ពស់។',
+    cat_desc_wearables: 'អេក្រង់ AMOLED ច្បាស់ត្រជាក់ភ្នែក ឧបករណ៍ចាប់សញ្ញាសុខភាព និងតាមដានសកម្មភាពប្រចាំថ្ងៃ។',
+    cat_desc_workspace: 'កុងតាក់មេកានិក តួអាលុយមីញ៉ូម CNC និងសម្ភារៈតុធ្វើការបង្កើនប្រសិទ្ធភាពការងារ។',
+    cat_desc_power: 'ឆ្នាំងសាកកម្លាំងខ្ពស់ GaN III និងថ្មជំនួយឥតខ្សែម៉ាញេទិកល្បឿនលឿន។',
+
+    // Mobile Menu
+    mobile_search_placeholder: 'ស្វែងរកកាស, នាឡិកា...',
+    mobile_saved_wishlist: 'បញ្ជីចង់បានដែលបានរក្សាទុក',
+    mobile_shopping_cart: 'កន្ត្រកទំនិញ',
+    mobile_my_account_orders: 'គណនី & ការកុម្ម៉ង់របស់ខ្ញុំ',
+    mobile_register: 'ចុះឈ្មោះ',
+
+    // Footer Extras
+    footer_trust_delivery_title: 'ដឹកជញ្ជូនរហ័ស',
+    footer_trust_delivery_desc: 'ភ្នំពេញ និង ២៥ ខេត្ត-ក្រុង',
+    footer_trust_warranty_title: 'ធានារយៈពេល ១ ឆ្នាំ',
+    footer_trust_warranty_desc: 'ធានាផលិតផលសុទ្ធ ១០០%',
+    footer_trust_returns_title: 'ប្តូរវិញក្នុង ៣០ ថ្ងៃ',
+    footer_trust_returns_desc: 'ប្តូរទំនិញងាយស្រួលឥតបារម្ភ',
+    footer_trust_payment_title: 'Bakong KHQR & ABA',
+    footer_trust_payment_desc: 'ទូទាត់រហ័ស និងសុវត្ថិភាព',
+    footer_newsletter_badge: 'ព្រឹត្តិបត្រព័ត៌មាន',
+    footer_newsletter_title: 'ជាវព័ត៌មានថ្មីៗពី TechTonic',
+    footer_newsletter_desc: 'ទទួលបានព័ត៌មានមុនគេអំពីឧបករណ៍សំឡេង ក្ដារចុចមេកានិក និងការបញ្ចុះតម្លៃពិសេសសម្រាប់សមាជិកនៅកម្ពុជា។',
+    footer_newsletter_no_spam: 'គ្មានសាររំខានឡើយ។ អ្នកអាចឈប់ជាវបានគ្រប់ពេលដោយចុចតែម្ដង។',
+    footer_cod: 'ទូទាត់ពេលទទួលទំនិញ',
+    footer_link_power_chargers: 'ឆ្នាំងសាក & ថាមពល',
+    footer_link_workspace_keyboards: 'ក្ដារចុចតុធ្វើការ',
+    footer_link_signin_register: 'ចូលគណនី / ចុះឈ្មោះ',
+    footer_copyright: '© 2026 TechTonic Store។ រក្សាសិទ្ធិគ្រប់យ៉ាង។',
+    footer_phnom_penh_flagship: 'សាខាធំនៅរាជធានីភ្នំពេញ',
+
+    // Cart & Wishlist Pages
+    cart_page_title: 'កន្ត្រកទំនិញ',
+    cart_clear: 'សម្អាតកន្ត្រក',
+    cart_clear_confirm: 'តើអ្នកប្រាកដថាចង់សម្អាតកន្ត្រកទំនិញទាំងអស់មែនទេ?',
+    cart_cleared_toast: 'បានសម្អាតកន្ត្រកទំនិញ',
+    cart_empty_page_desc: 'អ្នកមិនទាន់បានបន្ថែមគ្រឿងអេឡិចត្រូនិចទៅក្នុងកន្ត្រកនៅឡើយទេ។ សូមមើលឆ្នាំងសាក GaN កាស ANC ឬក្ដារចុចមេកានិករបស់យើង។',
+    cart_guest_title: 'មានគណនី TechTonic រួចហើយឬ?',
+    cart_guest_desc: 'ចូលគណនីដើម្បីផ្ទុកអាសយដ្ឋានដែលបានរក្សាទុក តាមដានការដឹកជញ្ជូន និងទូទាត់ប្រាក់បានយ៉ាងរលូន។',
+    cart_sign_in_now: 'ចូលគណនីឥឡូវនេះ',
+    cart_continue_shopping: 'បន្តទិញទំនិញ',
+    cart_order_summary: 'សង្ខេបការកុម្ម៉ង់',
+    cart_estimated_shipping: 'ថ្លៃដឹកជញ្ជូនប៉ាន់ស្មាន',
+    cart_free: 'ឥតគិតថ្លៃ',
+    cart_total: 'សរុប',
+    cart_includes_vat: 'រួមបញ្ចូលពន្ធ និងថ្លៃសេវារួចរាល់',
+    cart_discount_code: 'កូដបញ្ចុះតម្លៃ',
+    cart_apply: 'ប្រើប្រាស់',
+    cart_remove: 'លុបចេញ',
+    cart_variant: 'ជម្រើស៖',
+    cart_each: 'ក្នុងមួយគ្រឿង',
+    cart_add_prefix: 'បន្ថែម',
+    cart_sign_in_checkout_toast: 'សូមចូលគណនី ឬចុះឈ្មោះ ដើម្បីបន្តទៅកាន់ការទូទាត់',
+
+    wishlist_badge: 'ផលិតផលដែលបានរក្សាទុក',
+    wishlist_title: 'បញ្ជីចង់បានរបស់អ្នក',
+    wishlist_empty_title: 'បញ្ជីចង់បានរបស់អ្នកនៅទទេ',
+    wishlist_empty_desc: 'អ្នកមិនទាន់បានរក្សាទុកផលិតផលណាមួយនៅឡើយទេ។ ស្វែងរកកាសស្ទូឌីយោ នាឡិកាទីតានីញ៉ូម និងឆ្នាំងសាក GaN របស់យើង។',
+    wishlist_explore: 'ស្វែងរកកាតាឡុកផលិតផល',
+    wishlist_move_all: 'ផ្ទេរទាំងអស់ ({count}) ទៅកន្ត្រក',
+    wishlist_clear: 'សម្អាតបញ្ជីចង់បាន',
+    wishlist_move_to_cart: 'ផ្ទេរទៅកន្ត្រកទំនិញ'
   }
 };
 
@@ -555,17 +707,26 @@ export const SUBCATEGORY_TRANSLATIONS = {
     'Fast Chargers': 'ឆ្នាំងសាកល្បឿនលឿន',
     'GaN Chargers': 'ឆ្នាំងសាក GaN',
     'Power Banks': 'ថ្មជំនួយ Power Bank',
+    'Wall Chargers': 'ឆ្នាំងសាកជញ្ជាំង',
     'Wireless Chargers': 'ឆ្នាំងសាកឥតខ្សែ',
     'Charging Cables': 'ខ្សែសាក',
     'Car Chargers': 'ឆ្នាំងសាកឡាន',
     'MagSafe Accessories': 'គ្រឿង MagSafe',
-    'Multi-port Chargers': 'ឆ្នាំងសាករន្ធច្រើន'
+    'MagSafe Chargers': 'ឆ្នាំងសាក MagSafe',
+    'Multi-port Chargers': 'ឆ្នាំងសាករន្ធច្រើន',
+    'Multi-Port Chargers': 'ឆ្នាំងសាករន្ធច្រើន',
+    'USB-C Chargers': 'ឆ្នាំងសាក USB-C',
+    'Charging Stations': 'ស្ថានីយសាកភ្លើង',
+    'Travel Adapters': 'អាដាប់ទ័រធ្វើដំណើរ',
+    'Solar Power Banks': 'ថ្មជំនួយសូឡា',
+    'Drawing Tablets': 'ក្ដារគូរឌីជីថល',
+    'External Keypads': 'ក្ដារចុចលេខបន្ថែម'
   }
 };
 
 export function translateCategory(name, lang = 'en') {
   if (!name) return name;
-  if (lang === 'km' && CATEGORY_TRANSLATIONS.km[name]) {
+  if ((lang === 'km' || lang === 'kh') && CATEGORY_TRANSLATIONS.km[name]) {
     return CATEGORY_TRANSLATIONS.km[name];
   }
   return CATEGORY_TRANSLATIONS.en[name] || name;
@@ -573,13 +734,17 @@ export function translateCategory(name, lang = 'en') {
 
 export function translateSubcategory(name, lang = 'en') {
   if (!name) return name;
-  if (lang === 'km' && SUBCATEGORY_TRANSLATIONS.km[name]) {
-    return SUBCATEGORY_TRANSLATIONS.km[name];
+  if (lang === 'km' || lang === 'kh') {
+    if (SUBCATEGORY_TRANSLATIONS.km[name]) return SUBCATEGORY_TRANSLATIONS.km[name];
+    const lower = name.toLowerCase();
+    const matchKey = Object.keys(SUBCATEGORY_TRANSLATIONS.km).find((k) => k.toLowerCase() === lower);
+    if (matchKey) return SUBCATEGORY_TRANSLATIONS.km[matchKey];
   }
   return name;
 }
 
 export function getTranslation(lang, key, fallback = '') {
-  const dictionary = TRANSLATIONS[lang] || TRANSLATIONS.en;
+  const normalizedLang = lang === 'kh' ? 'km' : lang;
+  const dictionary = TRANSLATIONS[normalizedLang] || TRANSLATIONS.en;
   return dictionary[key] !== undefined ? dictionary[key] : (TRANSLATIONS.en[key] !== undefined ? TRANSLATIONS.en[key] : (fallback || key));
 }

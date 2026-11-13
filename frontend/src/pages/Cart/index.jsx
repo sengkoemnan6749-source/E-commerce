@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, ArrowLeft, Trash2, ArrowRight, UserCheck } from 'lucide-react';
-import { useCart, useAuth, useToast } from '../../store/StoreContext';
+import { useCart, useAuth, useToast, useLanguage } from '../../store/StoreContext';
 import CartItem from '../../components/cart/CartItem';
 import CartSummary from '../../components/cart/CartSummary';
 import Button from '../../components/common/Button';
@@ -10,12 +10,13 @@ export default function Cart() {
   const { items, updateQuantity, removeFromCart, clearCart, totalItems } = useCart();
   const { user } = useAuth();
   const { addToast } = useToast();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to clear your entire cart?')) {
+    if (window.confirm(t('cart_clear_confirm', 'Are you sure you want to clear your entire cart?'))) {
       clearCart();
-      addToast('Cart cleared', 'info');
+      addToast(t('cart_cleared_toast', 'Cart cleared'), 'info');
     }
   };
 
@@ -26,14 +27,14 @@ export default function Cart() {
           <ShoppingBag className="w-10 h-10" />
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mb-2">
-          Your Cart is Empty
+          {t('cart_empty', 'Your Cart is Empty')}
         </h1>
         <p className="text-sm text-slate-500 max-w-md mx-auto mb-8 leading-relaxed">
-          Looks like you haven't added any electronics to your bag yet. Check out our high-efficiency GaN chargers, ANC headphones, or mechanical keyboards.
+          {t('cart_empty_page_desc', "Looks like you haven't added any electronics to your bag yet. Check out our high-efficiency GaN chargers, ANC headphones, or mechanical keyboards.")}
         </p>
         <Link to="/shop">
           <Button variant="primary" size="lg" className="px-8 shadow-md">
-            <span>Explore Electronics</span>
+            <span>{t('hero_explore', 'Explore Electronics')}</span>
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </Link>
@@ -47,10 +48,12 @@ export default function Cart() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-200 mb-8 gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Shopping Cart
+            {t('cart_page_title', 'Shopping Cart')}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Review your {totalItems} selected {totalItems === 1 ? 'item' : 'items'} before proceeding to secure checkout.
+            {language === 'km'
+              ? `ពិនិត្យមើលទំនិញទាំង ${totalItems} មុខរបស់អ្នក មុនពេលបន្តទៅកាន់ការទូទាត់ប្រកបដោយសុវត្ថិភាព។`
+              : `Review your ${totalItems} selected ${totalItems === 1 ? 'item' : 'items'} before proceeding to secure checkout.`}
           </p>
         </div>
 
@@ -61,7 +64,7 @@ export default function Cart() {
             className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-rose-600 transition-colors"
           >
             <Trash2 className="w-4 h-4" />
-            <span>Clear Cart</span>
+            <span>{t('cart_clear', 'Clear Cart')}</span>
           </button>
         </div>
       </div>
@@ -75,10 +78,10 @@ export default function Cart() {
             </div>
             <div>
               <span className="text-xs font-extrabold text-blue-950 block">
-                Have a TechTonic Account?
+                {t('cart_guest_title', 'Have a TechTonic Account?')}
               </span>
               <span className="text-[11px] text-blue-800">
-                Sign in to automatically load your saved addresses, track deliveries, and complete checkout smoothly.
+                {t('cart_guest_desc', 'Sign in to automatically load your saved addresses, track deliveries, and complete checkout smoothly.')}
               </span>
             </div>
           </div>
@@ -86,7 +89,7 @@ export default function Cart() {
             to="/login?redirect=/checkout"
             className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-white text-blue-600 hover:text-blue-700 text-xs font-bold border border-blue-200/80 shadow-2xs hover:shadow-xs transition-all shrink-0"
           >
-            <span>Sign In Now</span>
+            <span>{t('cart_sign_in_now', 'Sign In Now')}</span>
             <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
           </Link>
         </div>
@@ -113,7 +116,7 @@ export default function Cart() {
               className="inline-flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Continue Shopping</span>
+              <span>{t('cart_continue_shopping', 'Continue Shopping')}</span>
             </Link>
           </div>
         </div>

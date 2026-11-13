@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Star, ShieldCheck, Truck, RotateCcw, Plus, Minus, ShoppingBag, Zap, Heart, Check } from 'lucide-react';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
-import { useCart, useWishlist, useToast, useAuth } from '../../store/StoreContext';
+import { useCart, useWishlist, useToast, useAuth, useLanguage } from '../../store/StoreContext';
+import { translateCategory } from '../../utils/translations';
 import Button from '../common/Button';
 import Badge from '../common/Badge';
 
@@ -17,6 +18,7 @@ export default function ProductInfo({
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { addToast } = useToast();
   const { user } = useAuth();
+  const { t, language } = useLanguage();
 
   const [internalVariant, setInternalVariant] = useState(
     product.variants?.[0]?.name || 'Standard'
@@ -54,7 +56,7 @@ export default function ProductInfo({
     if (product.stock === 0) return;
     addToCart(product, quantity, selectedVariant, activeImage);
     if (!user) {
-      addToast('Please sign in or register to proceed to checkout', 'info');
+      addToast(t('cart_sign_in_checkout_toast', 'Please sign in or register to proceed to checkout'), 'info');
       navigate('/login?redirect=/checkout');
     } else {
       navigate('/checkout');
@@ -66,7 +68,7 @@ export default function ProductInfo({
       {/* Category & SKU */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-          {product.category}
+          {translateCategory(product.category, language)}
         </span>
         <span className="text-xs text-slate-400 font-mono">
           SKU: {product.sku || `TT-${product.id.toString().padStart(4, '0')}`}
@@ -84,7 +86,7 @@ export default function ProductInfo({
           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
           <span className="font-bold text-sm text-slate-900">{product.rating}</span>
           <span className="text-xs text-slate-500 font-medium">
-            ({product.reviewsCount || 24} reviews)
+            ({product.reviewsCount || 24} {language === 'km' ? 'មតិយោបល់' : 'reviews'})
           </span>
         </div>
 
@@ -93,11 +95,11 @@ export default function ProductInfo({
         {product.stock > 0 ? (
           <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            In Stock ({product.stock} units)
+            {t('label_in_stock', 'In Stock')} ({product.stock} {language === 'km' ? 'គ្រឿង' : 'units'})
           </span>
         ) : (
           <span className="text-xs font-semibold text-slate-400">
-            Out of Stock
+            {t('label_out_of_stock', 'Out of Stock')}
           </span>
         )}
       </div>
@@ -115,12 +117,12 @@ export default function ProductInfo({
           )}
           {discountPercent > 0 && (
             <span className="text-xs font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
-              Save {discountPercent}%
+              {language === 'km' ? `សន្សំ ${discountPercent}%` : `Save ${discountPercent}%`}
             </span>
           )}
         </div>
         <div className="mt-1 text-xs font-medium text-slate-500">
-          Estimated: <span className="font-semibold text-slate-700">{formatKHR(product.price)}</span> (VAT included)
+          {language === 'km' ? 'ប្រហែល៖' : 'Estimated:'} <span className="font-semibold text-slate-700">{formatKHR(product.price)}</span> ({language === 'km' ? 'រួមបញ្ចូលពន្ធ VAT' : 'VAT included'})
         </div>
       </div>
 
@@ -134,10 +136,10 @@ export default function ProductInfo({
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2.5">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-              Color / Edition:
+              {language === 'km' ? 'ពណ៌ / ម៉ូដែល៖' : 'Color / Edition:'}
             </label>
             <span className="text-xs text-slate-500">
-              Selected: <strong className="text-slate-900 font-semibold">{selectedVariant}</strong>
+              {language === 'km' ? 'បានជ្រើសរើស៖' : 'Selected:'} <strong className="text-slate-900 font-semibold">{selectedVariant}</strong>
             </span>
           </div>
           <div className="flex flex-wrap gap-2.5">
@@ -217,12 +219,12 @@ export default function ProductInfo({
             {adding ? (
               <>
                 <Check className="w-5 h-5 mr-2 text-emerald-300" />
-                Added to Cart!
+                {t('card_added', 'Added to Cart!')}
               </>
             ) : (
               <>
                 <ShoppingBag className="w-5 h-5 mr-2" />
-                Add to Cart
+                {t('btn_add_to_cart', 'Add to Cart')}
               </>
             )}
           </Button>
@@ -236,7 +238,7 @@ export default function ProductInfo({
                 ? 'border-rose-200 bg-rose-50 text-rose-600'
                 : 'border-slate-200 bg-white text-slate-600 hover:text-rose-500 hover:border-slate-300'
             }`}
-            aria-label="Wishlist"
+            aria-label={t('nav_wishlist', 'Wishlist')}
           >
             <Heart className={`w-5 h-5 ${isFavorited ? 'fill-current' : ''}`} />
           </button>
@@ -250,7 +252,7 @@ export default function ProductInfo({
           disabled={product.stock === 0}
           onClick={handleBuyNow}
         >
-          Buy Now
+          {t('btn_buy_now', 'Buy Now')}
         </Button>
       </div>
 
@@ -259,24 +261,24 @@ export default function ProductInfo({
         <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
           <Truck className="w-5 h-5 text-blue-600 flex-shrink-0" />
           <div className="text-xs">
-            <p className="font-bold text-slate-900">Same-Day Express</p>
-            <p className="text-slate-500">Phnom Penh & 24h provinces</p>
+            <p className="font-bold text-slate-900">{t('perk_shipping', 'Same-Day Express')}</p>
+            <p className="text-slate-500">{t('footer_trust_delivery_desc', 'Phnom Penh & 24h provinces')}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
           <ShieldCheck className="w-5 h-5 text-blue-600 flex-shrink-0" />
           <div className="text-xs">
-            <p className="font-bold text-slate-900">1-Year Warranty</p>
-            <p className="text-slate-500">100% genuine guaranteed</p>
+            <p className="font-bold text-slate-900">{t('footer_trust_warranty_title', '1-Year Warranty')}</p>
+            <p className="text-slate-500">{t('footer_trust_warranty_desc', '100% genuine guaranteed')}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/60">
           <RotateCcw className="w-5 h-5 text-blue-600 flex-shrink-0" />
           <div className="text-xs">
-            <p className="font-bold text-slate-900">30-Day Returns</p>
-            <p className="text-slate-500">Hassle-free swap or refund</p>
+            <p className="font-bold text-slate-900">{t('footer_trust_returns_title', '30-Day Returns')}</p>
+            <p className="text-slate-500">{t('footer_trust_returns_desc', 'Hassle-free swap or refund')}</p>
           </div>
         </div>
       </div>

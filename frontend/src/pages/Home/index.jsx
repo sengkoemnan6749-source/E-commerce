@@ -127,7 +127,7 @@ export default function Home() {
 
                 {/* Headline */}
                 <h1 className={`font-black ${
-                  language === 'kh'
+                  language === 'km'
                     ? 'text-2xl sm:text-4xl lg:text-[2.65rem] xl:text-[3rem] leading-[1.35] sm:leading-[1.3] tracking-normal'
                     : 'text-3xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.65rem] tracking-tight leading-[1.12] sm:leading-[1.08]'
                 } mb-4 sm:mb-5 text-white drop-shadow-sm relative z-10`}>
@@ -313,7 +313,7 @@ export default function Home() {
 
               {/* Headline */}
               <h1 className={`font-black ${
-                language === 'kh'
+                language === 'km'
                   ? 'text-xl sm:text-2xl leading-[1.38] tracking-normal'
                   : 'text-2xl sm:text-3xl tracking-tight leading-[1.15]'
               } mb-2.5 sm:mb-3.5 text-white`}>
@@ -549,7 +549,7 @@ export default function Home() {
                       {translateCategory(cat.name, language)}
                     </h3>
                     <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
-                      {cat.description}
+                      {t(`cat_desc_${cat.id || cat.slug}`, cat.description)}
                     </p>
                   </div>
 

@@ -15,28 +15,29 @@ import {
   ArrowRight,
   ExternalLink
 } from 'lucide-react';
-import { useAuth, useToast } from '../../store/StoreContext';
+import { useAuth, useToast, useLanguage } from '../../store/StoreContext';
 import { orderService } from '../../services/orderService';
 
 export default function AccountLayout() {
   const { user, logout } = useAuth();
   const { addToast } = useToast();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   const orders = orderService.getOrders();
 
   const handleLogout = () => {
     logout();
-    addToast('You have been signed out successfully', 'info');
+    addToast(language === 'km' ? 'អ្នកបានចាកចេញពីគណនីដោយជោគជ័យ' : 'You have been signed out successfully', 'info');
     navigate('/login');
   };
 
   const navItems = [
-    { to: '/account', label: 'Dashboard Overview', icon: LayoutDashboard, end: true },
-    { to: '/account/orders', label: 'My Orders', icon: Package, badge: orders.length },
-    { to: '/account/profile', label: 'Profile Details', icon: User },
-    { to: '/account/addresses', label: 'Saved Addresses', icon: MapPin, badge: user?.addresses?.length || 1 },
-    { to: '/account/invoices', label: 'Invoices & Receipts', icon: FileText }
+    { to: '/account', label: t('account_overview', 'Dashboard Overview'), icon: LayoutDashboard, end: true },
+    { to: '/account/orders', label: t('account_orders', 'My Orders'), icon: Package, badge: orders.length },
+    { to: '/account/profile', label: t('account_profile', 'Profile Details'), icon: User },
+    { to: '/account/addresses', label: t('account_addresses', 'Saved Addresses'), icon: MapPin, badge: user?.addresses?.length || 1 },
+    { to: '/account/invoices', label: t('account_invoices', 'Invoices & Receipts'), icon: FileText }
   ];
 
   const userName = user?.name || user?.fullName || 'Sara Meng';
@@ -66,7 +67,10 @@ export default function AccountLayout() {
               </p>
 
               <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
-                <span>Member Since: <strong className="text-slate-200 font-medium">January 2025</strong></span>
+                <span>
+                  {language === 'km' ? 'សមាជិកតាំងពី៖' : 'Member Since:'}{' '}
+                  <strong className="text-slate-200 font-medium">{language === 'km' ? 'មករា ២០២៥' : 'January 2025'}</strong>
+                </span>
               </div>
             </div>
           </div>
@@ -77,7 +81,7 @@ export default function AccountLayout() {
               to="/shop"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-sm transition-all"
             >
-              <span>Browse Store</span>
+              <span>{t('nav_browse_catalog', 'Browse Store')}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
 
@@ -88,7 +92,7 @@ export default function AccountLayout() {
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
+              <span>{t('nav_sign_out', 'Sign Out')}</span>
             </button>
           </div>
 
@@ -147,18 +151,24 @@ export default function AccountLayout() {
             <div className="flex items-center gap-2.5 mb-2">
               <Headphones className="w-5 h-5 text-blue-600" />
               <div>
-                <h4 className="text-xs font-bold text-slate-900">Need Assistance?</h4>
-                <span className="text-[11px] text-slate-500">Phnom Penh Support Hub</span>
+                <h4 className="text-xs font-bold text-slate-900">
+                  {language === 'km' ? 'ត្រូវការជំនួយមែនទេ?' : 'Need Assistance?'}
+                </h4>
+                <span className="text-[11px] text-slate-500">
+                  {language === 'km' ? 'មជ្ឈមណ្ឌលជំនួយភ្នំពេញ' : 'Phnom Penh Support Hub'}
+                </span>
               </div>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed mb-3.5">
-              Contact our team for delivery tracking, warranty claims, or product advice.
+              {language === 'km'
+                ? 'ទាក់ទងក្រុមការងាររបស់យើងសម្រាប់ការតាមដានដឹកជញ្ជូន ការធានា ឬប្រឹក្សាផលិតផល។'
+                : 'Contact our team for delivery tracking, warranty claims, or product advice.'}
             </p>
             <a
               href="mailto:support@techtonic.dev"
               className="inline-flex items-center justify-center w-full py-2 px-3 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 transition-colors shadow-2xs"
             >
-              Contact Support
+              {language === 'km' ? 'ទាក់ទងផ្នែកជំនួយ' : 'Contact Support'}
             </a>
           </div>
         </aside>

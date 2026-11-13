@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { formatUSD } from '../../utils/formatPrice';
 import { productService } from '../../services/productService';
+import { useLanguage } from '../../store/StoreContext';
 
 export default function CartItem({ item, onUpdateQuantity, onRemove }) {
+  const { t } = useLanguage();
   const cleanImg = productService.getCleanProductImage(item, item.selectedVariant || item.variant);
 
   return (
@@ -43,7 +45,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }) {
         {/* Variant label */}
         {item.selectedVariant && (
           <span className="text-[11px] text-slate-500 font-medium">
-            Variant: <span className="text-slate-700 font-semibold">{item.selectedVariant}</span>
+            {t('cart_variant', 'Variant:')} <span className="text-slate-700 font-semibold">{item.selectedVariant}</span>
           </span>
         )}
 
@@ -77,7 +79,7 @@ export default function CartItem({ item, onUpdateQuantity, onRemove }) {
             </div>
             {item.quantity > 1 && (
               <span className="text-[10px] text-slate-400 block">
-                {formatUSD(item.price)} each
+                {formatUSD(item.price)} {t('cart_each', 'each')}
               </span>
             )}
           </div>

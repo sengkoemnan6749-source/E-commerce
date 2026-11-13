@@ -10,7 +10,7 @@ export default function CartDrawer() {
   const { isDrawerOpen, closeDrawer, items, updateQuantity, removeFromCart, subtotal, totalItems } = useCart();
   const { user } = useAuth();
   const { addToast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   // Lock body scroll when drawer is open
@@ -30,7 +30,7 @@ export default function CartDrawer() {
   const handleCheckout = () => {
     closeDrawer();
     if (!user) {
-      addToast('Please sign in or register to proceed to checkout', 'info');
+      addToast(t('cart_sign_in_checkout_toast', 'Please sign in or register to proceed to checkout'), 'info');
       navigate('/login?redirect=/checkout');
     } else {
       navigate('/checkout');
@@ -81,6 +81,8 @@ export default function CartDrawer() {
                 <span className={subtotal >= 100 ? 'font-medium text-slate-700' : ''}>
                   {subtotal >= 100
                     ? t('cart_free_shipping_eligible', 'You unlocked Free Express Delivery!')
+                    : language === 'km'
+                    ? `${t('cart_add_prefix', 'បន្ថែម')} ${formatUSD(100 - subtotal)} ${t('cart_free_shipping_remaining', 'ទៀត ដើម្បីទទួលបានសេវាដឹកឥតគិតថ្លៃ')}`
                     : `Add ${formatUSD(100 - subtotal)} ${t('cart_free_shipping_remaining', 'away from Free Express Delivery')}`}
                 </span>
               </div>

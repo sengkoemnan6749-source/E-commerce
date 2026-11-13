@@ -78,11 +78,11 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
     setGeneralError('');
 
     if (!signInEmail.trim()) {
-      setGeneralError(language === 'kh' ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល' : 'Please enter your email address');
+      setGeneralError(language === 'km' ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល' : 'Please enter your email address');
       return;
     }
     if (!signInPassword.trim()) {
-      setGeneralError(language === 'kh' ? 'សូមបញ្ចូលពាក្យសម្ងាត់' : 'Please enter your password');
+      setGeneralError(language === 'km' ? 'សូមបញ្ចូលពាក្យសម្ងាត់' : 'Please enter your password');
       return;
     }
 
@@ -91,14 +91,14 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
       const res = await login(signInEmail, signInPassword);
       if (res.success) {
         addToast(
-          language === 'kh'
+          language === 'km'
             ? `សូមស្វាគមន៍ការត្រឡប់មកវិញ, ${res.user.name || res.user.fullName || 'សមាជិក'}!`
             : `Welcome back, ${res.user.name || res.user.fullName || 'Member'}!`,
           'success'
         );
         navigate(from, { replace: true });
       } else {
-        setGeneralError(res.message || (language === 'kh' ? 'ការចូលមិនត្រឹមត្រូវ សូមពិនិត្យឡើងវិញ' : 'Login failed. Please check credentials.'));
+        setGeneralError(res.message || (language === 'km' ? 'ការចូលមិនត្រឹមត្រូវ សូមពិនិត្យឡើងវិញ' : 'Login failed. Please check credentials.'));
       }
     } catch (err) {
       setGeneralError(err.message || 'An unexpected error occurred');
@@ -113,21 +113,21 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
     const errs = {};
 
     if (!signUpAgreed) {
-      errs.agreed = language === 'kh' ? 'សូមយល់ព្រមលើលក្ខខណ្ឌប្រើប្រាស់' : 'Please accept the Terms of Service and Privacy Policy';
+      errs.agreed = language === 'km' ? 'សូមយល់ព្រមលើលក្ខខណ្ឌប្រើប្រាស់' : 'Please accept the Terms of Service and Privacy Policy';
     }
     if (!signUpData.name.trim()) {
-      errs.name = language === 'kh' ? 'សូមបញ្ចូលឈ្មោះពេញរបស់អ្នក' : 'Full name is required';
+      errs.name = language === 'km' ? 'សូមបញ្ចូលឈ្មោះពេញរបស់អ្នក' : 'Full name is required';
     }
     if (!signUpData.email.trim()) {
-      errs.email = language === 'kh' ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល' : 'Email address is required';
+      errs.email = language === 'km' ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល' : 'Email address is required';
     } else if (!validateEmail(signUpData.email)) {
-      errs.email = language === 'kh' ? 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ' : 'Please enter a valid email address';
+      errs.email = language === 'km' ? 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ' : 'Please enter a valid email address';
     }
     if (!signUpData.password || signUpData.password.length < 6) {
-      errs.password = language === 'kh' ? 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៦ ខ្ទង់' : 'Password must be at least 6 characters';
+      errs.password = language === 'km' ? 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៦ ខ្ទង់' : 'Password must be at least 6 characters';
     }
     if (signUpData.password !== signUpData.confirmPassword) {
-      errs.confirmPassword = language === 'kh' ? 'ពាក្យសម្ងាត់ទាំងពីរមិនត្រូវគ្នាទេ' : 'Passwords do not match';
+      errs.confirmPassword = language === 'km' ? 'ពាក្យសម្ងាត់ទាំងពីរមិនត្រូវគ្នាទេ' : 'Passwords do not match';
     }
 
     if (Object.keys(errs).length > 0) {
@@ -140,7 +140,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
       const res = await register(signUpData);
       if (res.success) {
         addToast(
-          language === 'kh' ? 'បានបង្កើតគណនីដោយជោគជ័យ! សូមស្វាគមន៍មកកាន់ TechTonic' : 'Account created successfully! Welcome to TechTonic.',
+          language === 'km' ? 'បានបង្កើតគណនីដោយជោគជ័យ! សូមស្វាគមន៍មកកាន់ TechTonic' : 'Account created successfully! Welcome to TechTonic.',
           'success'
         );
         navigate(from, { replace: true });
@@ -158,7 +158,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
     setLoading(true);
     try {
       await login('sara.meng@techtonic.dev', 'demopass123');
-      addToast(language === 'kh' ? 'បានចូលជាអតិថិជន (Sara Meng)' : 'Logged in as Customer (Sara Meng)', 'success');
+      addToast(language === 'km' ? 'បានចូលជាអតិថិជន (Sara Meng)' : 'Logged in as Customer (Sara Meng)', 'success');
       navigate('/account', { replace: true });
     } finally {
       setLoading(false);
@@ -169,7 +169,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
     setLoading(true);
     try {
       await login('admin@techtonic.dev', 'adminpass123');
-      addToast(language === 'kh' ? 'បានចូលជាអ្នកគ្រប់គ្រងហាង (Admin)' : 'Logged in as Store Admin', 'success');
+      addToast(language === 'km' ? 'បានចូលជាអ្នកគ្រប់គ្រងហាង (Admin)' : 'Logged in as Store Admin', 'success');
       navigate('/admin', { replace: true });
     } finally {
       setLoading(false);
@@ -180,7 +180,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
     setLoading(true);
     try {
       addToast(
-        language === 'kh' ? `បានចូលគណនីតាម ${provider} (Demo mode)` : `Signed in with ${provider} (Demo mode)`,
+        language === 'km' ? `បានចូលគណនីតាម ${provider} (Demo mode)` : `Signed in with ${provider} (Demo mode)`,
         'success'
       );
       await login(`demo.${provider.toLowerCase()}@techtonic.dev`, 'socialpass123');
@@ -222,17 +222,17 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
             to="/shop"
             className="text-xs font-semibold text-slate-300 hover:text-white transition-colors hidden sm:inline"
           >
-            {language === 'kh' ? 'ត្រឡប់ទៅហាង' : 'Continue Shopping'}
+            {language === 'km' ? 'ត្រឡប់ទៅហាង' : 'Continue Shopping'}
           </Link>
 
           {/* Compact Language Toggle */}
           <button
             type="button"
-            onClick={() => setLanguage(language === 'en' ? 'kh' : 'en')}
+            onClick={() => setLanguage(language === 'en' ? 'km' : 'en')}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/80 hover:bg-slate-800 text-slate-200 font-bold text-xs transition-colors cursor-pointer border border-slate-700"
             title="Toggle Language"
           >
-            <span>{language === 'kh' ? '🇰🇭 ភាសាខ្មែរ' : '🇺🇸 EN'}</span>
+            <span>{language === 'km' ? '🇰🇭 ភាសាខ្មែរ' : '🇺🇸 EN'}</span>
           </button>
         </div>
       </header>
@@ -247,15 +247,15 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
             <div>
               <h2 className="text-2xl font-bold text-white tracking-tight leading-snug">
                 {activeTab === 'signin'
-                  ? (language === 'kh' ? 'ស្វាគមន៍ការត្រឡប់មកវិញ' : 'Welcome back to TechTonic.')
-                  : (language === 'kh' ? 'បង្កើតគណនី TechTonic' : 'Your TechTonic Store Account.')}
+                  ? (language === 'km' ? 'ស្វាគមន៍ការត្រឡប់មកវិញ' : 'Welcome back to TechTonic.')
+                  : (language === 'km' ? 'បង្កើតគណនី TechTonic' : 'Your TechTonic Store Account.')}
               </h2>
               <p className="text-xs text-slate-400 mt-2.5 leading-relaxed">
                 {activeTab === 'signin'
-                  ? (language === 'kh'
+                  ? (language === 'km'
                     ? 'ចូលគណនីដើម្បីគ្រប់គ្រងការបញ្ជាទិញ ធានាផលិតផល និងតាមដានការដឹកជញ្ជូន។'
                     : 'Manage your orders, saved addresses, and delivery tracking in one place.')
-                  : (language === 'kh'
+                  : (language === 'km'
                     ? 'រក្សាទុកអាសយដ្ឋានដឹកជញ្ជូន ពិនិត្យវិក្កយបត្រ និងតាមដានទំនិញរបស់អ្នក។'
                     : 'Save shipping addresses, view invoices, and track every order.')}
               </p>
@@ -281,7 +281,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
 
             {/* Quiet Storefront Footer */}
             <div className="pt-4 border-t border-slate-800/70 text-[11px] text-slate-500">
-              {language === 'kh' ? 'ហាងផ្លូវការ TechTonic · ភ្នំពេញ' : 'TechTonic Official Storefront · Phnom Penh'}
+              {language === 'km' ? 'ហាងផ្លូវការ TechTonic · ភ្នំពេញ' : 'TechTonic Official Storefront · Phnom Penh'}
             </div>
           </div>
 
@@ -299,7 +299,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  {language === 'kh' ? 'ចូលគណនី' : 'Sign In'}
+                  {language === 'km' ? 'ចូលគណនី' : 'Sign In'}
                 </button>
                 <button
                   type="button"
@@ -310,7 +310,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
-                  {language === 'kh' ? 'បង្កើតគណនី' : 'Create Account'}
+                  {language === 'km' ? 'បង្កើតគណនី' : 'Create Account'}
                 </button>
               </div>
 
@@ -318,13 +318,13 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
               <div className="mb-6">
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                   {activeTab === 'signin'
-                    ? (language === 'kh' ? 'ចូលប្រើប្រាស់គណនីរបស់អ្នក' : 'Welcome back')
-                    : (language === 'kh' ? 'បង្កើតគណនី TechTonic ថ្មី' : 'Create an account')}
+                    ? (language === 'km' ? 'ចូលប្រើប្រាស់គណនីរបស់អ្នក' : 'Welcome back')
+                    : (language === 'km' ? 'បង្កើតគណនី TechTonic ថ្មី' : 'Create an account')}
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">
                   {activeTab === 'signin'
-                    ? (language === 'kh' ? 'សូមបញ្ចូលអ៊ីមែល និងពាក្យសម្ងាត់របស់អ្នកដើម្បីបន្ត។' : 'Enter your email and password to access your account.')
-                    : (language === 'kh' ? 'បញ្ចូលព័ត៌មានខាងក្រោមដើម្បីបង្កើតគណនី។' : 'Enter your details below to get started.')}
+                    ? (language === 'km' ? 'សូមបញ្ចូលអ៊ីមែល និងពាក្យសម្ងាត់របស់អ្នកដើម្បីបន្ត។' : 'Enter your email and password to access your account.')
+                    : (language === 'km' ? 'បញ្ចូលព័ត៌មានខាងក្រោមដើម្បីបង្កើតគណនី។' : 'Enter your details below to get started.')}
                 </p>
               </div>
 
@@ -333,7 +333,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                 <div className="mb-5 p-3 rounded-xl bg-blue-50 border border-blue-200 flex items-center gap-2.5 text-xs text-blue-900 font-medium">
                   <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
                   <span>
-                    {language === 'kh'
+                    {language === 'km'
                       ? 'សូមចូលគណនីដើម្បីបន្តការទូទាត់ប្រាក់៖ ទំនិញរបស់អ្នកត្រូវបានរក្សាទុកជាស្រេច។'
                       : 'Sign in to complete checkout: Your cart items are saved.'}
                   </span>
@@ -356,7 +356,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                   {/* Email Address */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      {language === 'kh' ? 'អាសយដ្ឋានអ៊ីមែល' : 'Email Address'}
+                      {language === 'km' ? 'អាសយដ្ឋានអ៊ីមែល' : 'Email Address'}
                     </label>
                     <div className="relative">
                       <input
@@ -364,7 +364,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                         autoComplete="email"
                         value={signInEmail}
                         onChange={(e) => setSignInEmail(e.target.value)}
-                        placeholder={language === 'kh' ? 'you@domain.com' : 'you@example.com'}
+                        placeholder={language === 'km' ? 'you@domain.com' : 'you@example.com'}
                         className="w-full h-11 pl-10 pr-4 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-hidden font-medium"
                       />
                       <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -375,14 +375,14 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="block text-xs font-bold text-slate-700">
-                        {language === 'kh' ? 'ពាក្យសម្ងាត់' : 'Password'}
+                        {language === 'km' ? 'ពាក្យសម្ងាត់' : 'Password'}
                       </label>
                       <button
                         type="button"
-                        onClick={() => addToast(language === 'kh' ? 'តំណភ្ជាប់កំណត់ឡើងវិញត្រូវបានផ្ញើ' : 'Password reset link sent to your email', 'info')}
+                        onClick={() => addToast(language === 'km' ? 'តំណភ្ជាប់កំណត់ឡើងវិញត្រូវបានផ្ញើ' : 'Password reset link sent to your email', 'info')}
                         className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
                       >
-                        {language === 'kh' ? 'ភ្លេចពាក្យសម្ងាត់?' : 'Forgot password?'}
+                        {language === 'km' ? 'ភ្លេចពាក្យសម្ងាត់?' : 'Forgot password?'}
                       </button>
                     </div>
                     <div className="relative">
@@ -415,7 +415,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                       className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
                     <label htmlFor="remember-me" className="text-xs text-slate-600 font-medium cursor-pointer select-none">
-                      {language === 'kh' ? 'ចងចាំខ្ញុំលើឧបករណ៍នេះ' : 'Remember me on this device'}
+                      {language === 'km' ? 'ចងចាំខ្ញុំលើឧបករណ៍នេះ' : 'Remember me on this device'}
                     </label>
                   </div>
 
@@ -429,7 +429,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                       <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <>
-                        <span>{language === 'kh' ? 'ចូលគណនី' : 'Sign In'}</span>
+                        <span>{language === 'km' ? 'ចូលគណនី' : 'Sign In'}</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
@@ -443,7 +443,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                   {/* Full Name */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {language === 'kh' ? 'ឈ្មោះពេញ' : 'Full Name'}
+                      {language === 'km' ? 'ឈ្មោះពេញ' : 'Full Name'}
                     </label>
                     <div className="relative">
                       <input
@@ -452,7 +452,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                         autoComplete="name"
                         value={signUpData.name}
                         onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
-                        placeholder={language === 'kh' ? 'ឧ. សារ៉ា ម៉េង' : 'e.g. Sara Meng'}
+                        placeholder={language === 'km' ? 'ឧ. សារ៉ា ម៉េង' : 'e.g. Sara Meng'}
                         className={`w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-hidden font-medium ${
                           signUpErrors.name ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10'
                         }`}
@@ -465,7 +465,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                   {/* Email Address */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {language === 'kh' ? 'អាសយដ្ឋានអ៊ីមែល' : 'Email Address'}
+                      {language === 'km' ? 'អាសយដ្ឋានអ៊ីមែល' : 'Email Address'}
                     </label>
                     <div className="relative">
                       <input
@@ -488,7 +488,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        {language === 'kh' ? 'ពាក្យសម្ងាត់' : 'Password'}
+                        {language === 'km' ? 'ពាក្យសម្ងាត់' : 'Password'}
                       </label>
                       <div className="relative">
                         <input
@@ -514,7 +514,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
 
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        {language === 'kh' ? 'ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់' : 'Confirm Password'}
+                        {language === 'km' ? 'ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់' : 'Confirm Password'}
                       </label>
                       <div className="relative">
                         <input
@@ -549,13 +549,13 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                       className="w-4 h-4 mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
                     <label htmlFor="signup-agreed" className="cursor-pointer select-none">
-                      <span>{language === 'kh' ? 'ខ្ញុំយល់ព្រមលើ ' : 'I agree to the '}</span>
+                      <span>{language === 'km' ? 'ខ្ញុំយល់ព្រមលើ ' : 'I agree to the '}</span>
                       <Link to="/about" className="text-slate-800 font-bold hover:underline">
-                        {language === 'kh' ? 'លក្ខខណ្ឌប្រើប្រាស់' : 'Terms of Service'}
+                        {language === 'km' ? 'លក្ខខណ្ឌប្រើប្រាស់' : 'Terms of Service'}
                       </Link>{' '}
-                      <span>{language === 'kh' ? 'និង ' : 'and '}</span>
+                      <span>{language === 'km' ? 'និង ' : 'and '}</span>
                       <Link to="/about" className="text-slate-800 font-bold hover:underline">
-                        {language === 'kh' ? 'គោលការណ៍ឯកជនភាព' : 'Privacy Policy'}
+                        {language === 'km' ? 'គោលការណ៍ឯកជនភាព' : 'Privacy Policy'}
                       </Link>
                     </label>
                   </div>
@@ -571,7 +571,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                       <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <>
-                        <span>{language === 'kh' ? 'បង្កើតគណនីថ្មី' : 'Create Account'}</span>
+                        <span>{language === 'km' ? 'បង្កើតគណនីថ្មី' : 'Create Account'}</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
@@ -586,7 +586,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                 </div>
                 <div className="relative flex justify-center text-[11px] uppercase tracking-wider text-slate-400">
                   <span className="bg-white px-3 font-semibold">
-                    {language === 'kh' ? 'ឬចូលតាមរយៈ' : 'Or continue with'}
+                    {language === 'km' ? 'ឬចូលតាមរយៈ' : 'Or continue with'}
                   </span>
                 </div>
               </div>
@@ -615,14 +615,14 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                   />
                 </svg>
-                <span>{language === 'kh' ? 'បន្តជាមួយ Google' : 'Continue with Google'}</span>
+                <span>{language === 'km' ? 'បន្តជាមួយ Google' : 'Continue with Google'}</span>
               </button>
             </div>
 
             {/* Quick Demo Accounts Bar */}
             <div className="mt-8 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
               <span className="text-slate-400 font-medium">
-                {language === 'kh' ? 'ចូលសាកល្បង៖' : 'Demo access:'}
+                {language === 'km' ? 'ចូលសាកល្បង៖' : 'Demo access:'}
               </span>
               <div className="flex items-center gap-3">
                 <button
@@ -632,7 +632,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                   className="text-slate-600 hover:text-blue-600 font-semibold text-xs transition-colors cursor-pointer"
                   title="Login as customer Sara Meng"
                 >
-                  {language === 'kh' ? 'អតិថិជន (Sara)' : 'Customer (Sara)'}
+                  {language === 'km' ? 'អតិថិជន (Sara)' : 'Customer (Sara)'}
                 </button>
                 <span className="text-slate-300">&middot;</span>
                 <button
@@ -654,15 +654,15 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
       <footer className="w-full py-4 px-6 border-t border-slate-200/70 bg-white text-center text-xs text-slate-400">
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 mb-1">
           <Link to="/about" className="hover:text-slate-600 transition-colors">
-            {language === 'kh' ? 'អំពី TechTonic' : 'About TechTonic'}
+            {language === 'km' ? 'អំពី TechTonic' : 'About TechTonic'}
           </Link>
           <span>•</span>
           <Link to="/about" className="hover:text-slate-600 transition-colors">
-            {language === 'kh' ? 'លក្ខខណ្ឌ' : 'Terms'}
+            {language === 'km' ? 'លក្ខខណ្ឌ' : 'Terms'}
           </Link>
           <span>•</span>
           <Link to="/about" className="hover:text-slate-600 transition-colors">
-            {language === 'kh' ? 'ឯកជនភាព' : 'Privacy'}
+            {language === 'km' ? 'ឯកជនភាព' : 'Privacy'}
           </Link>
           <span>•</span>
           <a
@@ -671,7 +671,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
             rel="noreferrer"
             className="hover:text-slate-600 transition-colors"
           >
-            {language === 'kh' ? 'ជំនួយ' : 'Support'}
+            {language === 'km' ? 'ជំនួយ' : 'Support'}
           </a>
         </div>
         <div>

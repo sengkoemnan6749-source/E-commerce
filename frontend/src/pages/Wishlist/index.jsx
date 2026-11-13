@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, ArrowLeft, Trash2, ArrowRight, Star, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { useWishlist, useCart, useToast } from '../../store/StoreContext';
+import { useWishlist, useLanguage } from '../../store/StoreContext';
 import { formatUSD } from '../../utils/formatPrice';
+import { translateCategory } from '../../utils/translations';
 import Button from '../../components/common/Button';
 
 export default function Wishlist() {
   const { wishlist, removeFromWishlist, clearWishlist, moveToCart, moveAllWishlistToCart } = useWishlist();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   const totalValue = wishlist.reduce((acc, item) => acc + Number(item.price || 0), 0);
@@ -18,17 +20,17 @@ export default function Wishlist() {
           <Heart className="w-10 h-10 fill-rose-200" />
         </div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-3">
-          Your Wishlist is Empty
+          {t('wishlist_empty_title', 'Your Wishlist is Empty')}
         </h1>
         <p className="text-sm text-slate-500 max-w-md mx-auto mb-8 leading-relaxed">
-          You haven't saved any hardware yet. Explore our studio acoustics, titanium wearables, and GaN fast chargers to start curating your setup.
+          {t('wishlist_empty_desc', "You haven't saved any hardware yet. Explore our studio acoustics, titanium wearables, and GaN fast chargers to start curating your setup.")}
         </p>
         <Link to="/shop">
           <button
             type="button"
             className="inline-flex items-center justify-center font-bold px-8 py-3.5 rounded-xl text-sm bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
           >
-            <span>Explore Hardware Catalog</span>
+            <span>{t('wishlist_explore', 'Explore Hardware Catalog')}</span>
             <ArrowRight className="w-4 h-4 ml-2" />
           </button>
         </Link>
@@ -43,13 +45,21 @@ export default function Wishlist() {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200/60 text-rose-700 text-xs font-bold uppercase tracking-wider mb-3">
             <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
-            <span>Saved Hardware</span>
+            <span>{t('wishlist_badge', 'Saved Hardware')}</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Your Wishlist
+            {t('wishlist_title', 'Your Wishlist')}
           </h1>
           <p className="text-sm text-slate-500 mt-1 max-w-xl">
-            You have <strong className="text-slate-900">{wishlist.length}</strong> saved {wishlist.length === 1 ? 'item' : 'items'} worth <strong className="text-slate-900">{formatUSD(totalValue)}</strong>. Move them to your cart with one click.
+            {language === 'km' ? (
+              <>
+                អ្នកមានទំនិញរក្សាទុកចំនួន <strong className="text-slate-900">{wishlist.length}</strong> ដែលមានតម្លៃសរុប <strong className="text-slate-900">{formatUSD(totalValue)}</strong>។ ផ្ទេរទៅកន្ត្រកទំនិញដោយចុចតែម្ដង។
+              </>
+            ) : (
+              <>
+                You have <strong className="text-slate-900">{wishlist.length}</strong> saved {wishlist.length === 1 ? 'item' : 'items'} worth <strong className="text-slate-900">{formatUSD(totalValue)}</strong>. Move them to your cart with one click.
+              </>
+            )}
           </p>
         </div>
 
@@ -60,7 +70,7 @@ export default function Wishlist() {
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 shadow-md shadow-blue-500/20 transition-all transform hover:-translate-y-0.5 active:scale-[0.98]"
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>Move All ({wishlist.length}) to Cart</span>
+            <span>{t('wishlist_move_all', 'Move All ({count}) to Cart').replace('{count}', wishlist.length)}</span>
           </button>
 
           <button
@@ -69,7 +79,7 @@ export default function Wishlist() {
             className="inline-flex items-center gap-1.5 px-4 py-3 rounded-xl text-xs font-semibold text-slate-500 hover:text-rose-600 hover:bg-rose-50 border border-slate-200/80 transition-all"
           >
             <Trash2 className="w-4 h-4" />
-            <span>Clear Wishlist</span>
+            <span>{t('wishlist_clear', 'Clear Wishlist')}</span>
           </button>
         </div>
       </div>
@@ -111,7 +121,7 @@ export default function Wishlist() {
                 {/* Category & Rating */}
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
-                    {item.category || item.categoryName || 'Flagship Hardware'}
+                    {translateCategory(item.category || item.categoryName || 'audio', language)}
                   </span>
                   <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">
                     <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
@@ -138,7 +148,7 @@ export default function Wishlist() {
                     </span>
                   )}
                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200/60 ml-auto">
-                    In Stock
+                    {t('label_in_stock', 'In Stock')}
                   </span>
                 </div>
               </div>
@@ -151,14 +161,14 @@ export default function Wishlist() {
                   className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                 >
                   <ShoppingBag className="w-4 h-4" />
-                  <span>Move to Cart</span>
+                  <span>{t('wishlist_move_to_cart', 'Move to Cart')}</span>
                 </button>
 
                 <Link
                   to={`/product/${item.id}`}
                   className="w-full py-2 px-3 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 flex items-center justify-center gap-1 transition-colors"
                 >
-                  <span>View Specifications</span>
+                  <span>{t('btn_view_details', 'View Specifications')}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -174,7 +184,7 @@ export default function Wishlist() {
           className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Continue Shopping Hardware Catalog</span>
+          <span>{t('cart_continue_shopping', 'Continue Shopping Hardware Catalog')}</span>
         </Link>
       </div>
     </div>

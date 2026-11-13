@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Tag, ShieldCheck, Truck, Check } from 'lucide-react';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
-import { useCart, useAuth, useToast } from '../../store/StoreContext';
+import { useCart, useAuth, useToast, useLanguage } from '../../store/StoreContext';
 import Button from '../common/Button';
 
 export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
@@ -18,6 +18,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
   } = useCart();
   const { user } = useAuth();
   const { addToast } = useToast();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   const [couponCode, setCouponCode] = useState('');
@@ -39,7 +40,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
 
   const handleProceed = () => {
     if (!user) {
-      addToast('Please sign in or register to proceed to checkout', 'info');
+      addToast(t('cart_sign_in_checkout_toast', 'Please sign in or register to proceed to checkout'), 'info');
       navigate('/login?redirect=/checkout');
       return;
     }
@@ -57,7 +58,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm flex flex-col gap-5">
       <h3 className="text-base sm:text-lg font-extrabold text-slate-900 border-b border-slate-100 pb-3">
-        Order Summary
+        {t('cart_order_summary', 'Order Summary')}
       </h3>
 
       {/* Free Shipping Progress bar */}
@@ -66,7 +67,9 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
           <span className="text-blue-950 flex items-center gap-1.5">
             <Truck className="w-3.5 h-3.5 text-blue-600" />
             {remainingForFreeShipping === 0
-              ? 'Congratulations! You unlocked FREE express delivery'
+              ? t('cart_free_shipping_eligible', 'Congratulations! You unlocked FREE express delivery')
+              : language === 'km'
+              ? `${t('cart_add_prefix', 'បន្ថែម')} ${formatUSD(remainingForFreeShipping)} ${t('cart_free_shipping_remaining', 'ទៀត ដើម្បីទទួលបានសេវាដឹកឥតគិតថ្លៃ')}`
               : `Add ${formatUSD(remainingForFreeShipping)} more for FREE Express delivery`}
           </span>
         </div>
@@ -81,15 +84,17 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
       {/* Price breakdown */}
       <div className="space-y-3 text-sm text-slate-600">
         <div className="flex justify-between items-center">
-          <span>Subtotal ({items.reduce((s, i) => s + i.quantity, 0)} items)</span>
+          <span>
+            {t('cart_subtotal', 'Subtotal')} ({items.reduce((s, i) => s + i.quantity, 0)} {t('cart_items_count', 'items')})
+          </span>
           <span className="font-semibold text-slate-900">{formatUSD(subtotal)}</span>
         </div>
 
         <div className="flex justify-between items-center">
-          <span>Estimated Shipping</span>
+          <span>{t('cart_estimated_shipping', 'Estimated Shipping')}</span>
           <span className="font-semibold text-slate-900">
             {shippingFee === 0 ? (
-              <span className="text-emerald-600 font-bold">FREE</span>
+              <span className="text-emerald-600 font-bold">{t('cart_free', 'FREE')}</span>
             ) : (
               formatUSD(shippingFee)
             )}
@@ -100,7 +105,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
           <div className="flex justify-between items-center text-emerald-600 font-semibold bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">
             <div className="flex items-center gap-1.5 text-xs">
               <Tag className="w-3.5 h-3.5" />
-              <span>Promo ({appliedCoupon.code})</span>
+              <span>{appliedCoupon.code}</span>
             </div>
             <div className="flex items-center gap-2">
               <span>-{formatUSD(discountAmount)}</span>
@@ -108,11 +113,11 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
                 type="button"
                 onClick={() => {
                   removeCoupon();
-                  addToast('Coupon removed', 'info');
+                  addToast(language === 'km' ? 'បានដកកូដបញ្ចុះតម្លៃ' : 'Coupon removed', 'info');
                 }}
                 className="text-[10px] text-emerald-700 underline hover:text-emerald-900"
               >
-                Remove
+                {t('cart_remove', 'Remove')}
               </button>
             </div>
           </div>
@@ -120,8 +125,8 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
 
         <div className="pt-3 border-t border-slate-200 flex justify-between items-baseline">
           <div>
-            <span className="text-base font-extrabold text-slate-950 block">Total</span>
-            <span className="text-[11px] text-slate-400">Includes all taxes and duties</span>
+            <span className="text-base font-extrabold text-slate-950 block">{t('cart_total', 'Total')}</span>
+            <span className="text-[11px] text-slate-400">{t('cart_includes_vat', 'Includes all taxes and duties')}</span>
           </div>
           <div className="text-right">
             <span className="text-2xl font-black text-slate-950 tracking-tight block">
@@ -138,7 +143,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
       {!appliedCoupon && (
         <form onSubmit={handleApply} className="pt-2">
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-            Discount Code
+            {t('cart_discount_code', 'Discount Code')}
           </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -146,7 +151,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
                 type="text"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                placeholder="Try TECH10 or SAVE5"
+                placeholder="TECH10 / SAVE5"
                 className="w-full uppercase rounded-xl border border-slate-300 px-3 py-2 text-xs font-mono font-bold text-slate-800 placeholder:normal-case placeholder:font-sans placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
             </div>
@@ -157,7 +162,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
               loading={applying}
               disabled={!couponCode.trim()}
             >
-              Apply
+              {t('cart_apply', 'Apply')}
             </Button>
           </div>
         </form>
@@ -173,7 +178,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
             disabled={items.length === 0}
             onClick={handleProceed}
           >
-            <span>Proceed to Checkout</span>
+            <span>{t('cart_checkout', 'Proceed to Checkout')}</span>
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
 
@@ -181,7 +186,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
             to="/shop"
             className="block text-center text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors"
           >
-            Or Continue Shopping
+            {t('cart_continue_shopping', 'Or Continue Shopping')}
           </Link>
         </div>
       )}
@@ -189,7 +194,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
       {/* Trust Seal */}
       <div className="pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400">
         <ShieldCheck className="w-4 h-4 text-emerald-600" />
-        <span>256-bit SSL encrypted checkout</span>
+        <span>{t('footer_ssl', '256-bit SSL encrypted checkout')}</span>
       </div>
     </div>
   );

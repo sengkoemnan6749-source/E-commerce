@@ -445,10 +445,10 @@ export default function Shop() {
       <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-            Engineered Hardware & Gear
+            {t('shop_title', 'Engineered Hardware & Gear')}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-            Reference audio, tactile mechanical peripherals, and fast GaN power accessories benchmarked for power users.
+            {t('shop_subtitle', 'Reference audio, tactile mechanical peripherals, and fast GaN power accessories benchmarked for power users.')}
           </p>
         </div>
       </div>
@@ -460,7 +460,7 @@ export default function Shop() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search headphones, keyboards, chargers, smartwatches..."
+            placeholder={t('shop_search_placeholder', 'Search headphones, keyboards, chargers, smartwatches...')}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -487,22 +487,22 @@ export default function Shop() {
             className="lg:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200"
           >
             <Filter className="w-3.5 h-3.5" />
-            <span>Filters ({hasActiveFilters ? 'Active' : 'All'})</span>
+            <span>{t('shop_filters', 'Filters')} ({hasActiveFilters ? (language === 'km' ? 'សកម្ម' : 'Active') : t('shop_all_prefix', 'All')})</span>
           </button>
 
           {/* Sort Dropdown */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400 font-medium hidden sm:inline">Sort:</span>
+            <span className="text-xs text-slate-400 font-medium hidden sm:inline">{t('shop_sort_label', 'Sort:')}</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer"
             >
-              <option value="featured">Featured First</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="rating">Highest Rated</option>
-              <option value="newest">Newest Releases</option>
+              <option value="featured">{t('shop_sort_featured', 'Featured First')}</option>
+              <option value="price-low">{t('shop_sort_price_low', 'Price: Low to High')}</option>
+              <option value="price-high">{t('shop_sort_price_high', 'Price: High to Low')}</option>
+              <option value="rating">{t('shop_sort_rating', 'Highest Rated')}</option>
+              <option value="newest">{t('shop_sort_newest', 'Newest Releases')}</option>
             </select>
           </div>
         </div>
@@ -512,11 +512,11 @@ export default function Shop() {
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-2 mb-6 animate-fadeIn">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">
-            Active Filters:
+            {t('shop_active_filters', 'Active Filters:')}
           </span>
           {selectedCategory !== 'All' && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-              <span>{selectedCategory}</span>
+              <span>{translateCategory(selectedCategory, language)}</span>
               <button
                 type="button"
                 onClick={() => setSelectedCategory('All')}
@@ -540,7 +540,7 @@ export default function Shop() {
           )}
           {maxPrice < 350 && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-              <span>Under {formatUSD(maxPrice)}</span>
+              <span>{t('shop_under', 'Under')} {formatUSD(maxPrice)}</span>
               <button
                 type="button"
                 onClick={() => setMaxPrice(350)}
@@ -552,7 +552,7 @@ export default function Shop() {
           )}
           {inStockOnly && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span>In Stock Only</span>
+              <span>{t('shop_in_stock_only', 'In Stock Only')}</span>
               <button
                 type="button"
                 onClick={() => setInStockOnly(false)}
@@ -565,7 +565,7 @@ export default function Shop() {
           {isWishlistOnly && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
               <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
-              <span>Wishlist Only ({wishlist.length})</span>
+              <span>{t('shop_wishlist_only', 'Wishlist Only')} ({wishlist.length})</span>
               <button
                 type="button"
                 onClick={() => {
@@ -581,7 +581,7 @@ export default function Shop() {
           )}
           {selectedSubcategory !== 'All' && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-              <span>Subcategory: {selectedSubcategory}</span>
+              <span>{t('shop_subcategory', 'Subcategory')}: {translateSubcategory(selectedSubcategory, language)}</span>
               <button
                 type="button"
                 onClick={() => handleSelectSubcategory('All')}
@@ -596,7 +596,7 @@ export default function Shop() {
             onClick={handleResetFilters}
             className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline ml-2"
           >
-            Clear All
+            {t('shop_clear_all', 'Clear All')}
           </button>
         </div>
       )}
@@ -609,10 +609,10 @@ export default function Shop() {
             <div className="flex items-center justify-between font-bold text-slate-900 pb-4 border-b border-slate-100 mb-5">
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-extrabold">Filter Hardware</span>
+                <span className="text-sm font-extrabold">{t('shop_filter_title', 'Filter Hardware')}</span>
               </div>
               <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                {filteredProducts.length} items
+                {filteredProducts.length} {t('shop_items', 'items')}
               </span>
             </div>
             <FilterSidebar />
@@ -630,10 +630,10 @@ export default function Shop() {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-900">
-                    Showing your saved wishlist items ({filteredProducts.length})
+                    {t('shop_wishlist_showing', 'Showing your saved wishlist items')} ({filteredProducts.length})
                   </p>
                   <p className="text-[11px] text-slate-600">
-                    Filter active: displaying hardware saved to your personal wishlist.
+                    {t('shop_wishlist_desc', 'Filter active: displaying hardware saved to your personal wishlist.')}
                   </p>
                 </div>
               </div>
@@ -642,7 +642,7 @@ export default function Shop() {
                   to="/wishlist"
                   className="text-xs font-bold text-rose-700 hover:text-rose-900 bg-white hover:bg-rose-100/50 border border-rose-200 px-3 py-1.5 rounded-lg transition-colors"
                 >
-                  Full Wishlist Page
+                  {t('shop_wishlist_full_page', 'Full Wishlist Page')}
                 </Link>
                 <button
                   type="button"
@@ -654,7 +654,7 @@ export default function Shop() {
                   className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1"
                 >
                   <X className="w-3.5 h-3.5" />
-                  <span>Clear Filter</span>
+                  <span>{t('shop_clear_filter', 'Clear Filter')}</span>
                 </button>
               </div>
             </div>
@@ -672,7 +672,11 @@ export default function Shop() {
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                     }`}
                 >
-                  <span>All {selectedCategory === 'All' ? 'Products' : selectedCategory}</span>
+                  <span>
+                    {selectedCategory === 'All'
+                      ? t('shop_all_products', 'All Products')
+                      : `${t('shop_all_prefix', 'All')} ${translateCategory(selectedCategory, language)}`}
+                  </span>
                 </button>
                 {activeSubcategories.map((sub) => {
                   const isSubActive =
@@ -694,7 +698,7 @@ export default function Shop() {
                           : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-slate-900'
                         }`}
                     >
-                      <span>{sub.name}</span>
+                      <span>{translateSubcategory(sub.name, language)}</span>
                       {subCount > 0 && (
                         <span
                           className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isSubActive
@@ -714,18 +718,18 @@ export default function Shop() {
 
           <div className="flex items-center justify-between text-xs text-slate-500 font-medium px-1">
             <span>
-              Showing <strong className="text-slate-900 font-bold">{filteredProducts.length}</strong> devices
+              {t('shop_showing', 'Showing')} <strong className="text-slate-900 font-bold">{filteredProducts.length}</strong> {t('shop_devices', 'devices')}
             </span>
             <div className="flex items-center gap-1.5 font-bold">
               {selectedCategory !== 'All' && (
-                <span className="text-blue-600">{selectedCategory}</span>
+                <span className="text-blue-600">{translateCategory(selectedCategory, language)}</span>
               )}
               {selectedCategory !== 'All' && selectedSubcategory !== 'All' && (
                 <span className="text-slate-300">/</span>
               )}
               {selectedSubcategory !== 'All' && (
                 <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
-                  {selectedSubcategory}
+                  {translateSubcategory(selectedSubcategory, language)}
                 </span>
               )}
             </div>
@@ -734,8 +738,8 @@ export default function Shop() {
           <ProductGrid
             products={paginatedProducts}
             columns="grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
-            emptyTitle={selectedSubcategory !== 'All' ? `No ${selectedSubcategory} currently in stock` : 'No products found'}
-            emptyMessage={selectedSubcategory !== 'All' ? `We are currently stocking new flagship batches for ${selectedSubcategory}. Check back soon or browse all gear in ${selectedCategory}!` : 'Try adjusting your filters or search keywords to find what you are looking for.'}
+            emptyTitle={t('shop_empty_title', 'No products found')}
+            emptyMessage={t('shop_empty_message', 'Try adjusting your filters or search keywords to find what you are looking for.')}
             onResetFilters={handleResetFilters}
           />
 
@@ -767,7 +771,7 @@ export default function Shop() {
                 <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
                   <div className="flex items-center gap-2 font-black text-slate-900">
                     <SlidersHorizontal className="w-4 h-4 text-blue-600" />
-                    <span>Filter Hardware</span>
+                    <span>{t('shop_filter_title', 'Filter Hardware')}</span>
                   </div>
                   <button
                     type="button"
@@ -787,7 +791,7 @@ export default function Shop() {
                   className="w-full"
                   onClick={() => setMobileFilterOpen(false)}
                 >
-                  Show {filteredProducts.length} Results
+                  {t('shop_show_results', 'Show {count} Results').replace('{count}', filteredProducts.length)}
                 </Button>
               </div>
             </div>

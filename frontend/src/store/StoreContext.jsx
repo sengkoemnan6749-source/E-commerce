@@ -15,16 +15,19 @@ export function StoreProvider({ children }) {
   // -------------------------------------------------------------
   const [language, setLanguageState] = useState(() => {
     try {
-      return localStorage.getItem(LANG_KEY) || 'en';
+      const saved = localStorage.getItem(LANG_KEY);
+      if (saved === 'kh') return 'km';
+      return saved || 'en';
     } catch {
       return 'en';
     }
   });
 
   const setLanguage = (lang) => {
-    setLanguageState(lang);
+    const normalized = lang === 'kh' ? 'km' : lang;
+    setLanguageState(normalized);
     try {
-      localStorage.setItem(LANG_KEY, lang);
+      localStorage.setItem(LANG_KEY, normalized);
     } catch (e) {
       console.error('Failed to save language preference:', e);
     }
@@ -33,7 +36,7 @@ export function StoreProvider({ children }) {
   // Sync HTML lang and class for typography optimization (Kantumruy Pro & relaxed line-height)
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      const isKh = language === 'kh';
+      const isKh = language === 'km' || language === 'kh';
       document.documentElement.lang = isKh ? 'km' : 'en';
       if (isKh) {
         document.documentElement.classList.add('lang-kh');

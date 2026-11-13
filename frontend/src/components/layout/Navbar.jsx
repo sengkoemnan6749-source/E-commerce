@@ -22,6 +22,7 @@ import {
 import { useCart, useAuth, useWishlist, useLanguage } from '../../store/StoreContext';
 import { productService } from '../../services/productService';
 import { formatUSD } from '../../utils/formatPrice';
+import { translateCategory, translateSubcategory } from '../../utils/translations';
 import HamburgerButton from '../common/HamburgerButton';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 
@@ -86,7 +87,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
   const { cartCount, setIsCartDrawerOpen } = useCart();
   const { user, isAuthenticated, logout, isAdmin, loginAsCustomer, loginAsAdmin } = useAuth();
   const { wishlist } = useWishlist();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -345,7 +346,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                   <div className="bg-[#091124] rounded-2xl shadow-2xl border border-slate-700/80 p-2 text-white backdrop-blur-xl">
                     <div className="px-3 py-2 border-b border-slate-800 mb-1">
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Product Categories
+                        {t('nav_product_categories', 'Product Categories')}
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -365,12 +366,12 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm font-bold text-slate-200 group-hover:text-sky-400 transition-colors">
-                                    {cat.name}
+                                    {translateCategory(cat.name, language)}
                                   </span>
                                   <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" />
                                 </div>
                                 <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">
-                                  {cat.description}
+                                  {t(`nav_cat_desc_${cat.id}`, cat.description)}
                                 </p>
                               </div>
                             </Link>
@@ -385,7 +386,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                                     onClick={() => setIsCategoryOpen(false)}
                                     className="text-[10px] font-bold text-slate-400 hover:text-sky-300 hover:bg-slate-700/70 bg-slate-800/80 px-2 py-0.5 rounded-md transition-colors"
                                   >
-                                    {sub.name}
+                                    {translateSubcategory(sub.name, language)}
                                   </Link>
                                 ))}
                               </div>
@@ -400,7 +401,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                         onClick={() => setIsCategoryOpen(false)}
                         className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-sky-400 hover:bg-slate-800/80 transition"
                       >
-                        <span>Browse Entire Catalog</span>
+                        <span>{t('nav_browse_catalog', 'Browse Entire Catalog')}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>
@@ -435,12 +436,14 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
             {isSearchOpen && searchQuery.trim() && (
               <div className="absolute left-0 right-0 mt-2 bg-[#091124] rounded-2xl shadow-2xl border border-slate-700/80 overflow-hidden z-50 animate-fadeIn divide-y divide-slate-800">
                 <div className="p-3 bg-slate-900/80 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider flex justify-between">
-                  <span>Hardware Results</span>
-                  <span className="text-sky-400">{searchResults.length} found</span>
+                  <span>{t('nav_search_results', 'Hardware Results')}</span>
+                  <span className="text-sky-400">
+                    {language === 'km' ? `${t('nav_found', 'រកឃើញ')} ${searchResults.length}` : `${searchResults.length} found`}
+                  </span>
                 </div>
                 {searchResults.length === 0 ? (
                   <div className="p-4 text-center text-sm text-slate-400">
-                    No hardware found for "{searchQuery}".
+                    {t('nav_no_results', 'No hardware found for')} "{searchQuery}".
                   </div>
                 ) : (
                   <div>
@@ -461,7 +464,9 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-slate-200 truncate">{p.name}</p>
-                          <p className="text-xs text-slate-400 truncate">{p.categoryName || p.category}</p>
+                          <p className="text-xs text-slate-400 truncate">
+                            {translateCategory(p.categoryName || p.category, language)}
+                          </p>
                         </div>
                         <span className="text-sm font-bold text-sky-400 shrink-0">
                           {formatUSD(p.price)}
@@ -472,7 +477,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                       onClick={handleSearchSubmit}
                       className="p-2.5 text-center text-xs font-semibold text-sky-400 hover:bg-slate-800/60 cursor-pointer transition flex items-center justify-center gap-1 border-t border-slate-800"
                     >
-                      <span>View all results for "{searchQuery}"</span>
+                      <span>{t('nav_view_all_results', 'View all results for')} "{searchQuery}"</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </div>
                   </div>
@@ -491,8 +496,8 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
             <Link
               to="/wishlist"
               className="hidden sm:flex relative p-2 text-slate-300 hover:text-rose-400 hover:bg-slate-800/60 rounded-xl transition shrink-0"
-              title={`Wishlist (${wishlist.length} saved)`}
-              aria-label="Wishlist"
+              title={`${t('nav_wishlist', 'Wishlist')} (${wishlist.length})`}
+              aria-label={t('nav_wishlist', 'Wishlist')}
             >
               <Heart className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${wishlist.length > 0 ? 'text-rose-500 fill-rose-500' : ''}`} />
               {wishlist.length > 0 && (
@@ -572,7 +577,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                         className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-slate-300 hover:bg-slate-800 hover:text-sky-400 transition"
                       >
                         <MapPin className="w-4 h-4 text-slate-400" />
-                        <span>Saved Delivery Hubs</span>
+                        <span>{t('nav_saved_addresses', 'Saved Delivery Hubs')}</span>
                       </Link>
 
                       {/* Admin Console - ONLY shown to admin role */}
@@ -584,10 +589,10 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                         >
                           <div className="flex items-center gap-2.5">
                             <LayoutDashboard className="w-4 h-4 text-purple-400" />
-                            <span>TechTonicAdmin Console</span>
+                            <span>{t('nav_admin_console', 'Admin Console')}</span>
                           </div>
                           <span className="text-[9px] font-black uppercase tracking-wider bg-purple-500/30 text-purple-200 border border-purple-400/40 px-1.5 py-0.5 rounded">
-                            Role: Admin &rarr;
+                            Admin &rarr;
                           </span>
                         </Link>
                       )}
@@ -596,7 +601,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                     {/* Quick Role Switcher for testing */}
                     <div className="px-4 py-2 bg-slate-900/60">
                       <p className="text-[10px] text-slate-400 font-medium mb-1">
-                        Switch Account View:
+                        {t('nav_switch_view', 'Switch Account View:')}
                       </p>
                       {user?.role === 'admin' ? (
                         <button
@@ -610,7 +615,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                           }}
                           className="w-full text-left flex items-center justify-between text-[11px] font-semibold text-sky-400 hover:text-sky-300 transition py-0.5 cursor-pointer"
                         >
-                          <span>Switch to Customer (Sara)</span>
+                          <span>{t('nav_switch_customer', 'Switch to Customer (Sara)')}</span>
                           <span className="text-[10px]">&rarr;</span>
                         </button>
                       ) : (
@@ -622,7 +627,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                           }}
                           className="w-full text-left flex items-center justify-between text-[11px] font-semibold text-purple-400 hover:text-purple-300 transition py-0.5 cursor-pointer"
                         >
-                          <span>Switch to Admin (Alex)</span>
+                          <span>{t('nav_switch_admin', 'Switch to Admin (Alex)')}</span>
                           <span className="text-[10px]">&rarr;</span>
                         </button>
                       )}
