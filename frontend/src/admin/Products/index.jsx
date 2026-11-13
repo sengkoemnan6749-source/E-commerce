@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, Search, Edit2, Trash2, Package, Eye, Star } from 'lucide-react';
 import { productService } from '../../services/productService';
+import { adminService } from '../../services/adminService';
 import { formatUSD } from '../../utils/formatPrice';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -74,7 +75,7 @@ export default function AdminProducts() {
     setModalMode('delete');
   };
 
-  const handleSaveProduct = (e) => {
+  const handleSaveProduct = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       addToast(
@@ -84,48 +85,57 @@ export default function AdminProducts() {
       return;
     }
 
-    if (modalMode === 'add') {
-      productService.addProduct({
-        ...formData,
-        price: Number(formData.price),
-        originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
-        stock: Number(formData.stock),
-        rating: 4.8,
-        reviewsCount: 1,
-        isFeatured: true
-      });
-      addToast(
-        language === 'km'
-          ? 'បានបន្ថែមផលិតផលទៅក្នុងកាតាឡុកដោយជោគជ័យ'
-          : 'Product added to catalog successfully',
-        'success'
-      );
-    } else if (modalMode === 'edit') {
-      productService.updateProduct(activeProduct.id, {
-        ...formData,
-        price: Number(formData.price),
-        originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
-        stock: Number(formData.stock)
-      });
-      addToast(
-        language === 'km' ? 'បានធ្វើបច្ចុប្បន្នភាពផលិតផលដោយជោគជ័យ' : 'Product updated successfully',
-        'success'
-      );
-    }
+    try {
+      if (modalMode === 'add') {
+        await adminService.createProduct({
+          ...formData,
+          price: Number(formData.price),
+          originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
+          stock: Number(formData.stock),
+          isFeatured: true
+        });
+        addToast(
+          language === 'km'
+            ? 'បានបន្ថែមផលិតផលទៅក្នុងកាតាឡុកដោយជោគជ័យ'
+            : 'Product added to catalog successfully',
+          'success'
+        );
+      } else if (modalMode === 'edit') {
+        await adminService.updateProduct(activeProduct.id, {
+          ...formData,
+          price: Number(formData.price),
+          originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
+          stock: Number(formData.stock)
+        });
+        addToast(
+          language === 'km' ? 'បានធ្វើបច្ចុប្បន្នភាពផលិតផលដោយជោគជ័យ' : 'Product updated successfully',
+          'success'
+        );
+      }
 
-    refreshProducts();
-    setModalMode(null);
+      await productService.syncFromBackend();
+      refreshProducts();
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('techtonic:admin-updated'));
+      setModalMode(null);
+    } catch (err) {
+      addToast(err?.message || 'Failed to save product.', 'error');
+    }
   };
 
-  const handleDeleteConfirm = () => {
-    if (activeProduct) {
-      productService.deleteProduct(activeProduct.id);
+  const handleDeleteConfirm = async () => {
+    if (!activeProduct) return;
+    try {
+      await adminService.deleteProduct(activeProduct.id);
+      await productService.syncFromBackend();
       refreshProducts();
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('techtonic:admin-updated'));
       addToast(
         language === 'km' ? 'បានលុបផលិតផលចេញពីកាតាឡុក' : 'Product removed from catalog',
         'info'
       );
       setModalMode(null);
+    } catch (err) {
+      addToast(err?.message || 'Failed to delete product.', 'error');
     }
   };
 

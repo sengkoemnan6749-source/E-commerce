@@ -1,6 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { onIdTokenChanged } from 'firebase/auth';
+import { firebaseAuth, isFirebaseConfigured } from '../config/firebase';
+import { api } from '../services/api';
 import { authService } from '../services/authService';
 import { productService } from '../services/productService';
+import { orderService } from '../services/orderService';
 import { getTranslation } from '../utils/translations';
 
 const StoreContext = createContext(null);
@@ -44,7 +48,88 @@ export function StoreProvider({ children }) {
         document.documentElement.classList.remove('lang-kh');
       }
     }
+    return () => {};
   }, [language]);
+
+  // Hydrate catalog from live backend API on app boot
+  useEffect(() => {
+    productService.syncFromBackend();
+  }, []);
+
+  const [authReady, setAuthReady] = useState(() => !(isFirebaseConfigured && firebaseAuth));
+  const [pending2fa, setPending2fa] = useState(null);
+  const syncedUserUidRef = useRef(null);
+
+  const mergeByKey = (localList, serverList, keyFn) => {
+    const merged = [];
+    const seen = new Set();
+    [...(Array.isArray(localList) ? localList : []), ...(Array.isArray(serverList) ? serverList : [])].forEach((item) => {
+      if (!item || !item.id) return;
+      const k = keyFn(item);
+      if (!seen.has(k)) {
+        seen.add(k);
+        merged.push(item);
+      }
+    });
+    return merged;
+  };
+
+  // Keep Firebase Auth session & API bearer token synchronized
+  useEffect(() => {
+    if (!isFirebaseConfigured || !firebaseAuth) {
+      setAuthReady(true);
+      return undefined;
+    }
+    const unsubscribe = onIdTokenChanged(firebaseAuth, async (fbUser) => {
+      if (fbUser) {
+        try {
+          const token = await fbUser.getIdToken();
+          api.setAuthToken(token);
+          const twoFactor = await authService.getTwoFactorStatus();
+          if (twoFactor.enabled && !twoFactor.verified) {
+            setPending2fa({ email: fbUser.email || '' });
+            setRawUser(null);
+          } else {
+            setPending2fa(null);
+            const profile = await authService.syncBackendProfile();
+            if (profile) {
+              setRawUser(profile);
+              const uid = profile.id || profile.uid || fbUser.uid;
+              if (syncedUserUidRef.current !== uid) {
+                syncedUserUidRef.current = uid;
+                if (Array.isArray(profile.cart) && profile.cart.length > 0) {
+                  setCart((prev) =>
+                    sanitizeCartList(
+                      mergeByKey(prev, profile.cart, (it) => `${it.id}::${it.selectedVariant || it.variant || 'Standard'}`)
+                    )
+                  );
+                }
+                if (Array.isArray(profile.wishlist) && profile.wishlist.length > 0) {
+                  setWishlist((prev) =>
+                    sanitizeWishlistList(mergeByKey(prev, profile.wishlist, (it) => String(it.id)))
+                  );
+                }
+              }
+              orderService.fetchMyOrders().catch(() => {});
+            }
+          }
+        } catch {
+          // Non-fatal if backend is temporarily offline
+        } finally {
+          setAuthReady(true);
+        }
+      } else {
+        syncedUserUidRef.current = null;
+        api.setAuthToken(null);
+        api.setUser2faToken?.(null);
+        setPending2fa(null);
+        setRawUser(null);
+        orderService.clearOrdersCache();
+        setAuthReady(true);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const t = (key, fallback = '') => getTranslation(language, key, fallback);
   // -------------------------------------------------------------
@@ -75,29 +160,17 @@ export function StoreProvider({ children }) {
 
   const normalizeUser = (u) => {
     if (!u) return null;
-    const validAddresses = (Array.isArray(u.savedAddresses) && u.savedAddresses.length > 0)
+    const validAddresses = Array.isArray(u.savedAddresses)
       ? u.savedAddresses
-      : (Array.isArray(u.addresses) && u.addresses.length > 0)
+      : Array.isArray(u.addresses)
         ? u.addresses
-        : [
-            {
-              id: 'addr-default',
-              label: 'Work / Studio Lab',
-              fullName: u.fullName || u.name || 'Sara Meng',
-              phone: u.phone || '+855 12 888 999',
-              address: 'Street 310, Building 24, BKK1',
-              city: 'Khan Chamkarmon',
-              province: 'Phnom Penh',
-              postalCode: '120101',
-              isDefault: true
-            }
-          ];
+        : [];
 
     return {
       ...u,
-      name: u.fullName || u.name || 'Sara Meng',
-      fullName: u.fullName || u.name || 'Sara Meng',
-      phone: u.phone || '+855 12 888 999',
+      name: u.fullName || u.name || u.email || 'Customer',
+      fullName: u.fullName || u.name || u.email || 'Customer',
+      phone: u.phone || '',
       addresses: validAddresses,
       savedAddresses: validAddresses
     };
@@ -106,62 +179,124 @@ export function StoreProvider({ children }) {
   const user = normalizeUser(rawUser);
 
   const login = async (email, password) => {
-    const loggedUser = authService.login(email, password);
-    setRawUser(loggedUser);
-    showToast(`Welcome back, ${loggedUser.fullName || 'Customer'}!`);
-    return { success: true, user: normalizeUser(loggedUser) };
+    try {
+      const res = await authService.loginWithEmail(email, password);
+      if (res?.requires2fa) {
+        setPending2fa({ email: res.email || email.trim() });
+        setRawUser(null);
+        return { success: false, requires2fa: true, email: res.email || email.trim() };
+      }
+      const loggedUser = res?.profile || res;
+      setPending2fa(null);
+      setRawUser(loggedUser);
+      orderService.fetchMyOrders().catch(() => {});
+      showToast(`Welcome back, ${loggedUser.fullName || loggedUser.name || 'Customer'}!`);
+      return { success: true, user: normalizeUser(loggedUser) };
+    } catch (error) {
+      return { success: false, message: error.message || 'Invalid email or password' };
+    }
   };
 
   const register = async (userData) => {
-    const newUser = authService.register(userData);
-    setRawUser(newUser);
-    showToast(`Account created successfully! Welcome, ${newUser.fullName || 'Customer'}!`);
-    return { success: true, user: normalizeUser(newUser) };
+    try {
+      const newUser = await authService.registerWithEmail(userData);
+      setPending2fa(null);
+      setRawUser(newUser);
+      orderService.fetchMyOrders().catch(() => {});
+      showToast(`Account created successfully! Welcome, ${newUser.fullName || newUser.name || 'Customer'}!`);
+      return { success: true, user: normalizeUser(newUser) };
+    } catch (error) {
+      return { success: false, message: error.message || 'Registration failed' };
+    }
   };
 
-  const loginAsCustomer = () => {
-    const u = authService.loginAsCustomer();
-    setRawUser(u);
-    showToast(`Switched to Customer account (${u.fullName})`, 'success');
-    return normalizeUser(u);
+  const loginWithGoogle = async () => {
+    try {
+      const res = await authService.loginWithGoogle();
+      if (res?.requires2fa) {
+        setPending2fa({ email: res.email || '' });
+        setRawUser(null);
+        return { success: false, requires2fa: true, email: res.email || '' };
+      }
+      const loggedUser = res?.profile || res;
+      setPending2fa(null);
+      setRawUser(loggedUser);
+      orderService.fetchMyOrders().catch(() => {});
+      showToast(`Welcome, ${loggedUser.fullName || loggedUser.name || 'Customer'}!`);
+      return { success: true, user: normalizeUser(loggedUser) };
+    } catch (error) {
+      return { success: false, message: error.message || 'Google sign-in failed' };
+    }
   };
 
-  const loginAsAdmin = () => {
-    const u = authService.loginAsAdmin();
-    setRawUser(u);
-    showToast(`Switched to Administrator account (${u.fullName})`, 'success');
-    return normalizeUser(u);
+  const completeTwoFactorLogin = async ({ totpCode, recoveryCode }) => {
+    try {
+      await authService.verifyTwoFactor({ totpCode, recoveryCode });
+      const profile = await authService.syncBackendProfile();
+      if (!profile) {
+        throw new Error('Unable to load user profile.');
+      }
+      setPending2fa(null);
+      setRawUser(profile);
+      orderService.fetchMyOrders().catch(() => {});
+      authService.reportSecurityEvent('LOGIN_SUCCESS', 'Completed 2FA sign-in', profile.email);
+      showToast(`Welcome back, ${profile.fullName || profile.name || 'Customer'}!`);
+      return { success: true, user: normalizeUser(profile) };
+    } catch (error) {
+      return { success: false, message: error.message || 'Invalid verification code' };
+    }
   };
 
   const logout = () => {
     authService.logout();
+    orderService.clearOrdersCache();
+    setPending2fa(null);
     setRawUser(null);
     showToast('Signed out successfully.');
   };
 
-  const updateProfile = (data) => {
-    const updated = authService.updateProfile(data);
-    setRawUser(updated);
-    showToast('Profile updated successfully.');
+  const updateProfile = async (data) => {
+    try {
+      const updated = await authService.updateProfile(data);
+      if (updated) setRawUser(updated);
+      showToast('Profile updated successfully.');
+      return updated;
+    } catch (error) {
+      showToast(error.message || 'Failed to update profile.', 'error');
+      return null;
+    }
   };
 
-  const addAddress = (addr) => {
-    const updated = authService.saveAddress(addr);
-    setRawUser({ ...updated });
+  const addAddress = async (addr) => {
+    try {
+      const updated = await authService.saveAddress(addr);
+      if (updated) setRawUser({ ...updated });
+      return updated;
+    } catch (error) {
+      showToast(error.message || 'Failed to save address.', 'error');
+      return null;
+    }
   };
 
-  const deleteAddress = (addrId) => {
-    const updated = authService.deleteAddress(addrId);
-    setRawUser({ ...updated });
+  const deleteAddress = async (addrId) => {
+    try {
+      const updated = await authService.deleteAddress(addrId);
+      if (updated) setRawUser({ ...updated });
+      return updated;
+    } catch (error) {
+      showToast(error.message || 'Failed to delete address.', 'error');
+      return null;
+    }
   };
 
-  const setDefaultAddress = (addrId) => {
-    if (user?.addresses) {
-      const updated = user.addresses.map(a => ({
-        ...a,
-        isDefault: a.id === addrId
-      }));
-      setRawUser({ ...rawUser, savedAddresses: updated, addresses: updated });
+  const setDefaultAddress = async (addrId) => {
+    try {
+      const updated = await authService.setDefaultAddress(addrId);
+      if (updated) setRawUser({ ...updated });
+      return updated;
+    } catch (error) {
+      showToast(error.message || 'Failed to update default address.', 'error');
+      return null;
     }
   };
 
@@ -187,13 +322,7 @@ export function StoreProvider({ children }) {
         const parsed = JSON.parse(stored);
         return sanitizeCartList(parsed);
       }
-      // Initial 2 items to match the reference mockup cart badge ("2")
-      const p1 = productService.getProductById('prod-001');
-      const p2 = productService.getProductById('prod-012');
-      const defaults = [];
-      if (p1) defaults.push({ ...p1, quantity: 1, selectedVariant: 'Midnight Black', image: productService.getCleanProductImage(p1) });
-      if (p2) defaults.push({ ...p2, quantity: 1, selectedVariant: 'Titanium Silver', image: productService.getCleanProductImage(p2) });
-      return defaults;
+      return [];
     } catch {
       return [];
     }
@@ -305,18 +434,29 @@ export function StoreProvider({ children }) {
     setPromoCode('');
   };
 
-  const applyPromo = (code) => {
+  const applyPromo = async (code) => {
     const normalized = (code || '').trim().toUpperCase();
-    if (normalized === 'TECH10') {
-      setDiscount(10);
-      setPromoCode('TECH10');
-      return { success: true, message: 'Promo code applied: $10.00 off!' };
-    } else if (normalized === 'SAVE5') {
-      setDiscount(5);
-      setPromoCode('SAVE5');
-      return { success: true, message: 'Promo code applied: $5.00 off!' };
-    } else {
-      return { success: false, message: 'Invalid promo code. Try TECH10 or SAVE5.' };
+    if (!normalized) {
+      return { success: false, message: 'Please enter a promo code.' };
+    }
+    try {
+      const currentSubtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const res = await api.post('/promos/validate', {
+        code: normalized,
+        subtotal: currentSubtotal,
+      });
+      if (res?.data?.valid) {
+        const amt = Number(res.data.discountAmount || 0);
+        setDiscount(amt);
+        setPromoCode(res.data.code || normalized);
+        return {
+          success: true,
+          message: res.data.message || `Promo code applied: $${amt.toFixed(2)} off!`,
+        };
+      }
+      return { success: false, message: res?.data?.message || 'Invalid promo code.' };
+    } catch (err) {
+      return { success: false, message: err?.message || 'Invalid or expired promo code.' };
     }
   };
 
@@ -376,6 +516,23 @@ export function StoreProvider({ children }) {
     }
   }, [wishlist]);
 
+  // Debounced cross-device Firestore sync for authenticated user's cart & wishlist
+  useEffect(() => {
+    const uid = rawUser?.id || rawUser?.uid;
+    if (!uid || syncedUserUidRef.current !== uid) {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      api
+        .put('/auth/state', {
+          cart: sanitizeCartList(cart),
+          wishlist: sanitizeWishlistList(wishlist),
+        })
+        .catch(() => {});
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [cart, wishlist, rawUser?.id, rawUser?.uid]);
+
   const toggleWishlist = (product) => {
     setWishlist(prev => {
       const exists = prev.some(item => item.id === product.id);
@@ -426,11 +583,13 @@ export function StoreProvider({ children }) {
 
     // Auth
     user,
+    authReady,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
+    pending2fa,
     login,
-    loginAsCustomer,
-    loginAsAdmin,
+    loginWithGoogle,
+    completeTwoFactorLogin,
     register,
     logout,
     updateProfile,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, Printer, Download, Eye, ExternalLink } from 'lucide-react';
 import { orderService } from '../../../services/orderService';
 import { formatUSD } from '../../../utils/formatPrice';
@@ -10,8 +10,21 @@ import Button from '../../../components/common/Button';
 
 export default function AccountInvoices() {
   const { language } = useLanguage();
-  const orders = orderService.getOrders();
+  const [orders, setOrders] = useState(() => orderService.getOrders());
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+
+  useEffect(() => {
+    const sync = (e) => {
+      if (Array.isArray(e?.detail)) {
+        setOrders(e.detail);
+      } else {
+        setOrders(orderService.getOrders());
+      }
+    };
+    window.addEventListener('techtonic:orders-updated', sync);
+    orderService.fetchMyOrders().then(setOrders).catch(() => {});
+    return () => window.removeEventListener('techtonic:orders-updated', sync);
+  }, []);
 
   return (
     <div>

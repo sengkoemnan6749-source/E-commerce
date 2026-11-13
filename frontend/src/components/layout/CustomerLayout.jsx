@@ -5,6 +5,7 @@ import Footer from './Footer';
 import MobileMenu from './MobileMenu';
 import CartDrawer from '../cart/CartDrawer';
 import ToastContainer from '../common/Toast';
+import SupportWidget from '../common/SupportWidget';
 
 export default function CustomerLayout() {
   const { pathname } = useLocation();
@@ -44,6 +45,9 @@ export default function CustomerLayout() {
 
       {/* Footer */}
       <Footer />
+
+      {/* Storefront Hybrid Contact Support Pop-up */}
+      <SupportWidget />
     </div>
   );
 }

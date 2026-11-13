@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import {
   User,
@@ -13,18 +13,56 @@ import {
   Crown,
   Headphones,
   ArrowRight,
-  ExternalLink
+  ExternalLink,
+  Camera
 } from 'lucide-react';
 import { useAuth, useToast, useLanguage } from '../../store/StoreContext';
 import { orderService } from '../../services/orderService';
+import { resizeAvatarImage, hasCustomAvatar } from '../../utils/imageUtils';
 
 export default function AccountLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const { addToast } = useToast();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
 
-  const orders = orderService.getOrders();
+  const [orders, setOrders] = useState(() => orderService.getOrders());
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const [avatarImgError, setAvatarImgError] = useState(false);
+  const avatarInputRef = useRef(null);
+
+  useEffect(() => {
+    setAvatarImgError(false);
+  }, [user?.avatar]);
+
+  const handleAvatarSelected = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setAvatarBusy(true);
+    try {
+      const dataUrl = await resizeAvatarImage(file, 256);
+      await updateProfile({ avatar: dataUrl });
+    } catch (err) {
+      addToast(err?.message || (language === 'km' ? 'មិនអាចផ្ទុករូបភាពបានទេ' : 'Failed to update profile image'), 'error');
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
+
+  useEffect(() => {
+    const sync = (e) => {
+      if (Array.isArray(e?.detail)) {
+        setOrders(e.detail);
+      } else {
+        setOrders(orderService.getOrders());
+      }
+    };
+    window.addEventListener('techtonic:orders-updated', sync);
+    orderService.fetchMyOrders().then(setOrders).catch(() => {});
+    return () => window.removeEventListener('techtonic:orders-updated', sync);
+  }, [user?.uid, user?.id]);
 
   const handleLogout = () => {
     logout();
@@ -36,11 +74,11 @@ export default function AccountLayout() {
     { to: '/account', label: t('account_overview', 'Dashboard Overview'), icon: LayoutDashboard, end: true },
     { to: '/account/orders', label: t('account_orders', 'My Orders'), icon: Package, badge: orders.length },
     { to: '/account/profile', label: t('account_profile', 'Profile Details'), icon: User },
-    { to: '/account/addresses', label: t('account_addresses', 'Saved Addresses'), icon: MapPin, badge: user?.addresses?.length || 1 },
+    { to: '/account/addresses', label: t('account_addresses', 'Saved Addresses'), icon: MapPin, badge: user?.addresses?.length || 0 },
     { to: '/account/invoices', label: t('account_invoices', 'Invoices & Receipts'), icon: FileText }
   ];
 
-  const userName = user?.name || user?.fullName || 'Sara Meng';
+  const userName = user?.name || user?.fullName || user?.email || 'Customer';
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (
@@ -52,9 +90,43 @@ export default function AccountLayout() {
           {/* User Profile Info */}
           <div className="flex items-center gap-5">
             <div className="relative shrink-0">
-              <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl sm:text-3xl font-black shadow-md border border-white/10">
-                {userInitial}
-              </div>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                onChange={handleAvatarSelected}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => !avatarBusy && avatarInputRef.current?.click()}
+                disabled={avatarBusy}
+                title={language === 'km' ? 'ប្តូររូបភាពគណនី' : 'Change profile photo'}
+                className="group relative w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-2xl sm:text-3xl font-black shadow-md border border-white/15 overflow-hidden cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-blue-400"
+              >
+                {hasCustomAvatar(user) && !avatarImgError ? (
+                  <img
+                    src={user.avatar}
+                    alt={userName}
+                    onError={() => setAvatarImgError(true)}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span>{userInitial}</span>
+                )}
+                <div className="absolute inset-0 bg-slate-950/45 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Camera className="w-5 h-5 text-white" />
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => !avatarBusy && avatarInputRef.current?.click()}
+                disabled={avatarBusy}
+                aria-label={language === 'km' ? 'ប្តូររូបភាពគណនី' : 'Upload profile image'}
+                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-800 hover:bg-blue-600 text-slate-200 hover:text-white border border-slate-600 flex items-center justify-center shadow-sm transition-colors cursor-pointer"
+              >
+                <Camera className="w-3 h-3" />
+              </button>
             </div>
 
             <div>
@@ -63,13 +135,13 @@ export default function AccountLayout() {
               </h1>
 
               <p className="text-xs text-slate-400 font-medium">
-                {user?.email || 'sara.student@techtonic.com'}
+                {user?.email || ''}
               </p>
 
               <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
                 <span>
                   {language === 'km' ? 'សមាជិកតាំងពី៖' : 'Member Since:'}{' '}
-                  <strong className="text-slate-200 font-medium">{language === 'km' ? 'មករា ២០២៥' : 'January 2025'}</strong>
+                  <strong className="text-slate-200 font-medium">{user?.memberSince || (language === 'km' ? 'សមាជិកផ្ទៀងផ្ទាត់រួច' : 'Verified Member')}</strong>
                 </span>
               </div>
             </div>
@@ -164,12 +236,13 @@ export default function AccountLayout() {
                 ? 'ទាក់ទងក្រុមការងាររបស់យើងសម្រាប់ការតាមដានដឹកជញ្ជូន ការធានា ឬប្រឹក្សាផលិតផល។'
                 : 'Contact our team for delivery tracking, warranty claims, or product advice.'}
             </p>
-            <a
-              href="mailto:support@techtonic.dev"
-              className="inline-flex items-center justify-center w-full py-2 px-3 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 transition-colors shadow-2xs"
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('techtonic:open-support'))}
+              className="inline-flex items-center justify-center w-full py-2 px-3 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 transition-colors shadow-2xs cursor-pointer"
             >
               {language === 'km' ? 'ទាក់ទងផ្នែកជំនួយ' : 'Contact Support'}
-            </a>
+            </button>
           </div>
         </aside>
 

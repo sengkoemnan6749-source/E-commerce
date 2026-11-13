@@ -1,4 +1,4 @@
-import { INITIAL_ORDERS } from './mockData';
+import { api } from './api';
 
 const ORDERS_KEY = 'techtonic_orders';
 
@@ -44,15 +44,18 @@ export function getOrderStatusMeta(status = '') {
 function getStoredOrders() {
   try {
     const raw = localStorage.getItem(ORDERS_KEY);
-    return raw ? JSON.parse(raw) : INITIAL_ORDERS;
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return INITIAL_ORDERS;
+    return [];
   }
 }
 
 function saveStoredOrders(orders) {
   try {
     localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('techtonic:orders-updated', { detail: orders }));
+    }
   } catch (e) {
     console.error('Failed to save orders:', e);
   }
@@ -61,82 +64,114 @@ function saveStoredOrders(orders) {
 function normalizeOrder(o) {
   if (!o) return null;
   const address = o.shippingAddress || {
-    fullName: o.customerName || o.customer?.fullName || 'Sara Meng',
-    phone: o.customerPhone || o.customer?.phone || '012 888 999',
-    address: 'Street 310, Building 24, BKK1',
-    city: 'Phnom Penh',
-    province: 'Phnom Penh',
-    postalCode: '120101'
+    fullName: o.customerName || o.customer?.fullName || 'Customer',
+    phone: o.customerPhone || o.customer?.phone || '',
+    address: '',
+    city: '',
+    province: '',
+    postalCode: ''
   };
 
   return {
     ...o,
-    id: o.id || `#ORD-20260924-${Math.floor(1000 + Math.random() * 9000)}`,
+    id: o.id,
     status: o.status || 'Confirmed',
-    customerName: o.customerName || address.fullName,
-    customerPhone: o.customerPhone || address.phone,
-    customerEmail: o.customerEmail || 'customer@techtonic.store',
+    customerName: o.customerName || address.fullName || 'Customer',
+    customerPhone: o.customerPhone || address.phone || '',
+    customerEmail: o.customerEmail || address.email || '',
     shippingAddress: address,
     items: o.items || [],
     paymentMethod: o.paymentMethod || 'KHQR (Bakong / ABA)',
     paymentStatus: o.paymentStatus || 'PAID',
-    carrier: o.carrier || 'GrabExpress Phnom Penh',
-    estimatedDelivery: o.estimatedDelivery || 'Today by 5:30 PM',
+    carrier: o.carrier || o.courier || 'GrabExpress Phnom Penh',
+    estimatedDelivery: o.estimatedDelivery || 'Scheduled for dispatch',
     createdAt: o.createdAt || new Date().toISOString()
   };
 }
 
 export const orderService = {
   getOrders() {
-    return getStoredOrders().map(normalizeOrder);
+    return getStoredOrders().map(normalizeOrder).filter(Boolean);
+  },
+
+  clearOrdersCache() {
+    try {
+      localStorage.removeItem(ORDERS_KEY);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('techtonic:orders-updated', { detail: [] }));
+      }
+    } catch {
+      // Ignore storage error
+    }
   },
 
   getOrderById(id) {
     const orders = this.getOrders();
-    return orders.find(o => String(o.id) === String(id) || o.id === `#${id}`) || null;
+    const cleanTarget = String(id).replace(/^#/, '').trim();
+    return orders.find(o => String(o.id).replace(/^#/, '') === cleanTarget) || null;
   },
 
-  createOrder(orderPayload) {
-    const orders = getStoredOrders();
-    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const randomHex = Math.floor(1000 + Math.random() * 9000);
-    const orderId = `#ORD-${todayStr}-${randomHex}`;
-
-    const newOrder = {
-      id: orderId,
-      userId: orderPayload.userId || null,
-      createdAt: new Date().toISOString(),
-      status: orderPayload.status || 'confirmed',
-      customerName: orderPayload.customerName || orderPayload.shippingAddress?.fullName || 'Customer',
-      customerPhone: orderPayload.customerPhone || orderPayload.shippingAddress?.phone || '012 345 678',
-      customerEmail: orderPayload.customerEmail || 'customer@techtonic.store',
-      shippingAddress: orderPayload.shippingAddress,
-      paymentMethod: orderPayload.paymentMethod || 'KHQR Bakong',
-      paymentStatus: 'PAID',
-      transactionId: orderPayload.transactionId || 'TXN-' + Math.floor(10000000 + Math.random() * 90000000),
+  async createOrderAsync(orderPayload) {
+    const res = await api.post('/orders', {
       items: orderPayload.items || [],
-      subtotal: orderPayload.subtotal || 0,
-      shippingFee: orderPayload.shippingFee || 0,
-      discountAmount: orderPayload.discountAmount || 0,
-      total: orderPayload.total || 0,
-      appliedCoupon: orderPayload.appliedCoupon || null,
-      carrier: orderPayload.carrier || 'GrabExpress Dispatch',
-      estimatedDelivery: orderPayload.estimatedDelivery || 'Today by 5:30 PM'
-    };
+      promoCode: orderPayload.appliedCoupon || orderPayload.promoCode || null,
+      paymentMethod: orderPayload.paymentMethod,
+      paymentStatus: orderPayload.paymentStatus,
+      transactionId: orderPayload.transactionId,
+      courier: orderPayload.deliveryPartner,
+      shippingAddress: {
+        ...(orderPayload.shippingAddress || {}),
+        fullName: orderPayload.customerName || orderPayload.shippingAddress?.fullName,
+        phone: orderPayload.customerPhone || orderPayload.shippingAddress?.phone,
+        email: orderPayload.customerEmail || orderPayload.shippingAddress?.email,
+      },
+    });
 
-    orders.unshift(newOrder);
+    if (!res?.data) {
+      throw new Error('Server did not return a valid order record.');
+    }
+
+    const normalized = normalizeOrder(res.data);
+    const orders = getStoredOrders().filter(o => o.id !== normalized.id);
+    orders.unshift(normalized);
     saveStoredOrders(orders);
-    return normalizeOrder(newOrder);
+    return normalized;
   },
 
-  updateOrderStatus(orderId, newStatus) {
-    const orders = getStoredOrders();
-    const order = orders.find(o => String(o.id) === String(orderId) || o.id === `#${orderId}`);
-    if (order) {
-      order.status = newStatus;
-      saveStoredOrders(orders);
-      return normalizeOrder(order);
+  async fetchMyOrders() {
+    if (!api.getAuthToken()) {
+      return this.getOrders();
+    }
+    const res = await api.get('/orders');
+    if (Array.isArray(res?.data)) {
+      const normalized = res.data.map(normalizeOrder).filter(Boolean);
+      saveStoredOrders(normalized);
+      return normalized;
+    }
+    return [];
+  },
+
+  async fetchOrderById(orderId, lookup = {}) {
+    const cleanId = String(orderId || '').replace(/^#/, '').trim();
+    if (!cleanId) return null;
+    const params = new URLSearchParams();
+    if (lookup.email) params.set('email', lookup.email);
+    if (lookup.phone) params.set('phone', lookup.phone);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    const res = await api.get(`/orders/${encodeURIComponent(cleanId)}${qs}`);
+    if (res?.data) {
+      const normalized = normalizeOrder(res.data);
+      const existing = getStoredOrders();
+      const idx = existing.findIndex((o) => String(o.id).replace(/^#/, '') === normalized.id);
+      if (idx >= 0) {
+        const next = [...existing];
+        next[idx] = normalized;
+        saveStoredOrders(next);
+      } else {
+        saveStoredOrders([normalized, ...existing]);
+      }
+      return normalized;
     }
     return null;
-  }
+  },
 };

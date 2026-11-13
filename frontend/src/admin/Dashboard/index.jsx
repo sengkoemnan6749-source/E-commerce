@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   TrendingUp,
@@ -10,79 +10,24 @@ import {
   ArrowUpRight,
   Eye,
   Download,
-  Calendar,
   CreditCard,
   QrCode,
-  CheckCircle2,
   Package
 } from 'lucide-react';
 import { productService } from '../../services/productService';
-import { orderService } from '../../services/orderService';
+import { adminService } from '../../services/adminService';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
-import { formatDate } from '../../utils/formatDate';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Invoice from '../../components/order/Invoice';
 import { useToast, useLanguage } from '../../store/StoreContext';
 import { translateCategory, translateOrderStatusLabel } from '../../utils/translations';
 
-// Timeframe datasets for interactive analytics
-const TIMEFRAME_DATA = {
-  'today': {
-    label: 'Today (Last 24 Hours)',
-    labelKm: 'ថ្ងៃនេះ (២៤ ម៉ោងចុងក្រោយ)',
-    revenueMult: 0.05,
-    ordersMult: 0.06,
-    chartPoints: [
-      { label: '00:00', revenue: 240, orders: 3 },
-      { label: '04:00', revenue: 120, orders: 1 },
-      { label: '08:00', revenue: 840, orders: 9 },
-      { label: '12:00', revenue: 1650, orders: 18 },
-      { label: '16:00', revenue: 2190, orders: 24 },
-      { label: '20:00', revenue: 1480, orders: 15 }
-    ]
-  },
-  '7d': {
-    label: 'Last 7 Days',
-    labelKm: '៧ ថ្ងៃចុងក្រោយ',
-    revenueMult: 0.25,
-    ordersMult: 0.28,
-    chartPoints: [
-      { label: 'Mon', labelKm: 'ចន្ទ', revenue: 4200, orders: 45 },
-      { label: 'Tue', labelKm: 'អង្គារ', revenue: 5100, orders: 54 },
-      { label: 'Wed', labelKm: 'ពុធ', revenue: 4800, orders: 50 },
-      { label: 'Thu', labelKm: 'ព្រហ', revenue: 6400, orders: 68 },
-      { label: 'Fri', labelKm: 'សុក្រ', revenue: 7850, orders: 82 },
-      { label: 'Sat', labelKm: 'សៅរ៍', revenue: 8900, orders: 95 },
-      { label: 'Sun', labelKm: 'អាទិត្យ', revenue: 6900, orders: 74 }
-    ]
-  },
-  '30d': {
-    label: 'Last 30 Days',
-    labelKm: '៣០ ថ្ងៃចុងក្រោយ',
-    revenueMult: 1,
-    ordersMult: 1,
-    chartPoints: [
-      { label: 'Week 1', labelKm: 'សប្ដាហ៍ ១', revenue: 26400, orders: 290 },
-      { label: 'Week 2', labelKm: 'សប្ដាហ៍ ២', revenue: 31200, orders: 345 },
-      { label: 'Week 3', labelKm: 'សប្ដាហ៍ ៣', revenue: 34800, orders: 380 },
-      { label: 'Week 4', labelKm: 'សប្ដាហ៍ ៤', revenue: 36050, orders: 405 }
-    ]
-  },
-  'ytd': {
-    label: 'Year-to-Date (2026)',
-    labelKm: 'ពីដើមឆ្នាំមកទល់បច្ចុប្បន្ន (2026)',
-    revenueMult: 4.2,
-    ordersMult: 4.1,
-    chartPoints: [
-      { label: 'Apr', labelKm: 'មេសា', revenue: 18400, orders: 210 },
-      { label: 'May', labelKm: 'ឧសភា', revenue: 22100, orders: 245 },
-      { label: 'Jun', labelKm: 'មិថុនា', revenue: 24800, orders: 275 },
-      { label: 'Jul', labelKm: 'កក្កដា', revenue: 31200, orders: 340 },
-      { label: 'Aug', labelKm: 'សីហា', revenue: 36500, orders: 395 },
-      { label: 'Sep', labelKm: 'កញ្ញា', revenue: 42900, orders: 460 }
-    ]
-  }
+const TIMEFRAME_META = {
+  today: { label: 'Today (Last 24 Hours)', labelKm: 'ថ្ងៃនេះ (២៤ ម៉ោងចុងក្រោយ)' },
+  '7d': { label: 'Last 7 Days', labelKm: '៧ ថ្ងៃចុងក្រោយ' },
+  '30d': { label: 'Last 30 Days', labelKm: '៣០ ថ្ងៃចុងក្រោយ' },
+  ytd: { label: 'Year-to-Date', labelKm: 'ពីដើមឆ្នាំមកទល់បច្ចុប្បន្ន' }
 };
 
 export default function AdminDashboard() {
@@ -90,10 +35,11 @@ export default function AdminDashboard() {
   const { language } = useLanguage();
   const location = useLocation();
   const adminBase = location.pathname.toLowerCase().startsWith('/techtonicadmin') ? '/TechTonicAdmin' : '/admin';
-  const [products, setProducts] = useState(productService.getProducts());
-  const [orders, setOrders] = useState(orderService.getOrders());
 
-  // Dashboard state
+  const [products, setProducts] = useState(() => productService.getProducts());
+  const [orders, setOrders] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState(null);
+
   const [timeframe, setTimeframe] = useState('30d');
   const [chartMetric, setChartMetric] = useState('revenue'); // 'revenue' | 'orders'
   const [hoveredPoint, setHoveredPoint] = useState(null);
@@ -101,71 +47,219 @@ export default function AdminDashboard() {
   const [selectedOrderModal, setSelectedOrderModal] = useState(null);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
-  const activeTimeframe = TIMEFRAME_DATA[timeframe] || TIMEFRAME_DATA['30d'];
-  const activeTimeframeLabel = language === 'km' ? activeTimeframe.labelKm : activeTimeframe.label;
+  const activeMeta = TIMEFRAME_META[timeframe] || TIMEFRAME_META['30d'];
+  const activeTimeframeLabel = language === 'km' ? activeMeta.labelKm : activeMeta.label;
+
+  const loadLiveDashboard = useCallback(async (showFeedback = false) => {
+    setIsRefreshing(true);
+    try {
+      const [stats, ordersRes] = await Promise.all([
+        adminService.getDashboard(),
+        adminService.getOrders({ limit: 100 }),
+        productService.syncFromBackend()
+      ]);
+      setDashboardStats(stats);
+      setOrders(ordersRes.orders || stats?.recentOrders || []);
+      setProducts(productService.getProducts());
+      if (showFeedback) {
+        addToast(
+          language === 'km'
+            ? 'បានផ្ទុកទិន្នន័យផ្ទាំងគ្រប់គ្រងឡើងវិញដោយជោគជ័យ។'
+            : 'Dashboard data refreshed from Firestore.',
+          'info'
+        );
+      }
+    } catch (err) {
+      if (showFeedback) {
+        addToast(err?.message || 'Failed to refresh dashboard data.', 'error');
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [addToast, language]);
+
+  useEffect(() => {
+    loadLiveDashboard(false);
+  }, [loadLiveDashboard]);
 
   const refreshData = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setProducts(productService.getProducts());
-      setOrders(orderService.getOrders());
-      setIsRefreshing(false);
-      addToast(
-        language === 'km'
-          ? 'បានផ្ទុកទិន្នន័យផ្ទាំងគ្រប់គ្រងឡើងវិញដោយជោគជ័យ។'
-          : 'Dashboard data refreshed successfully.',
-        'info'
-      );
-    }, 350);
+    loadLiveDashboard(true);
   };
 
-  // Metrics Calculations
-  const baseRevenue = 128450;
-  const totalCalculatedRevenue = useMemo(() => {
-    const rawSum = orders.reduce((sum, o) => sum + (o.total || 0), baseRevenue);
-    return Math.round(rawSum * activeTimeframe.revenueMult);
-  }, [orders, activeTimeframe]);
+  // Filter live orders by selected timeframe
+  const timeframeOrders = useMemo(() => {
+    const now = Date.now();
+    let cutoff = 0;
+    if (timeframe === 'today') cutoff = now - 24 * 60 * 60 * 1000;
+    else if (timeframe === '7d') cutoff = now - 7 * 24 * 60 * 60 * 1000;
+    else if (timeframe === '30d') cutoff = now - 30 * 24 * 60 * 60 * 1000;
+    else if (timeframe === 'ytd') cutoff = new Date(new Date().getFullYear(), 0, 1).getTime();
 
-  const totalCalculatedOrders = useMemo(() => {
-    return Math.round((1420 + orders.length) * activeTimeframe.ordersMult);
-  }, [orders, activeTimeframe]);
+    return orders.filter((o) => {
+      if (String(o.status || '').toLowerCase() === 'cancelled') return false;
+      const t = new Date(o.createdAt || 0).getTime();
+      return !cutoff || Number.isNaN(t) || t >= cutoff;
+    });
+  }, [orders, timeframe]);
+
+  const totalCalculatedRevenue = useMemo(() => {
+    return Math.round(
+      timeframeOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0) * 100
+    ) / 100;
+  }, [timeframeOrders]);
+
+  const totalCalculatedOrders = timeframeOrders.length;
 
   const averageOrderValue = useMemo(() => {
-    return (totalCalculatedRevenue / Math.max(1, totalCalculatedOrders)).toFixed(2);
+    return totalCalculatedOrders > 0
+      ? (totalCalculatedRevenue / totalCalculatedOrders).toFixed(2)
+      : '0.00';
   }, [totalCalculatedRevenue, totalCalculatedOrders]);
 
-  const lowStockProducts = products.filter((p) => p.stock <= 5);
+  const lowStockProducts = useMemo(() => {
+    if (Array.isArray(dashboardStats?.lowStockProducts)) {
+      return dashboardStats.lowStockProducts;
+    }
+    return products.filter((p) => Number(p.stock ?? 0) <= 10);
+  }, [dashboardStats, products]);
 
-  // Quick Restock Handler
-  const handleQuickRestock = (productId, amount = 10) => {
+  // Real chart buckets computed from live orders
+  const chartPoints = useMemo(() => {
+    const bucketCount = timeframe === '7d' ? 7 : 6;
+    const now = Date.now();
+    const spanMs =
+      timeframe === 'today'
+        ? 24 * 60 * 60 * 1000
+        : timeframe === '7d'
+          ? 7 * 24 * 60 * 60 * 1000
+          : timeframe === '30d'
+            ? 30 * 24 * 60 * 60 * 1000
+            : Math.max(24 * 60 * 60 * 1000, now - new Date(new Date().getFullYear(), 0, 1).getTime());
+
+    const stepMs = spanMs / bucketCount;
+    const startMs = now - spanMs;
+    const buckets = Array.from({ length: bucketCount }, (_, idx) => {
+      const bucketTime = new Date(startMs + stepMs * (idx + 1));
+      const label =
+        timeframe === 'today'
+          ? bucketTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : bucketTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return { label, revenue: 0, orders: 0 };
+    });
+
+    timeframeOrders.forEach((o) => {
+      const ts = new Date(o.createdAt || now).getTime();
+      const idx = Math.min(
+        bucketCount - 1,
+        Math.max(0, Math.floor(((Number.isNaN(ts) ? now : ts) - startMs) / stepMs))
+      );
+      buckets[idx].orders += 1;
+      buckets[idx].revenue = Math.round((buckets[idx].revenue + (Number(o.total) || 0)) * 100) / 100;
+    });
+
+    return buckets;
+  }, [timeframeOrders, timeframe]);
+
+  // Real Revenue by Category computed from live order items
+  const categoryBreakdown = useMemo(() => {
+    const productById = new Map(products.map((p) => [String(p.id), p]));
+    const colorPool = ['bg-blue-600', 'bg-indigo-600', 'bg-emerald-600', 'bg-amber-500'];
+    const totals = new Map();
+
+    timeframeOrders.forEach((o) => {
+      (o.items || []).forEach((item) => {
+        const prod = productById.get(String(item.productId || item.id));
+        const catName = item.category || prod?.category || prod?.categoryName || 'Hardware';
+        const lineTotal = (Number(item.price) || 0) * (Number(item.quantity) || 1);
+        totals.set(catName, (totals.get(catName) || 0) + lineTotal);
+      });
+    });
+
+    if (totals.size === 0) {
+      return [
+        'Audio & Acoustics',
+        'Workspace Peripherals',
+        'Smart Wearables',
+        'Power & Mobile'
+      ].map((name, i) => ({ name, amount: 0, pct: 0, color: colorPool[i % colorPool.length] }));
+    }
+
+    const grand = Array.from(totals.values()).reduce((s, v) => s + v, 0) || 1;
+    return Array.from(totals.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([name, amount], i) => ({
+        name,
+        amount,
+        pct: Math.round((amount / grand) * 100),
+        color: colorPool[i % colorPool.length]
+      }));
+  }, [timeframeOrders, products]);
+
+  // Real Payment Methods breakdown from live orders
+  const paymentStats = useMemo(() => {
+    let khqrRev = 0;
+    let khqrCount = 0;
+    let cardRev = 0;
+    let cardCount = 0;
+    timeframeOrders.forEach((o) => {
+      const m = String(o.paymentMethod || '').toLowerCase();
+      const amt = Number(o.total) || 0;
+      if (m.includes('khqr') || m.includes('bakong')) {
+        khqrCount += 1;
+        khqrRev += amt;
+      } else {
+        cardCount += 1;
+        cardRev += amt;
+      }
+    });
+    const totalAmt = khqrRev + cardRev;
+    return {
+      khqrRev,
+      khqrPct: totalAmt > 0 ? ((khqrRev / totalAmt) * 100).toFixed(1) : '0.0',
+      cardRev,
+      cardPct: totalAmt > 0 ? ((cardRev / totalAmt) * 100).toFixed(1) : '0.0',
+    };
+  }, [timeframeOrders]);
+
+  // Quick Restock Handler -> persists to Firestore via adminService
+  const handleQuickRestock = async (productId, amount = 10) => {
     const prod = products.find((p) => p.id === productId);
     if (!prod) return;
-    const newStock = (prod.stock || 0) + amount;
-    productService.updateProduct(productId, { ...prod, stock: newStock });
-    setProducts(productService.getProducts());
-    addToast(
-      language === 'km'
-        ? `បានបន្ថែមស្តុក ${prod.name} (+${amount} គ្រឿង)។ ស្តុកសរុប៖ ${newStock}`
-        : `Restocked ${prod.name} (+${amount} units). Total stock: ${newStock}`,
-      'success'
-    );
+    const newStock = (Number(prod.stock) || 0) + amount;
+    try {
+      await adminService.updateProduct(productId, { ...prod, stock: newStock });
+      await loadLiveDashboard(false);
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('techtonic:admin-updated'));
+      addToast(
+        language === 'km'
+          ? `បានបន្ថែមស្តុក ${prod.name} (+${amount} គ្រឿង)។ ស្តុកសរុប៖ ${newStock}`
+          : `Restocked ${prod.name} (+${amount} units). Total stock: ${newStock}`,
+        'success'
+      );
+    } catch (err) {
+      addToast(err?.message || 'Failed to update stock.', 'error');
+    }
   };
 
-  // Order Quick Status Update
-  const handleQuickStatusChange = (orderId, newStatus) => {
-    orderService.updateOrderStatus(orderId, newStatus);
-    setOrders(orderService.getOrders());
-    addToast(
-      language === 'km'
-        ? `បានប្ដូរស្ថានភាពការបញ្ជាទិញ ${orderId} ទៅជា ${translateOrderStatusLabel(newStatus, 'km')}`
-        : `Order ${orderId} status updated to ${newStatus}`,
-      'success'
-    );
+  // Order Quick Status Update -> persists to Firestore via adminService
+  const handleQuickStatusChange = async (orderId, newStatus) => {
+    try {
+      await adminService.updateOrderStatus(orderId, newStatus);
+      await loadLiveDashboard(false);
+      addToast(
+        language === 'km'
+          ? `បានប្ដូរស្ថានភាពការបញ្ជាទិញ ${orderId} ទៅជា ${translateOrderStatusLabel(newStatus, 'km')}`
+          : `Order ${orderId} status updated to ${translateOrderStatusLabel(newStatus, 'en')}`,
+        'success'
+      );
+    } catch (err) {
+      addToast(err?.message || 'Failed to update order status.', 'error');
+    }
   };
 
   // SVG Chart Dimensions & Spline Coordinates
-  const chartPoints = activeTimeframe.chartPoints;
-  const maxVal = Math.max(...chartPoints.map((p) => (chartMetric === 'revenue' ? p.revenue : p.orders)));
+  const maxVal = Math.max(1, ...chartPoints.map((p) => (chartMetric === 'revenue' ? p.revenue : p.orders)));
   const minVal = Math.min(...chartPoints.map((p) => (chartMetric === 'revenue' ? p.revenue : p.orders))) * 0.8;
 
   const svgWidth = 800;
@@ -294,7 +388,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium mt-3 pt-2.5 border-t border-slate-100">
             <TrendingUp className="w-3.5 h-3.5" />
             <span>
-              {language === 'km' ? '+14.2% ធៀបនឹងរយៈពេលមុន' : '+14.2% vs previous period'}
+              {language === 'km' ? `ទិន្នន័យផ្ទាល់ (${activeTimeframeLabel})` : `Live Firestore (${activeTimeframeLabel})`}
             </span>
           </div>
         </div>
@@ -315,14 +409,16 @@ export default function AdminDashboard() {
             </div>
             <div className="text-[11px] text-slate-500 mt-0.5">
               {language === 'km'
-                ? `ការបញ្ជាទិញចំនួន ${orders.filter(o => o.status === 'confirmed' || o.status === 'processing').length} កំពុងរង់ចាំចាត់ចែង`
-                : `${orders.filter(o => o.status === 'confirmed' || o.status === 'processing').length} orders pending fulfillment`}
+                ? `ការបញ្ជាទិញចំនួន ${dashboardStats?.summary?.pendingOrdersCount ?? orders.filter(o => ['confirmed', 'processing', 'pending'].includes(String(o.status || '').toLowerCase())).length} កំពុងរង់ចាំចាត់ចែង`
+                : `${dashboardStats?.summary?.pendingOrdersCount ?? orders.filter(o => ['confirmed', 'processing', 'pending'].includes(String(o.status || '').toLowerCase())).length} orders pending fulfillment`}
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium mt-3 pt-2.5 border-t border-slate-100">
-            <TrendingUp className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-600 font-medium mt-3 pt-2.5 border-t border-slate-100">
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
             <span>
-              {language === 'km' ? '+8.4% កំណើនបរិមាណបញ្ជាទិញ' : '+8.4% volume growth'}
+              {language === 'km'
+                ? `អតិថិជនសរុប ${dashboardStats?.summary?.totalCustomers ?? 0} នាក់`
+                : `${dashboardStats?.summary?.totalCustomers ?? 0} registered customers`}
             </span>
           </div>
         </div>
@@ -348,7 +444,9 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-1.5 text-[11px] text-slate-600 font-medium mt-3 pt-2.5 border-t border-slate-100">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
             <span>
-              {language === 'km' ? '+$5.20 ធៀបនឹងខែមុន' : '+$5.20 vs last month'}
+              {language === 'km'
+                ? `បញ្ជាទិញបានប្រគល់ ${dashboardStats?.summary?.deliveredOrdersCount ?? 0}`
+                : `${dashboardStats?.summary?.deliveredOrdersCount ?? 0} delivered orders`}
             </span>
           </div>
         </div>
@@ -536,18 +634,13 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-3.5">
-              {[
-                { name: 'Audio & Acoustics', pct: 38, amount: '$48,200', color: 'bg-blue-600' },
-                { name: 'Workspace Peripherals', pct: 25, amount: '$32,400', color: 'bg-indigo-600' },
-                { name: 'Smart Wearables', pct: 22, amount: '$28,100', color: 'bg-emerald-600' },
-                { name: 'Power & Mobile', pct: 15, amount: '$19,750', color: 'bg-amber-500' }
-              ].map((c) => (
+              {categoryBreakdown.map((c) => (
                 <div key={c.name} className="space-y-1">
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-700 font-medium">
                       {translateCategory(c.name, language)}
                     </span>
-                    <span className="font-mono font-bold text-slate-900">{c.amount} ({c.pct}%)</span>
+                    <span className="font-mono font-bold text-slate-900">{formatUSD(c.amount)} ({c.pct}%)</span>
                   </div>
                   <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div className={`h-full ${c.color} rounded-full`} style={{ width: `${c.pct}%` }} />
@@ -582,8 +675,8 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs tabular-nums font-bold text-slate-900 block">68.2%</span>
-                  <span className="text-[10px] text-slate-500 tabular-nums">$87,346</span>
+                  <span className="text-xs tabular-nums font-bold text-slate-900 block">{paymentStats.khqrPct}%</span>
+                  <span className="text-[10px] text-slate-500 tabular-nums">{formatUSD(paymentStats.khqrRev)}</span>
                 </div>
               </div>
 
@@ -600,8 +693,8 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs tabular-nums font-bold text-slate-900 block">31.8%</span>
-                  <span className="text-[10px] text-slate-500 tabular-nums">$41,104</span>
+                  <span className="text-xs tabular-nums font-bold text-slate-900 block">{paymentStats.cardPct}%</span>
+                  <span className="text-[10px] text-slate-500 tabular-nums">{formatUSD(paymentStats.cardRev)}</span>
                 </div>
               </div>
             </div>
@@ -719,7 +812,7 @@ export default function AdminDashboard() {
 
                     <td className="py-3 px-3">
                       <span className="font-semibold text-slate-900 block truncate max-w-[130px]">
-                        {o.customerName}
+                        {o.customerName || o.customer?.fullName || 'Customer'}
                       </span>
                       <span className="text-[10px] text-slate-400">{o.paymentMethod}</span>
                     </td>
@@ -890,6 +983,25 @@ export default function AdminDashboard() {
               <Button
                 variant="primary"
                 onClick={() => {
+                  const rows = [
+                    ['Order ID', 'Customer', 'Status', 'Payment Method', 'Total (USD)', 'Created At'],
+                    ...timeframeOrders.map((o) => [
+                      o.id,
+                      o.customerName || o.customer?.fullName || 'Customer',
+                      o.status,
+                      o.paymentMethod,
+                      Number(o.total || 0).toFixed(2),
+                      o.createdAt || ''
+                    ])
+                  ];
+                  const csvContent = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+                  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `techtonic-sales-${timeframe}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
                   setIsExportModalOpen(false);
                   addToast(
                     language === 'km'

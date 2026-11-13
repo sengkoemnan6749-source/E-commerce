@@ -1,11 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
-import { ShieldCheck, Truck, RotateCcw } from 'lucide-react';
+import { ShieldCheck, Truck, RotateCcw, Tag } from 'lucide-react';
 import { productService } from '../../services/productService';
-import { useLanguage } from '../../store/StoreContext';
+import { useLanguage, useCart, useToast } from '../../store/StoreContext';
+import PromoVouchersList from './PromoVouchersList';
 
 export default function OrderSummary({ items = [], subtotal = 0, shippingFee = 0, discountAmount = 0, total = 0, appliedCoupon = null }) {
   const { language } = useLanguage();
+  const { applyCoupon, removeCoupon } = useCart();
+  const { addToast } = useToast();
+  const [promoInput, setPromoInput] = useState('');
+  const [applyingPromo, setApplyingPromo] = useState(false);
+
+  const handleApplyPromo = async (codeToApply) => {
+    const clean = String(codeToApply || promoInput || '').trim();
+    if (!clean) return;
+    setApplyingPromo(true);
+    try {
+      const res = await applyCoupon(clean);
+      if (res?.success) {
+        addToast(res.message, 'success');
+        setPromoInput('');
+      } else {
+        addToast(res?.message || 'Invalid promo code.', 'error');
+      }
+    } finally {
+      setApplyingPromo(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col gap-5">
@@ -62,11 +84,53 @@ export default function OrderSummary({ items = [], subtotal = 0, shippingFee = 0
         </div>
 
         {discountAmount > 0 && (
-          <div className="flex justify-between text-emerald-600 font-semibold">
-            <span>
+          <div className="flex justify-between items-center text-emerald-600 font-semibold">
+            <span className="inline-flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5" />
               {language === 'km' ? 'បញ្ចុះតម្លៃ' : 'Discount'} {appliedCoupon ? `(${appliedCoupon.code})` : ''}
             </span>
-            <span>-{formatUSD(discountAmount)}</span>
+            <div className="flex items-center gap-2">
+              <span>-{formatUSD(discountAmount)}</span>
+              {appliedCoupon && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    removeCoupon();
+                    addToast(language === 'km' ? 'បានដកកូដបញ្ចុះតម្លៃ' : 'Promo removed', 'info');
+                  }}
+                  className="text-[10px] underline text-slate-400 hover:text-rose-600 cursor-pointer"
+                >
+                  {language === 'km' ? 'ដកចេញ' : 'Remove'}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!appliedCoupon && (
+          <div className="pt-2">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={promoInput}
+                onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                placeholder={language === 'km' ? 'បញ្ចូលកូដប្រូម៉ូសិន...' : 'Promo code...'}
+                className="flex-1 uppercase rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 placeholder:normal-case placeholder:font-sans placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+              <button
+                type="button"
+                disabled={applyingPromo || !promoInput.trim()}
+                onClick={() => handleApplyPromo(promoInput)}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold disabled:opacity-40 cursor-pointer"
+              >
+                {language === 'km' ? 'ប្រើកូដ' : 'Apply'}
+              </button>
+            </div>
+            <PromoVouchersList
+              subtotal={subtotal}
+              applying={applyingPromo}
+              onSelectPromo={(promo) => handleApplyPromo(promo.code)}
+            />
           </div>
         )}
 

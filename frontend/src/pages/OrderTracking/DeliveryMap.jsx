@@ -14,21 +14,13 @@ import {
   Compass
 } from 'lucide-react';
 import { useLanguage } from '../../store/StoreContext';
-
-// Real GPS waypoints across Phnom Penh (Toul Kork Hub -> Russian Blvd -> Monivong Blvd -> St 310, BKK1)
-const ROUTE_COORDINATES = [
-  [11.5724, 104.8967], // 0%: TechTonic Toul Kork Central Logistics Hub (St 598)
-  [11.5695, 104.9015], // 15%: Depot gate connecting onto Russian Federation Blvd
-  [11.5662, 104.9082], // 32%: Russian Blvd near Techno / RUPP
-  [11.5620, 104.9155], // 50%: Russian Blvd approaching Monivong Blvd flyover
-  [11.5575, 104.9198], // 68%: Monivong Blvd Southbound (Olympic / 7 Makara)
-  [11.5512, 104.9208], // 84%: Monivong turning east into BKK1 area
-  [11.5485, 104.9215], // 93%: Street 310 entry
-  [11.5475, 104.9228], // 100%: Building 24, St 310, BKK1 (Customer Destination)
-];
+import { resolveDestinationCoord, buildRouteWaypoints } from '../../utils/cambodiaLocations';
 
 export default function DeliveryMap({ orderStatus = 'out_for_delivery', shippingAddress }) {
   const { language } = useLanguage();
+  const destInfo = resolveDestinationCoord(shippingAddress);
+  const routeCoordinates = buildRouteWaypoints(destInfo.coord);
+  const routeKey = routeCoordinates[routeCoordinates.length - 1].join(',');
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const tileLayerRef = useRef(null);
@@ -41,7 +33,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
     const s = (orderStatus || '').toLowerCase().replace(/\s+/g, '_');
     if (s.includes('deliver') && !s.includes('out')) {
       return {
-        coord: ROUTE_COORDINATES[7],
+        coord: routeCoordinates[7],
         eta: language === 'km' ? 'បានប្រគល់ជោគជ័យ' : 'Delivered',
         statusText: language === 'km' ? 'បានប្រគល់ជូនដោយជោគជ័យ' : 'Successfully Delivered',
         subtext: language === 'km' ? 'អតិថិជនបានទទួល និងចុះហត្ថលេខា' : 'Received and signed by customer',
@@ -49,23 +41,23 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
     }
     if (s.includes('out')) {
       return {
-        coord: ROUTE_COORDINATES[6],
+        coord: routeCoordinates[6],
         eta: language === 'km' ? 'ជិតមកដល់ (~៨ នាទី)' : 'Arriving Shortly (~8 mins)',
         statusText: language === 'km' ? 'អ្នកដឹកជញ្ជូនកំពុងធ្វើដំណើរដល់គោលដៅ' : 'Courier on Final Route',
-        subtext: language === 'km' ? 'កំពុងចូលជិតទីតាំងដឹកជញ្ជូននៅ BKK1' : 'Approaching BKK1 delivery destination',
+        subtext: language === 'km' ? `កំពុងចូលជិតទីតាំងដឹកជញ្ជូននៅ ${destInfo.label}` : `Approaching ${destInfo.label}`,
       };
     }
     if (s.includes('ship')) {
       return {
-        coord: ROUTE_COORDINATES[3],
+        coord: routeCoordinates[3],
         eta: language === 'km' ? 'កំពុងដឹកជញ្ជូន (~៣៥ នាទី)' : 'In Transit (~35 mins)',
-        statusText: language === 'km' ? 'កំពុងដឹកជញ្ជូនឆ្លងកាត់ភ្នំពេញ' : 'In Transit across Phnom Penh',
-        subtext: language === 'km' ? 'បានដឹកចេញតាមរយៈក្រុម GrabExpress' : 'Dispatched via GrabExpress fleet',
+        statusText: language === 'km' ? `កំពុងដឹកជញ្ជូនឆ្ពោះទៅ ${destInfo.label}` : `In Transit to ${destInfo.label}`,
+        subtext: language === 'km' ? 'បានដឹកចេញពីមជ្ឈមណ្ឌលកណ្ដាលទួលគោក' : 'Dispatched from Toul Kork Central Hub',
       };
     }
     if (s.includes('process')) {
       return {
-        coord: ROUTE_COORDINATES[1],
+        coord: routeCoordinates[1],
         eta: language === 'km' ? 'ថ្ងៃនេះមុនម៉ោង ៥:១៥ ល្ងាច' : 'Today by 5:15 PM',
         statusText: language === 'km' ? 'កំពុងវេចខ្ចប់ និងត្រួតពិនិត្យគុណភាព' : 'Packaging & Quality Verified',
         subtext: language === 'km' ? 'បានរៀបចំ និងវេចខ្ចប់នៅមជ្ឈមណ្ឌលទួលគោក' : 'Assembled and packed at Toul Kork Service Center',
@@ -73,17 +65,17 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
     }
     if (s.includes('confirm')) {
       return {
-        coord: ROUTE_COORDINATES[0],
+        coord: routeCoordinates[0],
         eta: language === 'km' ? 'ថ្ងៃនេះមុនម៉ោង ៥:៣០ ល្ងាច' : 'Today by 5:30 PM',
         statusText: language === 'km' ? 'បានបញ្ជាក់ការកុម្ម៉ង់នៅមជ្ឈមណ្ឌលទួលគោក' : 'Order Confirmed at Toul Kork Hub',
         subtext: language === 'km' ? 'កញ្ចប់ទំនិញកំពុងរង់ចាំការដឹកចេញ' : 'Package queued for dispatch',
       };
     }
     return {
-      coord: ROUTE_COORDINATES[5],
+      coord: routeCoordinates[5],
       eta: language === 'km' ? 'មកដល់ក្នុងរយៈពេល ១៥ នាទី' : 'Arriving in 15 mins',
       statusText: language === 'km' ? 'កំពុងដឹកជញ្ជូនទៅគោលដៅ' : 'In Transit to Destination',
-      subtext: language === 'km' ? 'កំពុងដំណើរការដឹកជញ្ជូននៅភ្នំពេញ' : 'Delivery in progress across Phnom Penh',
+      subtext: language === 'km' ? `កំពុងដំណើរការដឹកជញ្ជូនទៅ ${destInfo.label}` : `Delivery in progress to ${destInfo.label}`,
     };
   };
 
@@ -117,7 +109,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
         }).addTo(map);
 
         // 1. Soft Glow Outer Polyline
-        L.polyline(ROUTE_COORDINATES, {
+        L.polyline(routeCoordinates, {
           color: '#38bdf8',
           weight: 7,
           opacity: 0.5,
@@ -126,7 +118,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
         }).addTo(map);
 
         // 2. High-Contrast Route Polyline
-        L.polyline(ROUTE_COORDINATES, {
+        L.polyline(routeCoordinates, {
           color: '#2563eb',
           weight: 4,
           opacity: 0.95,
@@ -149,10 +141,11 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
           `,
           iconSize: [34, 34],
         });
-        L.marker(ROUTE_COORDINATES[0], { icon: originIcon }).addTo(map);
+        L.marker(routeCoordinates[0], { icon: originIcon }).addTo(map);
 
         // 4. Destination Marker: Customer Destination
-        const destName = shippingAddress?.fullName || 'Sara Meng';
+        const destName = shippingAddress?.fullName || 'Customer';
+        const safeCity = shippingAddress?.city || shippingAddress?.province || destInfo.label;
         const destIcon = L.divIcon({
           className: 'custom-dest-icon',
           html: `
@@ -161,13 +154,13 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               </div>
               <div style="background:#ffffff; border:1px solid rgba(0,0,0,0.15); padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700; color:#0f172a; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.25);">
-                ${destName} • BKK1
+                ${destName} • ${safeCity}
               </div>
             </div>
           `,
           iconSize: [34, 34],
         });
-        L.marker(ROUTE_COORDINATES[ROUTE_COORDINATES.length - 1], { icon: destIcon }).addTo(map);
+        L.marker(routeCoordinates[routeCoordinates.length - 1], { icon: destIcon }).addTo(map);
 
         // 5. Courier Motorbike Marker (Apple Maps / Grab Delivery Style)
         const courierIcon = L.divIcon({
@@ -187,7 +180,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
         courierMarkerRef.current = courierMarker;
 
         // Fit map bounds cleanly
-        map.fitBounds(L.latLngBounds(ROUTE_COORDINATES), {
+        map.fitBounds(L.latLngBounds(routeCoordinates), {
           padding: [50, 50],
         });
 
@@ -216,7 +209,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
         delete mapContainerRef.current._leaflet_id;
       }
     };
-  }, []);
+  }, [routeKey]);
 
   // Dynamic Basemap Switcher (Google Earth Satellite Hybrid vs Street Map)
   useEffect(() => {
@@ -258,7 +251,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
   const handleZoomOut = () => mapInstanceRef.current?.zoomOut();
   const handleRecenter = () => {
     if (!mapInstanceRef.current) return;
-    mapInstanceRef.current.fitBounds(L.latLngBounds(ROUTE_COORDINATES), {
+    mapInstanceRef.current.fitBounds(L.latLngBounds(routeCoordinates), {
       padding: [50, 50],
     });
   };

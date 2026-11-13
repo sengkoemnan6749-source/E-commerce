@@ -25,6 +25,7 @@ import { formatUSD } from '../../utils/formatPrice';
 import { translateCategory, translateSubcategory } from '../../utils/translations';
 import HamburgerButton from '../common/HamburgerButton';
 import LanguageSwitcher from '../common/LanguageSwitcher';
+import { hasCustomAvatar } from '../../utils/imageUtils';
 
 const CATEGORIES = [
   {
@@ -85,7 +86,7 @@ const CATEGORIES = [
 
 export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen = false }) {
   const { cartCount, setIsCartDrawerOpen } = useCart();
-  const { user, isAuthenticated, logout, isAdmin, loginAsCustomer, loginAsAdmin } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const { wishlist } = useWishlist();
   const { t, language } = useLanguage();
   const navigate = useNavigate();
@@ -518,13 +519,17 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                   className="flex items-center gap-2 p-1 hover:bg-slate-800/60 rounded-full transition group cursor-pointer"
                   aria-label="User Account Menu"
                 >
-                  <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700/80 shadow-2xs shrink-0">
-                    <img
-                      src={user?.avatar || '/images/avatars/sara.png'}
-                      alt={userFirstName}
-                      className="w-full h-full object-cover"
-                      onError={(e) => { e.target.src = '/images/avatars/sara.png'; }}
-                    />
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700/80 shadow-2xs shrink-0 bg-blue-600 text-white flex items-center justify-center text-xs font-black">
+                    {hasCustomAvatar(user) ? (
+                      <img
+                        src={user.avatar}
+                        alt={userFirstName}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.src = '/images/avatars/sara.png'; }}
+                      />
+                    ) : (
+                      <span>{userFirstName.charAt(0).toUpperCase()}</span>
+                    )}
                   </div>
                   <span className="hidden sm:inline text-xs sm:text-sm font-semibold text-slate-200">
                     {userFirstName}
@@ -595,41 +600,6 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                             Admin &rarr;
                           </span>
                         </Link>
-                      )}
-                    </div>
-
-                    {/* Quick Role Switcher for testing */}
-                    <div className="px-4 py-2 bg-slate-900/60">
-                      <p className="text-[10px] text-slate-400 font-medium mb-1">
-                        {t('nav_switch_view', 'Switch Account View:')}
-                      </p>
-                      {user?.role === 'admin' ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            loginAsCustomer();
-                            setIsUserMenuOpen(false);
-                            if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/TechTonicAdmin')) {
-                              navigate('/account');
-                            }
-                          }}
-                          className="w-full text-left flex items-center justify-between text-[11px] font-semibold text-sky-400 hover:text-sky-300 transition py-0.5 cursor-pointer"
-                        >
-                          <span>{t('nav_switch_customer', 'Switch to Customer (Sara)')}</span>
-                          <span className="text-[10px]">&rarr;</span>
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            loginAsAdmin();
-                            setIsUserMenuOpen(false);
-                          }}
-                          className="w-full text-left flex items-center justify-between text-[11px] font-semibold text-purple-400 hover:text-purple-300 transition py-0.5 cursor-pointer"
-                        >
-                          <span>{t('nav_switch_admin', 'Switch to Admin (Alex)')}</span>
-                          <span className="text-[10px]">&rarr;</span>
-                        </button>
                       )}
                     </div>
 

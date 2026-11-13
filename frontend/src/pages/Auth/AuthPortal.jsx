@@ -12,12 +12,13 @@ import {
 } from 'lucide-react';
 import { useAuth, useToast, useLanguage } from '../../store/StoreContext';
 import { ToastContainer } from '../../components/common/Toast';
-import { validateEmail } from '../../utils/validation';
+import { validateRegistrationGmail, evaluatePasswordStrength } from '../../utils/validation';
+import { authService } from '../../services/authService';
 
 export default function AuthPortal({ defaultMode = 'signin' }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle, pending2fa, completeTwoFactorLogin, logout } = useAuth();
   const { addToast } = useToast();
   const { language, setLanguage, t } = useLanguage();
 
@@ -55,10 +56,53 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
   const [signUpAgreed, setSignUpAgreed] = useState(true);
   const [signUpErrors, setSignUpErrors] = useState({});
 
+  // Two-Factor Verification step for users with optional 2FA enabled
+  const [twoFaCode, setTwoFaCode] = useState('');
+  const [twoFaUseRecovery, setTwoFaUseRecovery] = useState(false);
+  const [twoFaRecoveryCode, setTwoFaRecoveryCode] = useState('');
+
   // Query redirect handling
   const searchParams = new URLSearchParams(location.search);
   const redirectQuery = searchParams.get('redirect');
-  const from = location.state?.from?.pathname || redirectQuery || '/account';
+  const from = location.state?.from?.pathname || redirectQuery || null;
+
+  // Anti-Brute-Force Sign-In Protection (5 failed attempts -> 30s lockout)
+  const LOCKOUT_KEY = 'techtonic_auth_lockout';
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState(() => {
+    try {
+      const saved = Number(localStorage.getItem('techtonic_auth_lockout') || 0);
+      return saved > Date.now() ? saved : 0;
+    } catch {
+      return 0;
+    }
+  });
+  const [lockoutSecondsLeft, setLockoutSecondsLeft] = useState(0);
+
+  useEffect(() => {
+    if (!lockoutUntil || lockoutUntil <= Date.now()) {
+      setLockoutSecondsLeft(0);
+      try { localStorage.removeItem(LOCKOUT_KEY); } catch {}
+      return undefined;
+    }
+    const updateTimer = () => {
+      const diff = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      if (diff <= 0) {
+        setLockoutSecondsLeft(0);
+        setLockoutUntil(0);
+        setFailedAttempts(0);
+        try { localStorage.removeItem(LOCKOUT_KEY); } catch {}
+      } else {
+        setLockoutSecondsLeft(diff);
+      }
+    };
+    updateTimer();
+    const timer = setInterval(updateTimer, 500);
+    return () => clearInterval(timer);
+  }, [lockoutUntil]);
+
+  const isLockedOut = lockoutSecondsLeft > 0;
+  const passwordEval = evaluatePasswordStrength(signUpData.password, signUpData.email, signUpData.name);
 
   // Tab switcher with smooth navigation
   const handleSwitchTab = (newTab) => {
@@ -77,6 +121,15 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
     e.preventDefault();
     setGeneralError('');
 
+    if (isLockedOut) {
+      setGeneralError(
+        language === 'km'
+          ? `សកម្មភាពត្រូវបានផ្អាកបណ្តោះអាសន្នដើម្បីសុវត្ថិភាព។ សូមរង់ចាំ ${lockoutSecondsLeft} វិនាទី។`
+          : `Too many failed attempts. Please wait ${lockoutSecondsLeft}s before trying again.`
+      );
+      return;
+    }
+
     if (!signInEmail.trim()) {
       setGeneralError(language === 'km' ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល' : 'Please enter your email address');
       return;
@@ -90,15 +143,36 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
     try {
       const res = await login(signInEmail, signInPassword);
       if (res.success) {
+        setFailedAttempts(0);
+        setLockoutUntil(0);
+        try { localStorage.removeItem(LOCKOUT_KEY); } catch {}
         addToast(
           language === 'km'
             ? `សូមស្វាគមន៍ការត្រឡប់មកវិញ, ${res.user.name || res.user.fullName || 'សមាជិក'}!`
             : `Welcome back, ${res.user.name || res.user.fullName || 'Member'}!`,
           'success'
         );
-        navigate(from, { replace: true });
+        navigate(from || (res.user?.role === 'admin' ? '/admin' : '/account'), { replace: true });
+      } else if (res.requires2fa) {
+        setFailedAttempts(0);
+        setLockoutUntil(0);
+        try { localStorage.removeItem(LOCKOUT_KEY); } catch {}
       } else {
-        setGeneralError(res.message || (language === 'km' ? 'ការចូលមិនត្រឹមត្រូវ សូមពិនិត្យឡើងវិញ' : 'Login failed. Please check credentials.'));
+        const nextFails = failedAttempts + 1;
+        setFailedAttempts(nextFails);
+        if (nextFails >= 5) {
+          const until = Date.now() + 30 * 1000;
+          setLockoutUntil(until);
+          try { localStorage.setItem(LOCKOUT_KEY, String(until)); } catch {}
+          authService.reportSecurityEvent('BRUTE_FORCE_LOCKOUT', '5 failed sign-in attempts triggered 30s lockout', signInEmail.trim());
+          setGeneralError(
+            language === 'km'
+              ? 'អ្នកបានបញ្ចូលខុសច្រើនដងពេក! គណនីត្រូវបានផ្អាករយៈពេល ៣០ វិនាទីដើម្បីការពារការលួចចូល។'
+              : 'Too many failed attempts! Sign-in temporarily locked for 30s to prevent brute-force attack.'
+          );
+        } else {
+          setGeneralError(res.message || (language === 'km' ? 'ការចូលមិនត្រឹមត្រូវ សូមពិនិត្យឡើងវិញ' : 'Login failed. Please check credentials.'));
+        }
       }
     } catch (err) {
       setGeneralError(err.message || 'An unexpected error occurred');
@@ -110,6 +184,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
   // Sign Up Handler
   const handleSignUpSubmit = async (e) => {
     e.preventDefault();
+    setGeneralError('');
     const errs = {};
 
     if (!signUpAgreed) {
@@ -118,13 +193,38 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
     if (!signUpData.name.trim()) {
       errs.name = language === 'km' ? 'សូមបញ្ចូលឈ្មោះពេញរបស់អ្នក' : 'Full name is required';
     }
+    const gmailCheck = validateRegistrationGmail(signUpData.email);
     if (!signUpData.email.trim()) {
       errs.email = language === 'km' ? 'សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល' : 'Email address is required';
-    } else if (!validateEmail(signUpData.email)) {
-      errs.email = language === 'km' ? 'ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ' : 'Please enter a valid email address';
+    } else if (!gmailCheck.valid) {
+      if (gmailCheck.reasonCode === 'ALIAS_NOT_ALLOWED') {
+        errs.email = language === 'km'
+          ? 'មិនអនុញ្ញាតឱ្យប្រើអ៊ីមែល Alias (+) ទេ សូមប្រើ Gmail ដើមផ្ទាល់ខ្លួន'
+          : 'Alias emails with "+" are not allowed. Use your primary @gmail.com address.';
+      } else if (gmailCheck.reasonCode === 'GMAIL_ONLY') {
+        errs.email = language === 'km'
+          ? 'ការបង្កើតគណនីតម្រូវឱ្យប្រើអ៊ីមែល @gmail.com តែប៉ុណ្ណោះ'
+          : 'Account registration requires a @gmail.com email address';
+      } else {
+        errs.email = language === 'km'
+          ? 'ទម្រង់ @gmail.com មិនត្រឹមត្រូវ'
+          : 'Please enter a valid @gmail.com email address';
+      }
     }
-    if (!signUpData.password || signUpData.password.length < 6) {
-      errs.password = language === 'km' ? 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៦ ខ្ទង់' : 'Password must be at least 6 characters';
+    if (!passwordEval.isValid) {
+      if (!passwordEval.checks.minLength) {
+        errs.password = language === 'km'
+          ? 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៨ តួអក្សរ'
+          : 'Password must be at least 8 characters';
+      } else if (!passwordEval.notCommonOrPersonal) {
+        errs.password = language === 'km'
+          ? 'ពាក្យសម្ងាត់ងាយទាយពេក ឬដូចឈ្មោះ/អ៊ីមែលរបស់អ្នក'
+          : 'Password is too common or contains your name/email';
+      } else {
+        errs.password = language === 'km'
+          ? 'ត្រូវមាន អក្សរធំ (A-Z), អក្សរតូច (a-z), លេខ (0-9) និងនិមិត្តសញ្ញា (!@#$)'
+          : 'Must include uppercase, lowercase, number, and special character (!@#$)';
+      }
     }
     if (signUpData.password !== signUpData.confirmPassword) {
       errs.confirmPassword = language === 'km' ? 'ពាក្យសម្ងាត់ទាំងពីរមិនត្រូវគ្នាទេ' : 'Passwords do not match';
@@ -134,6 +234,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
       setSignUpErrors(errs);
       return;
     }
+    setSignUpErrors({});
 
     setLoading(true);
     try {
@@ -143,7 +244,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
           language === 'km' ? 'បានបង្កើតគណនីដោយជោគជ័យ! សូមស្វាគមន៍មកកាន់ TechTonic' : 'Account created successfully! Welcome to TechTonic.',
           'success'
         );
-        navigate(from, { replace: true });
+        navigate(from || (res.user?.role === 'admin' ? '/admin' : '/account'), { replace: true });
       } else {
         setGeneralError(res.message || 'Registration failed');
       }
@@ -154,37 +255,78 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
     }
   };
 
-  const handleQuickCustomer = async () => {
+  const handleGoogleSignIn = async () => {
+    setGeneralError('');
     setLoading(true);
     try {
-      await login('sara.meng@techtonic.dev', 'demopass123');
-      addToast(language === 'km' ? 'បានចូលជាអតិថិជន (Sara Meng)' : 'Logged in as Customer (Sara Meng)', 'success');
-      navigate('/account', { replace: true });
+      const res = await loginWithGoogle();
+      if (res?.success) {
+        addToast(
+          language === 'km'
+            ? `បានចូលគណនីតាម Google ជោគជ័យ, ${res.user?.fullName || 'សមាជិក'}!`
+            : `Signed in with Google, ${res.user?.fullName || 'Member'}!`,
+          'success'
+        );
+        navigate(from || (res.user?.role === 'admin' ? '/admin' : '/account'), { replace: true });
+      } else if (!res?.requires2fa) {
+        setGeneralError(res?.message || 'Google sign-in failed');
+      }
+    } catch (err) {
+      setGeneralError(err.message || 'Google sign-in failed');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleQuickAdmin = async () => {
-    setLoading(true);
-    try {
-      await login('admin@techtonic.dev', 'adminpass123');
-      addToast(language === 'km' ? 'បានចូលជាអ្នកគ្រប់គ្រងហាង (Admin)' : 'Logged in as Store Admin', 'success');
-      navigate('/admin', { replace: true });
-    } finally {
-      setLoading(false);
+  const handleForgotPassword = async () => {
+    setGeneralError('');
+    const targetEmail = signInEmail.trim();
+    if (!targetEmail) {
+      setGeneralError(
+        language === 'km'
+          ? 'សូមបញ្ចូលអាសយដ្ឋាន Gmail របស់អ្នកជាមុនសិន ដើម្បីទទួលតំណភ្ជាប់កំណត់ពាក្យសម្ងាត់ថ្មី'
+          : 'Please enter your email address first to receive a password reset link.'
+      );
+      return;
     }
-  };
-
-  const handleSocialMock = async (provider) => {
     setLoading(true);
     try {
+      await authService.sendPasswordReset(targetEmail);
       addToast(
-        language === 'km' ? `បានចូលគណនីតាម ${provider} (Demo mode)` : `Signed in with ${provider} (Demo mode)`,
+        language === 'km'
+          ? `តំណភ្ជាប់កំណត់ពាក្យសម្ងាត់ថ្មីត្រូវបានផ្ញើទៅ ${targetEmail} ហើយ!`
+          : `Password reset email sent to ${targetEmail}`,
         'success'
       );
-      await login(`demo.${provider.toLowerCase()}@techtonic.dev`, 'socialpass123');
-      navigate(from, { replace: true });
+    } catch (err) {
+      setGeneralError(err?.message || 'Unable to send password reset email');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyTwoFactor = async (e) => {
+    e.preventDefault();
+    setGeneralError('');
+    setLoading(true);
+    try {
+      const res = await completeTwoFactorLogin({
+        totpCode: twoFaUseRecovery ? undefined : twoFaCode.trim(),
+        recoveryCode: twoFaUseRecovery ? twoFaRecoveryCode.trim() : undefined,
+      });
+      if (res?.success) {
+        setTwoFaCode('');
+        setTwoFaRecoveryCode('');
+        addToast(
+          language === 'km' ? 'បានផ្ទៀងផ្ទាត់ 2FA ដោយជោគជ័យ!' : 'Two-factor verification successful!',
+          'success'
+        );
+        navigate(from || (res.user?.role === 'admin' ? '/admin' : '/account'), { replace: true });
+      } else {
+        setGeneralError(res?.message || 'Invalid verification code');
+      }
+    } catch (err) {
+      setGeneralError(err?.message || 'Verification failed');
     } finally {
       setLoading(false);
     }
@@ -289,40 +431,46 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
           <div className="flex-1 p-6 sm:p-10 xl:p-12 flex flex-col justify-between bg-white">
             <div>
               {/* Segmented Tab Switcher */}
-              <div className="p-1 rounded-xl bg-slate-100 flex items-center mb-6 max-w-sm">
-                <button
-                  type="button"
-                  onClick={() => handleSwitchTab('signin')}
-                  className={`flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
-                    activeTab === 'signin'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  {language === 'km' ? 'ចូលគណនី' : 'Sign In'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSwitchTab('signup')}
-                  className={`flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
-                    activeTab === 'signup'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  {language === 'km' ? 'បង្កើតគណនី' : 'Create Account'}
-                </button>
-              </div>
+              {!pending2fa && (
+                <div className="p-1 rounded-xl bg-slate-100 flex items-center mb-6 max-w-sm">
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchTab('signin')}
+                    className={`flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
+                      activeTab === 'signin'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {language === 'km' ? 'ចូលគណនី' : 'Sign In'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSwitchTab('signup')}
+                    className={`flex-1 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer ${
+                      activeTab === 'signup'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    {language === 'km' ? 'បង្កើតគណនី' : 'Create Account'}
+                  </button>
+                </div>
+              )}
 
               {/* Form Title & Subtitle */}
               <div className="mb-6">
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                  {activeTab === 'signin'
+                  {pending2fa
+                    ? (language === 'km' ? 'ផ្ទៀងផ្ទាត់ 2-Step Verification' : 'Two-step verification')
+                    : activeTab === 'signin'
                     ? (language === 'km' ? 'ចូលប្រើប្រាស់គណនីរបស់អ្នក' : 'Welcome back')
                     : (language === 'km' ? 'បង្កើតគណនី TechTonic ថ្មី' : 'Create an account')}
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">
-                  {activeTab === 'signin'
+                  {pending2fa
+                    ? (language === 'km' ? 'សូមបញ្ចូលកូដ ៦ ខ្ទង់ពី Google Authenticator ដើម្បីបន្ត។' : 'Enter the 6-digit code from Google Authenticator to finish signing in.')
+                    : activeTab === 'signin'
                     ? (language === 'km' ? 'សូមបញ្ចូលអ៊ីមែល និងពាក្យសម្ងាត់របស់អ្នកដើម្បីបន្ត។' : 'Enter your email and password to access your account.')
                     : (language === 'km' ? 'បញ្ចូលព័ត៌មានខាងក្រោមដើម្បីបង្កើតគណនី។' : 'Enter your details below to get started.')}
                 </p>
@@ -349,9 +497,94 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
               )}
 
               {/* ================================================= */}
-              {/* SIGN IN FORM */}
+              {/* 2FA VERIFICATION STEP (WHEN USER ENABLED 2FA) */}
               {/* ================================================= */}
-              {activeTab === 'signin' ? (
+              {pending2fa ? (
+                <form onSubmit={handleVerifyTwoFactor} className="space-y-4">
+                  <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-200/80 text-xs text-slate-700">
+                    <div className="font-bold text-slate-900">
+                      {language === 'km' ? 'ផ្ទៀងផ្ទាត់ 2-Step Verification' : 'Two-Factor Verification Required'}
+                    </div>
+                    <div className="mt-0.5 text-slate-500">
+                      {pending2fa.email}
+                    </div>
+                  </div>
+
+                  {!twoFaUseRecovery ? (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-bold text-slate-700">
+                          {language === 'km' ? 'លេខកូដ ៦ ខ្ទង់ពី Google Authenticator' : '6-digit Authenticator code'}
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setTwoFaUseRecovery(true)}
+                          className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
+                        >
+                          {language === 'km' ? 'ប្រើកូដបម្រុង' : 'Use backup code'}
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        value={twoFaCode}
+                        onChange={(e) => setTwoFaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        className="w-full h-11 px-4 rounded-xl bg-slate-50 focus:bg-white border border-slate-200 focus:border-blue-600 text-center text-lg font-mono tracking-[0.35em] outline-hidden"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-bold text-slate-700">
+                          {language === 'km' ? 'កូដសង្គ្រោះបម្រុង' : 'Backup Recovery Code'}
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setTwoFaUseRecovery(false)}
+                          className="text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
+                        >
+                          {language === 'km' ? 'ប្រើកូដ ៦ ខ្ទង់វិញ' : 'Use Authenticator'}
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={twoFaRecoveryCode}
+                        onChange={(e) => setTwoFaRecoveryCode(e.target.value.toUpperCase())}
+                        placeholder="TTU-XXXX-XXXX"
+                        className="w-full h-11 px-4 rounded-xl bg-slate-50 focus:bg-white border border-slate-200 focus:border-blue-600 text-center font-mono text-sm uppercase outline-hidden"
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-11 sm:h-12 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                  >
+                    {loading ? (
+                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <span>{language === 'km' ? 'ផ្ទៀងផ្ទាត់ និងចូល' : 'Verify & Sign In'}</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout();
+                      setGeneralError('');
+                    }}
+                    className="w-full text-xs text-slate-500 hover:text-slate-800 font-semibold py-1.5 cursor-pointer"
+                  >
+                    {language === 'km' ? '← ចូលដោយគណនីផ្សេងទៀត' : '← Sign in with a different account'}
+                  </button>
+                </form>
+              ) : activeTab === 'signin' ? (
                 <form onSubmit={handleSignInSubmit} className="space-y-4">
                   {/* Email Address */}
                   <div>
@@ -379,8 +612,9 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                       </label>
                       <button
                         type="button"
-                        onClick={() => addToast(language === 'km' ? 'តំណភ្ជាប់កំណត់ឡើងវិញត្រូវបានផ្ញើ' : 'Password reset link sent to your email', 'info')}
-                        className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                        onClick={handleForgotPassword}
+                        disabled={loading}
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
                       >
                         {language === 'km' ? 'ភ្លេចពាក្យសម្ងាត់?' : 'Forgot password?'}
                       </button>
@@ -422,11 +656,17 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    disabled={loading}
-                    className="w-full h-11 sm:h-12 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-70"
+                    disabled={loading || isLockedOut}
+                    className="w-full h-11 sm:h-12 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : isLockedOut ? (
+                      <span>
+                        {language === 'km'
+                          ? `រង់ចាំ ${lockoutSecondsLeft} វិនាទី...`
+                          : `Security Lockout (${lockoutSecondsLeft}s)`}
+                      </span>
                     ) : (
                       <>
                         <span>{language === 'km' ? 'ចូលគណនី' : 'Sign In'}</span>
@@ -474,7 +714,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                         autoComplete="email"
                         value={signUpData.email}
                         onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
-                        placeholder="you@domain.com"
+                        placeholder="you@gmail.com"
                         className={`w-full h-10 pl-9 pr-3 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-hidden font-medium ${
                           signUpErrors.email ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10'
                         }`}
@@ -495,7 +735,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                           type={showSignUpPassword ? 'text' : 'password'}
                           value={signUpData.password}
                           onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
-                          placeholder="min 6 chars"
+                          placeholder="8+ chars (Aa1!)"
                           className={`w-full h-10 pl-9 pr-9 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white border text-sm text-slate-900 placeholder:text-slate-400 transition-all outline-hidden font-medium ${
                             signUpErrors.password ? 'border-rose-400 focus:border-rose-500' : 'border-slate-200 focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10'
                           }`}
@@ -579,72 +819,48 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
                 </form>
               )}
 
-              {/* Social Login Divider */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200" />
-                </div>
-                <div className="relative flex justify-center text-[11px] uppercase tracking-wider text-slate-400">
-                  <span className="bg-white px-3 font-semibold">
-                    {language === 'km' ? 'ឬចូលតាមរយៈ' : 'Or continue with'}
-                  </span>
-                </div>
-              </div>
+              {!pending2fa && (
+                <>
+                  {/* Social Login Divider */}
+                  <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-slate-200" />
+                    </div>
+                    <div className="relative flex justify-center text-[11px] uppercase tracking-wider text-slate-400">
+                      <span className="bg-white px-3 font-semibold">
+                        {language === 'km' ? 'ឬចូលតាមរយៈ' : 'Or continue with'}
+                      </span>
+                    </div>
+                  </div>
 
-              {/* Google Sign-In */}
-              <button
-                type="button"
-                onClick={() => handleSocialMock('Google')}
-                className="w-full h-11 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center justify-center gap-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-colors cursor-pointer"
-              >
-                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                  />
-                </svg>
-                <span>{language === 'km' ? 'បន្តជាមួយ Google' : 'Continue with Google'}</span>
-              </button>
-            </div>
-
-            {/* Quick Demo Accounts Bar */}
-            <div className="mt-8 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-              <span className="text-slate-400 font-medium">
-                {language === 'km' ? 'ចូលសាកល្បង៖' : 'Demo access:'}
-              </span>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  id="login-demo-customer-btn"
-                  onClick={handleQuickCustomer}
-                  className="text-slate-600 hover:text-blue-600 font-semibold text-xs transition-colors cursor-pointer"
-                  title="Login as customer Sara Meng"
-                >
-                  {language === 'km' ? 'អតិថិជន (Sara)' : 'Customer (Sara)'}
-                </button>
-                <span className="text-slate-300">&middot;</span>
-                <button
-                  type="button"
-                  id="login-demo-admin-btn"
-                  onClick={handleQuickAdmin}
-                  className="text-slate-600 hover:text-blue-600 font-semibold text-xs transition-colors cursor-pointer"
-                  title="Login as store admin"
-                >
-                  Admin
-                </button>
-              </div>
+                  {/* Google Sign-In */}
+                  <button
+                    type="button"
+                    onClick={handleGoogleSignIn}
+                    className="w-full h-11 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 flex items-center justify-center gap-2.5 text-xs sm:text-sm font-semibold text-slate-700 transition-colors cursor-pointer"
+                  >
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                      />
+                    </svg>
+                    <span>{language === 'km' ? 'បន្តជាមួយ Google' : 'Continue with Google'}</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { api } from './api';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from './mockData';
 
 const PRODUCTS_KEY = 'techtonic_products_v21';
@@ -161,6 +162,11 @@ export const productService = {
       const idx = products.findIndex(p => String(p.id) === String(productData.id));
       if (idx !== -1) {
         products[idx] = { ...products[idx], ...productData };
+      } else {
+        products.unshift(productData);
+      }
+      if (api.getAuthToken()) {
+        api.put(`/admin/products/${encodeURIComponent(productData.id)}`, productData).catch(() => {});
       }
     } else {
       const newProduct = {
@@ -171,6 +177,9 @@ export const productService = {
         images: productData.image ? [productData.image] : ['/images/products/prod-001-main.png'],
       };
       products.unshift(newProduct);
+      if (api.getAuthToken()) {
+        api.post('/admin/products', newProduct).catch(() => {});
+      }
     }
     setStored(PRODUCTS_KEY, products);
     return this.getProducts();
@@ -187,6 +196,9 @@ export const productService = {
   deleteProduct(id) {
     const products = getStored(PRODUCTS_KEY, INITIAL_PRODUCTS).filter(p => String(p.id) !== String(id));
     setStored(PRODUCTS_KEY, products);
+    if (api.getAuthToken()) {
+      api.delete(`/admin/products/${encodeURIComponent(id)}`).catch(() => {});
+    }
     return this.getProducts();
   },
 
@@ -195,12 +207,19 @@ export const productService = {
     if (catData.id) {
       const idx = categories.findIndex(c => String(c.id) === String(catData.id));
       if (idx !== -1) categories[idx] = { ...categories[idx], ...catData };
+      if (api.getAuthToken()) {
+        api.put(`/admin/categories/${encodeURIComponent(catData.id)}`, catData).catch(() => {});
+      }
     } else {
-      categories.push({
+      const created = {
         ...catData,
         id: catData.slug || `cat-${Date.now()}`,
         count: catData.count || 0,
-      });
+      };
+      categories.push(created);
+      if (api.getAuthToken()) {
+        api.post('/admin/categories', created).catch(() => {});
+      }
     }
     setStored(CATEGORIES_KEY, categories);
     return categories;
@@ -217,7 +236,48 @@ export const productService = {
   deleteCategory(id) {
     const categories = this.getCategories().filter(c => String(c.id) !== String(id));
     setStored(CATEGORIES_KEY, categories);
+    if (api.getAuthToken()) {
+      api.delete(`/admin/categories/${encodeURIComponent(id)}`).catch(() => {});
+    }
     return categories;
+  },
+
+  async syncFromBackend() {
+    try {
+      const [prodRes, catRes] = await Promise.all([
+        api.get('/products?limit=100'),
+        api.get('/categories')
+      ]);
+
+      if (Array.isArray(prodRes?.data) && prodRes.data.length > 0) {
+        setStored(PRODUCTS_KEY, prodRes.data);
+      }
+      if (Array.isArray(catRes?.data) && catRes.data.length > 0) {
+        setStored(CATEGORIES_KEY, catRes.data);
+      }
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('techtonic:catalog-updated'));
+      }
+      return { synced: true };
+    } catch {
+      return { synced: false };
+    }
+  },
+
+  async fetchProductDetail(id) {
+    try {
+      const res = await api.get(`/products/${encodeURIComponent(id)}`);
+      return res?.data ? normalizeProduct(res.data) : this.getProductById(id);
+    } catch {
+      return this.getProductById(id);
+    }
+  },
+
+  async addReviewRemote(productId, reviewPayload) {
+    const res = await api.post(`/products/${encodeURIComponent(productId)}/reviews`, reviewPayload);
+    await this.syncFromBackend();
+    return res;
   },
 
   resetDefaults() {

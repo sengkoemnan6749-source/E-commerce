@@ -1,13 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Users } from 'lucide-react';
-import { INITIAL_CUSTOMERS } from '../../services/mockData';
+import { adminService } from '../../services/adminService';
 import { formatUSD } from '../../utils/formatPrice';
-import { useLanguage } from '../../store/StoreContext';
+import { useLanguage, useToast } from '../../store/StoreContext';
 
 export default function AdminCustomers() {
-  const [customers] = useState(INITIAL_CUSTOMERS);
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const { language } = useLanguage();
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    adminService.getCustomers()
+      .then((list) => {
+        if (active) setCustomers(list);
+      })
+      .catch((err) => {
+        if (active) addToast(err?.message || 'Failed to load customers.', 'error');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   const translateCustomerStatus = (status) => {
     if (language !== 'km') return status;
@@ -32,10 +50,11 @@ export default function AdminCustomers() {
   const filtered = customers.filter((c) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
+    const displayName = (c.fullName || c.name || '').toLowerCase();
     return (
-      c.name.toLowerCase().includes(q) ||
-      c.email.toLowerCase().includes(q) ||
-      c.phone.includes(q)
+      displayName.includes(q) ||
+      (c.email || '').toLowerCase().includes(q) ||
+      (c.phone || '').includes(q)
     );
   });
 
@@ -94,7 +113,13 @@ export default function AdminCustomers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    {language === 'km' ? 'កំពុងផ្ទុកបញ្ជីអតិថិជន...' : 'Loading customers from database...'}
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-500">
                     <Users className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -111,37 +136,41 @@ export default function AdminCustomers() {
                   </td>
                 </tr>
               ) : (
-                filtered.map((cust) => (
+                filtered.map((cust) => {
+                  const custName = cust.fullName || cust.name || cust.email || 'Customer';
+                  const custStatus = cust.status || 'Active';
+                  return (
                   <tr key={cust.id} className="hover:bg-slate-50/70 transition-colors">
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200/80 text-slate-700 flex items-center justify-center font-semibold text-xs flex-shrink-0">
-                          {cust.name.charAt(0)}
+                          {custName.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-semibold text-slate-900">{cust.name}</span>
+                        <span className="font-semibold text-slate-900">{custName}</span>
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 text-slate-600 font-mono whitespace-nowrap">{cust.email}</td>
+                    <td className="py-3.5 px-4 text-slate-600 font-mono whitespace-nowrap">{cust.email || '—'}</td>
 
-                    <td className="py-3.5 px-4 text-slate-600 tabular-nums whitespace-nowrap">{cust.phone}</td>
+                    <td className="py-3.5 px-4 text-slate-600 tabular-nums whitespace-nowrap">{cust.phone || '—'}</td>
 
                     <td className="py-3.5 px-4 text-center tabular-nums font-semibold text-slate-700">
-                      {cust.ordersCount}
+                      {cust.ordersCount || 0}
                     </td>
 
                     <td className="py-3.5 px-4 tabular-nums font-semibold text-slate-900 whitespace-nowrap">
-                      {formatUSD(cust.totalSpent)}
+                      {formatUSD(cust.totalSpent || 0)}
                     </td>
 
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${getStatusTextClass(cust.status)}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${getStatusDotClass(cust.status)}`} />
-                        {translateCustomerStatus(cust.status)}
+                      <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${getStatusTextClass(custStatus)}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${getStatusDotClass(custStatus)}`} />
+                        {translateCustomerStatus(custStatus)}
                       </span>
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

@@ -4,6 +4,7 @@ import { ArrowRight, Tag, ShieldCheck, Truck, Check } from 'lucide-react';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
 import { useCart, useAuth, useToast, useLanguage } from '../../store/StoreContext';
 import Button from '../common/Button';
+import PromoVouchersList from '../checkout/PromoVouchersList';
 
 export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
   const {
@@ -24,18 +25,26 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
   const [couponCode, setCouponCode] = useState('');
   const [applying, setApplying] = useState(false);
 
-  const handleApply = (e) => {
-    e.preventDefault();
-    if (!couponCode.trim()) return;
+  const applyCode = async (rawCode) => {
+    const clean = String(rawCode || '').trim();
+    if (!clean) return;
     setApplying(true);
-    const res = applyCoupon(couponCode);
-    setApplying(false);
-    if (res.success) {
-      addToast(res.message, 'success');
-      setCouponCode('');
-    } else {
-      addToast(res.message, 'error');
+    try {
+      const res = await applyCoupon(clean);
+      if (res?.success) {
+        addToast(res.message, 'success');
+        setCouponCode('');
+      } else {
+        addToast(res?.message || 'Invalid promo code.', 'error');
+      }
+    } finally {
+      setApplying(false);
     }
+  };
+
+  const handleApply = async (e) => {
+    e.preventDefault();
+    await applyCode(couponCode);
   };
 
   const handleProceed = () => {
@@ -165,6 +174,11 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
               {t('cart_apply', 'Apply')}
             </Button>
           </div>
+          <PromoVouchersList
+            subtotal={subtotal}
+            applying={applying}
+            onSelectPromo={(promo) => applyCode(promo.code)}
+          />
         </form>
       )}
 

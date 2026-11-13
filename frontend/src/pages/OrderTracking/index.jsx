@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Truck,
@@ -28,36 +28,6 @@ import { formatDate } from '../../utils/formatDate';
 import { useToast, useAuth, useLanguage } from '../../store/StoreContext';
 import { translateOrderStatusLabel } from '../../utils/translations';
 
-const FALLBACK_ORDER = {
-  id: 'ORD-20260924-0001',
-  status: 'Out for Delivery',
-  createdAt: '2026-09-24T09:30:00.000Z',
-  customerName: 'Sara Meng',
-  customerPhone: '+855 12 345 678',
-  shippingAddress: {
-    fullName: 'Sara Meng',
-    phone: '+855 12 345 678',
-    address: 'Street 310, Building 24, BKK1',
-    city: 'Phnom Penh',
-    province: 'Phnom Penh',
-    postalCode: '120101'
-  },
-  items: [
-    {
-      id: 'prod-001',
-      name: 'TechTonic ANC Pro Headphones',
-      price: 109.99,
-      quantity: 1,
-      selectedVariant: 'Titanium Black'
-    }
-  ],
-  total: 109.99,
-  deliveryPartner: 'Vireak Buntham Express (VET)',
-  trackingNumber: 'VET-KH-889210',
-  carrier: 'GrabExpress Delivery Phnom Penh',
-  estimatedDelivery: 'Today by 5:30 PM'
-};
-
 export default function OrderTracking() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -65,67 +35,171 @@ export default function OrderTracking() {
   const { isAuthenticated } = useAuth();
   const { language } = useLanguage();
 
-  const allOrders = useMemo(() => {
-    const list = orderService.getOrders();
-    return list.length > 0 ? list : [FALLBACK_ORDER];
-  }, []);
-
   const [searchInput, setSearchInput] = useState('');
+  const [lookupContact, setLookupContact] = useState('');
   const [isCopied, setIsCopied] = useState(false);
+  const [loadingOrder, setLoadingOrder] = useState(false);
+  const lastLookupRef = useRef({});
 
   const [order, setOrder] = useState(() => {
     if (id) {
-      const found = orderService.getOrderById(id);
-      if (found) return found;
+      return orderService.getOrderById(id);
     }
-    return orderService.getOrders()[0] || FALLBACK_ORDER;
+    return orderService.getOrders()[0] || null;
   });
 
-  // Keep order synchronized whenever the route param id changes
+  // Load real order from backend when route param id or auth state changes
   useEffect(() => {
-    if (id) {
-      const found = orderService.getOrderById(id);
-      if (found) {
-        setOrder(found);
+    let active = true;
+    const load = async () => {
+      if (id) {
+        const cached = orderService.getOrderById(id);
+        if (cached && active) setOrder(cached);
+        setLoadingOrder(!cached);
+        try {
+          const fetched = await orderService.fetchOrderById(id, lastLookupRef.current);
+          if (active && fetched) setOrder(fetched);
+        } catch {
+          // Guests without auth may need email/phone lookup below
+        } finally {
+          if (active) setLoadingOrder(false);
+        }
         return;
       }
+
+      if (isAuthenticated) {
+        setLoadingOrder(true);
+        try {
+          const myOrders = await orderService.fetchMyOrders();
+          if (active) setOrder(myOrders[0] || null);
+        } catch {
+          if (active) setOrder(orderService.getOrders()[0] || null);
+        } finally {
+          if (active) setLoadingOrder(false);
+        }
+      }
+    };
+    load();
+    return () => { active = false; };
+  }, [id, isAuthenticated]);
+
+  // Real-time status sync (tab focus + 5s live polling while visible and not final)
+  useEffect(() => {
+    const activeId = id || order?.id;
+    if (!activeId && !isAuthenticated) return undefined;
+
+    let stopped = false;
+    const refreshLiveOrder = async () => {
+      if (stopped || document.visibilityState !== 'visible') return;
+      try {
+        if (activeId) {
+          const fresh = await orderService.fetchOrderById(activeId, lastLookupRef.current);
+          if (!stopped && fresh) {
+            setOrder(fresh);
+          }
+        } else if (isAuthenticated) {
+          const myOrders = await orderService.fetchMyOrders();
+          if (!stopped && myOrders[0]) {
+            setOrder(myOrders[0]);
+          }
+        }
+      } catch {
+        // Silent background refresh
+      }
+    };
+
+    const handleVisible = () => {
+      if (document.visibilityState === 'visible') {
+        refreshLiveOrder();
+      }
+    };
+
+    window.addEventListener('focus', refreshLiveOrder);
+    document.addEventListener('visibilitychange', handleVisible);
+
+    const statusKey = String(order?.status || '').toLowerCase();
+    const isFinal =
+      (statusKey.includes('deliver') && !statusKey.includes('out')) ||
+      statusKey.includes('cancel');
+
+    const handleStorageSync = (e) => {
+      if (e.key === 'techtonic_order_sync_ping' || e.key === 'techtonic_orders') {
+        refreshLiveOrder();
+      }
+    };
+    window.addEventListener('storage', handleStorageSync);
+
+    let channel = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        channel = new BroadcastChannel('techtonic-order-sync');
+        channel.onmessage = () => refreshLiveOrder();
+      } catch {
+        channel = null;
+      }
     }
-    const first = orderService.getOrders()[0];
-    if (first) {
-      setOrder(first);
-    }
-  }, [id]);
+
+    const intervalId = window.setInterval(refreshLiveOrder, isFinal ? 12000 : 5000);
+
+    return () => {
+      stopped = true;
+      window.removeEventListener('focus', refreshLiveOrder);
+      document.removeEventListener('visibilitychange', handleVisible);
+      window.removeEventListener('storage', handleStorageSync);
+      if (channel) channel.close();
+      if (intervalId) window.clearInterval(intervalId);
+    };
+  }, [id, order?.id, order?.status, isAuthenticated]);
 
   // Handle manual order search
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = async (e) => {
     e.preventDefault();
     const q = searchInput.trim();
     if (!q) return;
 
-    const found = orderService.getOrderById(q);
-    if (found) {
-      setOrder(found);
+    setLoadingOrder(true);
+    try {
+      const contact = lookupContact.trim();
+      const lookup = contact.includes('@')
+        ? { email: contact }
+        : contact
+          ? { phone: contact }
+          : {};
+      lastLookupRef.current = lookup;
+
+      const found = (await orderService.fetchOrderById(q, lookup)) || orderService.getOrderById(q);
+      if (found) {
+        setOrder(found);
+        addToast(
+          language === 'km'
+            ? `កំពុងបង្ហាញការតាមដានសម្រាប់ការកុម្ម៉ង់ ${found.id}`
+            : `Showing tracking for order ${found.id}`,
+          'success'
+        );
+        navigate(`/orders/${encodeURIComponent(found.id)}`);
+        setSearchInput('');
+      } else {
+        addToast(
+          language === 'km'
+            ? `រកមិនឃើញការកុម្ម៉ង់ "${q}" ទេ។`
+            : `Order "${q}" not found.`,
+          'error'
+        );
+      }
+    } catch (err) {
       addToast(
-        language === 'km'
-          ? `កំពុងបង្ហាញការតាមដានសម្រាប់ការកុម្ម៉ង់ ${found.id}`
-          : `Showing tracking for order ${found.id}`,
-        'success'
+        err?.message || (language === 'km' ? `រកមិនឃើញការកុម្ម៉ង់ "${q}" ទេ។` : `Order "${q}" not found.`),
+        'error'
       );
-      navigate(`/orders/${found.id}`);
-      setSearchInput('');
-    } else {
-      addToast(
-        language === 'km'
-          ? `រកមិនឃើញការកុម្ម៉ង់ "${q}" ទេ។ កំពុងបង្ហាញការកុម្ម៉ង់សាកល្បង។`
-          : `Order "${q}" not found. Showing active demo order.`,
-        'info'
-      );
+    } finally {
+      setLoadingOrder(false);
     }
   };
 
   // Copy tracking code to clipboard
   const handleCopyTracking = () => {
-    const code = order.trackingNumber || 'VET-KH-889210';
+    const code = order?.trackingNumber || order?.id || '';
+    if (!code) return;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(code);
       setIsCopied(true);
@@ -139,32 +213,27 @@ export default function OrderTracking() {
     }
   };
 
-  // Interactive status switcher for demonstration
-  const handleUpdateStatus = (newStatus) => {
-    const updated = orderService.updateOrderStatus(order.id, newStatus);
-    setOrder({ ...updated });
-    const statusLabel = translateOrderStatusLabel(formatOrderStatus(newStatus), language);
-    addToast(
-      language === 'km'
-        ? `ស្ថានភាពកុម្ម៉ង់ត្រូវបានប្តូរទៅ៖ ${statusLabel}`
-        : `Order status updated to: ${statusLabel}`,
-      'info'
-    );
-  };
-
   // Status-dependent headline and descriptions
   const getStatusDisplay = () => {
     const s = (order.status || '').toLowerCase();
+    const courierLabel = order.tracking?.courier || order.carrier || order.deliveryPartner || 'TechTonic Fleet';
+    const savedEvents = Array.isArray(order.tracking?.events) ? order.tracking.events : [];
+    const deliveredEvt = [...savedEvents].reverse().find((e) => {
+      const k = String(e?.status || '').toLowerCase();
+      return k.includes('deliver') && !k.includes('out');
+    });
+
     if (s.includes('deliver') && !s.includes('out')) {
+      const deliveredAt = formatEventTime(deliveredEvt?.timestamp || order.updatedAt || order.createdAt);
       return {
         badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
         dotColor: 'bg-emerald-500',
         headline: language === 'km' ? 'កញ្ចប់ទំនិញត្រូវបានប្រគល់ជោគជ័យ' : 'Package Delivered',
-        etaText: language === 'km' ? 'បានប្រគល់ថ្ងៃនេះ ម៉ោង ៥:២៤ ល្ងាច' : 'Delivered Today at 5:24 PM',
+        etaText: language === 'km' ? `បានប្រគល់នៅ ${deliveredAt}` : `Delivered on ${deliveredAt}`,
         subtext:
           language === 'km'
-            ? 'កញ្ចប់ទំនិញរបស់អ្នកត្រូវបានប្រគល់ដោយសុវត្ថិភាព និងចុះហត្ថលេខាដោយអតិថិជន Sara Meng។'
-            : 'Your package was safely delivered and signed by customer Sara Meng.',
+            ? `កញ្ចប់ទំនិញរបស់អ្នកត្រូវបានប្រគល់ដោយសុវត្ថិភាពជូនអតិថិជន ${order.customerName || ''}។`
+            : `Your package was safely delivered to ${order.customerName || 'the recipient'}.`,
         alertBg: 'bg-emerald-50/70 border-emerald-200/80 text-emerald-900',
         alertIconColor: 'text-emerald-600',
       };
@@ -174,11 +243,11 @@ export default function OrderTracking() {
         badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
         dotColor: 'bg-blue-600 animate-pulse',
         headline: language === 'km' ? 'កំពុងដឹកជញ្ជូន — មកដល់ថ្ងៃនេះ' : 'Out for Delivery — Arriving Today',
-        etaText: order.estimatedDelivery || (language === 'km' ? 'ថ្ងៃនេះមុនម៉ោង ៥:៣០ ល្ងាច' : 'Today by 5:30 PM'),
+        etaText: order.tracking?.estimatedDelivery || order.estimatedDelivery || (language === 'km' ? 'ថ្ងៃនេះ' : 'Expected Today'),
         subtext:
           language === 'km'
-            ? 'អ្នកដឹកជញ្ជូន Sokha Kong (Honda Dream 125) កំពុងធ្វើដំណើរទៅផ្លូវ 310, BKK1។'
-            : 'Courier Sokha Kong (Honda Dream 125) is in transit to Street 310, BKK1.',
+            ? `អ្នកដឹកជញ្ជូន (${courierLabel}) កំពុងធ្វើដំណើរទៅ ${order.shippingAddress?.address || order.shippingAddress?.city || ''}។`
+            : `${courierLabel} is in transit to ${order.shippingAddress?.address || order.shippingAddress?.city || 'your address'}.`,
         alertBg: 'bg-blue-50/70 border-blue-200/80 text-blue-900',
         alertIconColor: 'text-blue-600',
       };
@@ -188,7 +257,7 @@ export default function OrderTracking() {
         badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
         dotColor: 'bg-indigo-600',
         headline: language === 'km' ? 'កំពុងដឹកជញ្ជូន — ចេញពីមជ្ឈមណ្ឌលកណ្ដាល' : 'In Transit — Departed Central Depot',
-        etaText: order.estimatedDelivery || (language === 'km' ? 'ក្នុងរយៈពេល ២៤ ម៉ោង' : 'Within 24 Hours'),
+        etaText: order.tracking?.estimatedDelivery || order.estimatedDelivery || (language === 'km' ? 'ក្នុងរយៈពេល ២៤ ម៉ោង' : 'Within 24 Hours'),
         subtext:
           language === 'km'
             ? 'កញ្ចប់ទំនិញបានចេញពីមជ្ឈមណ្ឌលដឹកជញ្ជូនទួលគោក ហើយកំពុងធ្វើដំណើរ។'
@@ -225,22 +294,106 @@ export default function OrderTracking() {
     };
   };
 
-  const statusInfo = getStatusDisplay();
+  const formatEventTime = (raw) => {
+    const dateLabel = formatDate(raw);
+    if (!raw) return dateLabel;
+    const parsed = raw?._seconds ? new Date(raw._seconds * 1000) : new Date(raw);
+    if (Number.isNaN(parsed.getTime())) return dateLabel;
+    const timeLabel = parsed.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+    return `${dateLabel} • ${timeLabel}`;
+  };
 
-  // Dynamic milestone activity timeline
+  const dedupeLocationText = (raw) => {
+    const seen = new Set();
+    return String(raw || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter((part) => {
+        if (!part || seen.has(part.toLowerCase())) return false;
+        seen.add(part.toLowerCase());
+        return true;
+      })
+      .join(', ');
+  };
+
+  // Dynamic milestone activity timeline (uses real saved tracking events & fills any skipped steps cleanly)
   const getMilestones = () => {
-    const s = (order.status || '').toLowerCase();
+    const savedEvents = Array.isArray(order.tracking?.events) ? order.tracking.events : [];
+    const s = String(order.status || '').toLowerCase();
+    const courierLabel = order.tracking?.courier || order.carrier || order.deliveryPartner || 'TechTonic Fleet';
+    const cityLabel =
+      dedupeLocationText([order.shippingAddress?.city, order.shippingAddress?.province].filter(Boolean).join(', ')) ||
+      'Phnom Penh';
+    const fullAddrLabel =
+      dedupeLocationText(
+        [order.shippingAddress?.address, order.shippingAddress?.city, order.shippingAddress?.province]
+          .filter(Boolean)
+          .join(', ')
+      ) || cityLabel;
+
+    const findSaved = (matcher) =>
+      [...savedEvents].reverse().find((e) => matcher(String(e?.status || '').toLowerCase()));
+
+    if (s.includes('cancel')) {
+      const cancelEvt = findSaved((k) => k.includes('cancel'));
+      return [
+        {
+          title: language === 'km' ? 'ការកុម្ម៉ង់ត្រូវបានបោះបង់' : 'Order Cancelled',
+          time: formatEventTime(cancelEvt?.timestamp || order.updatedAt || order.createdAt),
+          location: dedupeLocationText(cancelEvt?.location || 'TechTonic Support Desk'),
+          done: true,
+        },
+        {
+          title:
+            language === 'km'
+              ? 'បានបញ្ជាក់ការកុម្ម៉ង់ និងផ្ទៀងផ្ទាត់ការទូទាត់'
+              : 'Order Confirmed & Payment Verified',
+          time: formatEventTime(findSaved((k) => k.includes('confirm'))?.timestamp || order.createdAt),
+          location:
+            language === 'km'
+              ? `ហាងអនឡាញ TechTonic • ${order.paymentMethod || 'KHQR'}`
+              : `TechTonic Online Store • ${order.paymentMethod || 'KHQR'}`,
+          done: true,
+        },
+      ];
+    }
+
+    const confirmEvt = findSaved((k) => k.includes('confirm'));
+    const processEvt = findSaved((k) => k.includes('process'));
+    const shipEvt = findSaved((k) => k.includes('ship'));
+    const outEvt = findSaved((k) => k.includes('out'));
+    const deliverEvt = findSaved((k) => k.includes('deliver') && !k.includes('out'));
+
+    const fallbackTime = formatEventTime(
+      deliverEvt?.timestamp ||
+        outEvt?.timestamp ||
+        shipEvt?.timestamp ||
+        processEvt?.timestamp ||
+        order.updatedAt ||
+        order.createdAt
+    );
+
     const milestones = [
       {
         title:
-          language === 'km'
+          s.includes('pending') && !confirmEvt
+            ? language === 'km'
+              ? 'បានបង្កើតការកុម្ម៉ង់ (រង់ចាំបញ្ជាក់)'
+              : 'Order Placed (Pending Confirmation)'
+            : language === 'km'
             ? 'បានបញ្ជាក់ការកុម្ម៉ង់ និងផ្ទៀងផ្ទាត់ការទូទាត់'
             : 'Order Confirmed & Payment Verified',
-        time: language === 'km' ? 'ថ្ងៃនេះ • ០៩:៣០ ព្រឹក' : 'Today • 09:30 AM',
-        location:
-          language === 'km'
-            ? 'ហាងអនឡាញ TechTonic • បានទូទាត់តាម Bakong KHQR'
-            : 'TechTonic Online Store • Bakong KHQR Paid',
+        time: formatEventTime(confirmEvt?.timestamp || order.createdAt),
+        location: dedupeLocationText(
+          confirmEvt?.location ||
+            (language === 'km'
+              ? `ហាងអនឡាញ TechTonic • ${order.paymentMethod || 'KHQR'}`
+              : `TechTonic Online Store • ${order.paymentMethod || 'KHQR'}`)
+        ),
         done: true,
       },
     ];
@@ -251,26 +404,22 @@ export default function OrderTracking() {
           language === 'km'
             ? 'បានរៀបចំកញ្ចប់ទំនិញ និងស្កេនត្រួតពិនិត្យគុណភាព'
             : 'Package Assembled & Quality Scanned',
-        time: language === 'km' ? 'ថ្ងៃនេះ • ១១:១៥ ព្រឹក' : 'Today • 11:15 AM',
-        location:
-          language === 'km'
-            ? 'មជ្ឈមណ្ឌលកណ្ដាល TechTonic ទួលគោក (ផ្លូវ 598)'
-            : 'TechTonic Central Toul Kork Hub (St 598)',
+        time: processEvt?.timestamp ? formatEventTime(processEvt.timestamp) : fallbackTime,
+        location: dedupeLocationText(
+          processEvt?.location ||
+            (language === 'km'
+              ? 'មជ្ឈមណ្ឌលកណ្ដាល TechTonic ទួលគោក (ផ្លូវ 598)'
+              : 'TechTonic Central Toul Kork Hub (St 598)')
+        ),
         done: true,
       });
     }
 
     if (s.includes('ship') || s.includes('out') || s.includes('deliver')) {
       milestones.unshift({
-        title:
-          language === 'km'
-            ? 'បានដឹកចេញជាមួយភ្នាក់ងារដឹកជញ្ជូន'
-            : 'Dispatched with Logistics Courier',
-        time: language === 'km' ? 'ថ្ងៃនេះ • ០១:៤៥ រសៀល' : 'Today • 01:45 PM',
-        location:
-          language === 'km'
-            ? 'បានចេញដំណើរតាមរយៈក្រុម GrabExpress'
-            : 'Departed via GrabExpress Fleet',
+        title: language === 'km' ? 'បានដឹកចេញជាមួយភ្នាក់ងារដឹកជញ្ជូន' : 'Dispatched with Logistics Courier',
+        time: shipEvt?.timestamp ? formatEventTime(shipEvt.timestamp) : fallbackTime,
+        location: dedupeLocationText(shipEvt?.location || courierLabel),
         done: true,
       });
     }
@@ -281,26 +430,17 @@ export default function OrderTracking() {
           language === 'km'
             ? 'អ្នកដឹកជញ្ជូនកំពុងធ្វើដំណើរដំណាក់កាលចុងក្រោយ'
             : 'Courier In Transit for Final Mile Delivery',
-        time: language === 'km' ? 'ថ្ងៃនេះ • ០៤:៣០ រសៀល' : 'Today • 04:30 PM',
-        location:
-          language === 'km'
-            ? 'ជិតដល់មហាវិថីព្រះមុនីវង្ស និងផ្លូវ 310, BKK1'
-            : 'Approaching Monivong Blvd & Street 310, BKK1',
+        time: outEvt?.timestamp ? formatEventTime(outEvt.timestamp) : fallbackTime,
+        location: dedupeLocationText(outEvt?.location || cityLabel),
         done: true,
       });
     }
 
     if (s.includes('deliver') && !s.includes('out')) {
       milestones.unshift({
-        title:
-          language === 'km'
-            ? 'កញ្ចប់ទំនិញត្រូវបានប្រគល់ជោគជ័យ'
-            : 'Package Successfully Delivered',
-        time: language === 'km' ? 'ថ្ងៃនេះ • ០៥:២៤ ល្ងាច' : 'Today • 05:24 PM',
-        location:
-          language === 'km'
-            ? 'អគារ 24, ផ្លូវ 310, BKK1 • ចុះហត្ថលេខាដោយ Sara Meng'
-            : 'Building 24, St 310, BKK1 • Signed by Sara Meng',
+        title: language === 'km' ? 'កញ្ចប់ទំនិញត្រូវបានប្រគល់ជោគជ័យ' : 'Package Successfully Delivered',
+        time: formatEventTime(deliverEvt?.timestamp || order.updatedAt || order.createdAt),
+        location: dedupeLocationText(deliverEvt?.location || fullAddrLabel),
         done: true,
       });
     }
@@ -308,6 +448,66 @@ export default function OrderTracking() {
     return milestones;
   };
 
+  if (!order) {
+    return (
+      <div className="bg-[#f8fafc] min-h-screen py-12 sm:py-16">
+        <div className="max-w-xl mx-auto px-4">
+          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-8 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4">
+              <Package className="w-7 h-7" />
+            </div>
+            <h1 className="text-xl font-extrabold text-slate-900 mb-2">
+              {language === 'km' ? 'តាមដានការកុម្ម៉ង់របស់អ្នក' : 'Track Your Order'}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mb-6">
+              {loadingOrder
+                ? (language === 'km' ? 'កំពុងទាញយកទិន្នន័យការកុម្ម៉ង់...' : 'Loading order tracking details...')
+                : (language === 'km'
+                    ? 'បញ្ចូលលេខកូដកុម្ម៉ង់ (និងអ៊ីមែល ឬលេខទូរសព្ទប្រសិនបើមិនទាន់ចូលគណនី) ដើម្បីពិនិត្យស្ថានភាពដឹកជញ្ជូនពិតប្រាកដ។'
+                    : 'Enter your order ID (and email or phone if checking out as guest) to view live delivery progress.')}
+            </p>
+            <form onSubmit={handleSearchSubmit} className="space-y-3 text-left">
+              <input
+                type="text"
+                required
+                placeholder={language === 'km' ? 'លេខកូដកុម្ម៉ង់ (ឧ. ORD-...)' : 'Order ID (e.g. ORD-...)'}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+              {!isAuthenticated && (
+                <input
+                  type="text"
+                  placeholder={language === 'km' ? 'អ៊ីមែល ឬលេខទូរសព្ទ (សម្រាប់ភ្ញៀវ)' : 'Email or phone number (for guest lookup)'}
+                  value={lookupContact}
+                  onChange={(e) => setLookupContact(e.target.value)}
+                  className="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              )}
+              <button
+                type="submit"
+                disabled={loadingOrder}
+                className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-colors cursor-pointer disabled:opacity-60"
+              >
+                {loadingOrder
+                  ? (language === 'km' ? 'កំពុងស្វែងរក...' : 'Searching...')
+                  : (language === 'km' ? 'ស្វែងរកការកុម្ម៉ង់' : 'Track Order')}
+              </button>
+            </form>
+            <div className="mt-6 pt-4 border-t border-slate-100">
+              <Link to={isAuthenticated ? '/account/orders' : '/shop'} className="text-xs font-semibold text-blue-600 hover:underline">
+                {isAuthenticated
+                  ? (language === 'km' ? 'ត្រឡប់ទៅការកុម្ម៉ង់របស់ខ្ញុំ' : 'Back to My Orders')
+                  : (language === 'km' ? 'បន្តទៅហាងទំនិញ' : 'Continue Shopping')}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const statusInfo = getStatusDisplay();
   const milestones = getMilestones();
 
   return (
@@ -338,75 +538,33 @@ export default function OrderTracking() {
             </span>
           </div>
 
-          {/* Quick Search & Demo Switcher in one sleek row */}
+          {/* Quick Order Lookup Search */}
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Compact Search Input */}
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                placeholder={
-                  language === 'km'
-                    ? 'ស្វែងរកលេខកុម្ម៉ង់ (ឧ. ORD-...)'
-                    : 'Search order ID (e.g. ORD-...)'
-                }
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-mono w-56 sm:w-64 shadow-xs"
-              />
-            </form>
-
-            {/* Discreet Stage Switcher for Testing */}
-            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-xs">
-              <span className="text-[11px] font-medium text-slate-500">
-                {language === 'km' ? 'ដំណាក់កាលសាកល្បង៖' : 'Demo Stage:'}
-              </span>
-              <select
-                value={(order.status || '').toLowerCase().replace(/\s+/g, '_')}
-                onChange={(e) => handleUpdateStatus(e.target.value)}
-                className="text-[11px] font-bold text-blue-600 bg-transparent border-none focus:outline-none cursor-pointer"
-              >
-                <option value="confirmed">
-                  1. {translateOrderStatusLabel(formatOrderStatus('confirmed'), language)}
-                </option>
-                <option value="processing">
-                  2. {translateOrderStatusLabel(formatOrderStatus('processing'), language)}
-                </option>
-                <option value="shipped">
-                  3. {translateOrderStatusLabel(formatOrderStatus('shipped'), language)}
-                </option>
-                <option value="out_for_delivery">
-                  4. {translateOrderStatusLabel(formatOrderStatus('out_for_delivery'), language)}
-                </option>
-                <option value="delivered">
-                  5. {translateOrderStatusLabel(formatOrderStatus('delivered'), language)}
-                </option>
-              </select>
-            </div>
-
-            {/* Quick Demo Order Picker */}
-            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-xs">
-              <span className="text-[11px] font-medium text-slate-500">
-                {language === 'km' ? 'ការកុម្ម៉ង់សាកល្បង៖' : 'Demo Order:'}
-              </span>
-              <select
-                value={order.id}
-                onChange={(e) => {
-                  const targetOrder = allOrders.find((o) => o.id === e.target.value);
-                  if (targetOrder) {
-                    setOrder(targetOrder);
-                    navigate(`/orders/${targetOrder.id}`);
+            <form onSubmit={handleSearchSubmit} className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder={
+                    language === 'km'
+                      ? 'ស្វែងរកលេខកុម្ម៉ង់ (ឧ. ORD-...)'
+                      : 'Search order ID (e.g. ORD-...)'
                   }
-                }}
-                className="text-[11px] font-bold text-slate-700 bg-transparent border-none focus:outline-none cursor-pointer font-mono"
-              >
-                {allOrders.map((ord) => (
-                  <option key={ord.id} value={ord.id}>
-                    {ord.id} ({translateOrderStatusLabel(formatOrderStatus(ord.status), language)})
-                  </option>
-                ))}
-              </select>
-            </div>
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-mono w-56 sm:w-64 shadow-xs"
+                />
+              </div>
+              {!isAuthenticated && (
+                <input
+                  type="text"
+                  placeholder={language === 'km' ? 'អ៊ីមែល/ទូរសព្ទ' : 'Email or phone'}
+                  value={lookupContact}
+                  onChange={(e) => setLookupContact(e.target.value)}
+                  className="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 w-40 shadow-xs"
+                />
+              )}
+            </form>
           </div>
         </div>
 
@@ -455,7 +613,9 @@ export default function OrderTracking() {
             <div className="flex flex-col items-start md:items-end gap-1 shrink-0">
               <span className="text-xs text-slate-500">
                 {language === 'km' ? 'ក្រុមហ៊ុនដឹកជញ្ជូន៖' : 'Courier:'}{' '}
-                <strong className="text-slate-800 font-semibold">{order.deliveryPartner || 'GrabExpress Phnom Penh'}</strong>
+                <strong className="text-slate-800 font-semibold">
+                  {order.tracking?.courier || order.carrier || order.deliveryPartner || 'GrabExpress Phnom Penh'}
+                </strong>
               </span>
             </div>
           </div>
@@ -488,14 +648,32 @@ export default function OrderTracking() {
                 </p>
               </div>
 
-              <div className="relative pl-6 space-y-6 border-l-2 border-slate-100 ml-3">
-                {milestones.map((item, idx) => (
+              <div
+                className={`relative pl-6 space-y-6 border-l-2 ml-3 ${
+                  String(order.status || '').toLowerCase().includes('cancel')
+                    ? 'border-rose-200'
+                    : 'border-blue-200'
+                }`}
+              >
+                {milestones.map((item, idx) => {
+                  const isCancelled = String(order.status || '').toLowerCase().includes('cancel');
+                  const dotClass =
+                    idx === 0
+                      ? isCancelled
+                        ? 'bg-rose-600 border-white ring-4 ring-rose-100'
+                        : 'bg-blue-600 border-white ring-4 ring-blue-100'
+                      : 'bg-blue-600 border-white';
+                  return (
                   <div key={idx} className="relative">
                     {/* Node Circle */}
-                    <div className={`absolute -left-[31px] top-0.5 w-4 h-4 rounded-full border-2 ${idx === 0 ? 'bg-blue-600 border-white ring-4 ring-blue-100' : 'bg-slate-300 border-white'}`} />
+                    <div className={`absolute -left-[31px] top-0.5 w-4 h-4 rounded-full border-2 ${dotClass}`} />
                     
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                      <span className={`text-xs font-bold ${idx === 0 ? 'text-blue-600' : 'text-slate-900'}`}>
+                      <span
+                        className={`text-xs font-bold ${
+                          idx === 0 ? (isCancelled ? 'text-rose-600' : 'text-blue-600') : 'text-slate-900'
+                        }`}
+                      >
                         {item.title}
                       </span>
                       <span className="text-[11px] font-mono text-slate-400 font-medium">
@@ -507,7 +685,8 @@ export default function OrderTracking() {
                       <span>{item.location}</span>
                     </p>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

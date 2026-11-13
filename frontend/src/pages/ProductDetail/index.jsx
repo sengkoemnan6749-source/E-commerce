@@ -165,8 +165,9 @@ export default function ProductDetail() {
           </p>
         </div>
         <ProductReviews
+          productId={product.id}
           rating={product.rating}
-          reviewsCount={product.reviewsCount || 24}
+          reviewsCount={product.reviewsCount || 0}
         />
       </div>
 

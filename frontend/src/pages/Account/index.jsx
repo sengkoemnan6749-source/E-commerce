@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Package,
@@ -22,7 +22,20 @@ import { translateOrderStatusLabel } from '../../utils/translations';
 export default function AccountOverview() {
   const { user } = useAuth();
   const { language } = useLanguage();
-  const orders = orderService.getOrders();
+  const [orders, setOrders] = useState(() => orderService.getOrders());
+
+  useEffect(() => {
+    const sync = (e) => {
+      if (Array.isArray(e?.detail)) {
+        setOrders(e.detail);
+      } else {
+        setOrders(orderService.getOrders());
+      }
+    };
+    window.addEventListener('techtonic:orders-updated', sync);
+    orderService.fetchMyOrders().then(setOrders).catch(() => {});
+    return () => window.removeEventListener('techtonic:orders-updated', sync);
+  }, [user?.uid, user?.id]);
 
   const totalSpent = useMemo(() => {
     return orders.reduce((sum, ord) => sum + (Number(ord.total) || 0), 0);

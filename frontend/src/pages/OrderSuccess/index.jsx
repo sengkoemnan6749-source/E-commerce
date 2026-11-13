@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Download, Truck, ShoppingBag, ArrowRight, Printer, Share2 } from 'lucide-react';
 import { orderService } from '../../services/orderService';
@@ -17,13 +17,24 @@ export default function OrderSuccess() {
   const orderId = searchParams.get('orderId');
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
-  const order = useMemo(() => {
+  const [order, setOrder] = useState(() => {
     if (orderId) {
       return orderService.getOrderById(orderId);
     }
-    // Fallback: grab latest order
     const all = orderService.getOrders();
     return all.length > 0 ? all[0] : null;
+  });
+
+  useEffect(() => {
+    if (!orderId) return;
+    const local = orderService.getOrderById(orderId);
+    if (local) {
+      setOrder(local);
+      return;
+    }
+    orderService.fetchOrderById(orderId).then((fetched) => {
+      if (fetched) setOrder(fetched);
+    }).catch(() => {});
   }, [orderId]);
 
   if (!order) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Truck, FileText, Search, Package } from 'lucide-react';
 import { orderService, getOrderStatusMeta } from '../../../services/orderService';
@@ -12,9 +12,56 @@ import Invoice from '../../../components/order/Invoice';
 
 export default function AccountOrders() {
   const { language } = useLanguage();
-  const orders = orderService.getOrders();
+  const [orders, setOrders] = useState(() => orderService.getOrders());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
+
+  useEffect(() => {
+    const sync = (e) => {
+      if (Array.isArray(e?.detail)) {
+        setOrders(e.detail);
+      } else {
+        setOrders(orderService.getOrders());
+      }
+    };
+    const refresh = () => {
+      if (document.visibilityState === 'visible') {
+        orderService.fetchMyOrders().then(setOrders).catch(() => {});
+      }
+    };
+
+    const handleStorageSync = (e) => {
+      if (e.key === 'techtonic_order_sync_ping' || e.key === 'techtonic_orders') {
+        refresh();
+      }
+    };
+
+    let channel = null;
+    if (typeof BroadcastChannel !== 'undefined') {
+      try {
+        channel = new BroadcastChannel('techtonic-order-sync');
+        channel.onmessage = () => refresh();
+      } catch {
+        channel = null;
+      }
+    }
+
+    window.addEventListener('techtonic:orders-updated', sync);
+    window.addEventListener('storage', handleStorageSync);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    refresh();
+    const intervalId = window.setInterval(refresh, 12000);
+
+    return () => {
+      window.removeEventListener('techtonic:orders-updated', sync);
+      window.removeEventListener('storage', handleStorageSync);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+      if (channel) channel.close();
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const filteredOrders = orders.filter((ord) => {
     if (!searchTerm.trim()) return true;

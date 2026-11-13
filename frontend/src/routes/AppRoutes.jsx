@@ -16,6 +16,7 @@ import Checkout from '../pages/Checkout';
 import OrderSuccess from '../pages/OrderSuccess';
 import OrderTracking from '../pages/OrderTracking';
 import About from '../pages/About';
+import LegalPolicy from '../pages/Legal';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 
@@ -33,9 +34,19 @@ import AdminProducts from '../admin/Products';
 import AdminCategories from '../admin/Categories';
 import AdminOrders from '../admin/Orders';
 import AdminCustomers from '../admin/Customers';
+import AdminAuditLogs from '../admin/AuditLogs';
+import AdminSupport from '../admin/Support';
+import AdminPromos from '../admin/Promos';
 
 function CustomerRouteGuard({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, authReady } = useAuth();
+  if (!authReady) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center text-xs font-medium text-slate-500">
+        Verifying session...
+      </div>
+    );
+  }
   if (!isAuthenticated) {
     return <Navigate to="/login?redirect=/account" replace />;
   }
@@ -43,7 +54,14 @@ function CustomerRouteGuard({ children }) {
 }
 
 function AdminRouteGuard({ children }) {
-  const { user, isAuthenticated, isAdmin } = useAuth();
+  const { user, isAuthenticated, isAdmin, authReady } = useAuth();
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] text-xs font-medium text-slate-500">
+        Verifying administrator privileges...
+      </div>
+    );
+  }
   if (!isAuthenticated) {
     return <Navigate to="/login?redirect=/admin" replace />;
   }
@@ -53,21 +71,7 @@ function AdminRouteGuard({ children }) {
   return children;
 }
 
-// Dedicated direct-access guard for TechTonicAdmin route requested by teacher
-function TechTonicAdminDirectGuard({ children }) {
-  const { user, isAuthenticated, isAdmin, loginAsAdmin } = useAuth();
-
-  React.useEffect(() => {
-    // If visitor is not yet authenticated as admin, automatically promote/login to TechTonicAdmin session
-    if (!isAuthenticated || !isAdmin || user?.role !== 'admin') {
-      if (typeof loginAsAdmin === 'function') {
-        loginAsAdmin();
-      }
-    }
-  }, [isAuthenticated, isAdmin, user, loginAsAdmin]);
-
-  return children;
-}
+// Admin route protection uses AdminRouteGuard (Firebase Auth + backend admin role)
 
 export default function AppRoutes() {
   return (
@@ -87,6 +91,9 @@ export default function AppRoutes() {
         <Route path="/track" element={<OrderTracking />} />
         <Route path="/order-tracking" element={<OrderTracking />} />
         <Route path="/about" element={<About />} />
+        <Route path="/privacy" element={<LegalPolicy type="privacy" />} />
+        <Route path="/terms" element={<LegalPolicy type="terms" />} />
+        <Route path="/warranty" element={<LegalPolicy type="warranty" />} />
 
         {/* Customer Account Routes */}
         <Route
@@ -109,13 +116,13 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Dedicated TechTonicAdmin Direct Route (Teacher Requirement) */}
+      {/* Protected TechTonicAdmin Route */}
       <Route
         path="/TechTonicAdmin"
         element={
-          <TechTonicAdminDirectGuard>
+          <AdminRouteGuard>
             <AdminLayout />
-          </TechTonicAdminDirectGuard>
+          </AdminRouteGuard>
         }
       >
         <Route index element={<AdminDashboard />} />
@@ -123,6 +130,9 @@ export default function AppRoutes() {
         <Route path="categories" element={<AdminCategories />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="customers" element={<AdminCustomers />} />
+        <Route path="promos" element={<AdminPromos />} />
+        <Route path="support" element={<AdminSupport />} />
+        <Route path="audit-logs" element={<AdminAuditLogs />} />
       </Route>
 
       {/* Case-insensitive alias */}
@@ -142,6 +152,9 @@ export default function AppRoutes() {
         <Route path="categories" element={<AdminCategories />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="customers" element={<AdminCustomers />} />
+        <Route path="promos" element={<AdminPromos />} />
+        <Route path="support" element={<AdminSupport />} />
+        <Route path="audit-logs" element={<AdminAuditLogs />} />
       </Route>
 
       {/* Fallback */}

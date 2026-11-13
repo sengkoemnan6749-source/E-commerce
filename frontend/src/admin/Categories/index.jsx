@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, FolderTree, Edit2, Trash2, Search } from 'lucide-react';
 import { productService } from '../../services/productService';
+import { adminService } from '../../services/adminService';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Input from '../../components/common/Input';
@@ -45,7 +46,7 @@ export default function AdminCategories() {
     setModalMode('delete');
   };
 
-  const handleSaveCategory = (e) => {
+  const handleSaveCategory = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
       addToast(
@@ -57,39 +58,47 @@ export default function AdminCategories() {
 
     const slug = formData.slug.trim() || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-    if (modalMode === 'add') {
-      productService.addCategory({
-        name: formData.name,
-        slug: slug,
-        description: formData.description,
-        count: 0
-      });
-      addToast(
-        language === 'km' ? 'បានបន្ថែមប្រភេទផលិតផលដោយជោគជ័យ' : 'Category added successfully',
-        'success'
-      );
-    } else if (modalMode === 'edit') {
-      productService.updateCategory(activeCategory.id, {
-        name: formData.name,
-        slug: slug,
-        description: formData.description
-      });
-      addToast(
-        language === 'km' ? 'បានធ្វើបច្ចុប្បន្នភាពប្រភេទផលិតផលដោយជោគជ័យ' : 'Category updated successfully',
-        'success'
-      );
-    }
+    try {
+      if (modalMode === 'add') {
+        await adminService.createCategory({
+          name: formData.name,
+          slug: slug,
+          description: formData.description
+        });
+        addToast(
+          language === 'km' ? 'បានបន្ថែមប្រភេទផលិតផលដោយជោគជ័យ' : 'Category added successfully',
+          'success'
+        );
+      } else if (modalMode === 'edit') {
+        await adminService.updateCategory(activeCategory.id, {
+          name: formData.name,
+          slug: slug,
+          description: formData.description
+        });
+        addToast(
+          language === 'km' ? 'បានធ្វើបច្ចុប្បន្នភាពប្រភេទផលិតផលដោយជោគជ័យ' : 'Category updated successfully',
+          'success'
+        );
+      }
 
-    refreshCategories();
-    setModalMode(null);
+      await productService.syncFromBackend();
+      refreshCategories();
+      setModalMode(null);
+    } catch (err) {
+      addToast(err?.message || 'Failed to save category.', 'error');
+    }
   };
 
-  const handleDeleteConfirm = () => {
-    if (activeCategory) {
-      productService.deleteCategory(activeCategory.id);
+  const handleDeleteConfirm = async () => {
+    if (!activeCategory) return;
+    try {
+      await adminService.deleteCategory(activeCategory.id);
+      await productService.syncFromBackend();
       refreshCategories();
       addToast(language === 'km' ? 'បានលុបប្រភេទផលិតផល' : 'Category deleted', 'info');
       setModalMode(null);
+    } catch (err) {
+      addToast(err?.message || 'Failed to delete category.', 'error');
     }
   };
 

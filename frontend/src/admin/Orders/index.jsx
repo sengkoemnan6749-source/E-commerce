@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Search, Eye, Truck, FileText, CheckCircle2, ExternalLink } from 'lucide-react';
-import { orderService, formatOrderStatus } from '../../services/orderService';
+import React, { useState, useEffect } from 'react';
+import { Search, Eye, Truck, FileText, CheckCircle2, ExternalLink, Send } from 'lucide-react';
+import { formatOrderStatus } from '../../services/orderService';
+import { adminService } from '../../services/adminService';
 import { formatUSD } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
 import Badge from '../../components/common/Badge';
@@ -10,27 +11,125 @@ import { useToast, useLanguage } from '../../store/StoreContext';
 import { translateOrderStatusLabel } from '../../utils/translations';
 
 export default function AdminOrders() {
-  const [orders, setOrders] = useState(orderService.getOrders());
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [orderTgStatus, setOrderTgStatus] = useState(null);
+  const [tgModalOpen, setTgModalOpen] = useState(false);
+  const [botTokenInput, setBotTokenInput] = useState('');
+  const [tgBusy, setTgBusy] = useState(false);
   const { addToast } = useToast();
   const { language } = useLanguage();
 
-  const refreshOrders = () => {
-    setOrders(orderService.getOrders());
+  const loadOrderTgStatus = async () => {
+    try {
+      const data = await adminService.getOrderTelegramStatus();
+      setOrderTgStatus(data);
+    } catch {
+      // ignore initial telegram check error
+    }
   };
 
-  const handleStatusChange = (orderId, newStatus) => {
-    orderService.updateOrderStatus(orderId, newStatus);
+  const refreshOrders = async () => {
+    try {
+      const res = await adminService.getOrders({ limit: 100 });
+      setOrders(res.orders || []);
+    } catch (err) {
+      addToast(err?.message || 'Failed to load orders.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     refreshOrders();
-    addToast(
-      language === 'km'
-        ? `បានធ្វើបច្ចុប្បន្នភាពការបញ្ជាទិញ ${orderId} ទៅជា ${translateOrderStatusLabel(newStatus, 'km')}`
-        : `Order ${orderId} updated to ${formatOrderStatus(newStatus)}`,
-      'success'
-    );
+    loadOrderTgStatus();
+    const handleFocus = () => {
+      if (document.visibilityState === 'visible') {
+        refreshOrders();
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+    const intervalId = window.setInterval(handleFocus, 15000);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const handleSaveOrderBotToken = async (e) => {
+    e.preventDefault();
+    if (!botTokenInput.trim()) return;
+    setTgBusy(true);
+    try {
+      const data = await adminService.configureOrderTelegramBot(botTokenInput.trim());
+      setOrderTgStatus(data);
+      setBotTokenInput('');
+      addToast(
+        data?.connected
+          ? (language === 'km' ? `បានភ្ជាប់ @${data.botUsername} ជោគជ័យ!` : `Connected @${data.botUsername} successfully!`)
+          : (language === 'km'
+              ? `បានរក្សាទុក @${data?.botUsername} — សូមបើក Telegram រួចចុច Start បន្ទាប់មកចុច "ភ្ជាប់ Telegram"`
+              : `Saved @${data?.botUsername} — open Telegram, tap Start, then click "Connect Telegram".`),
+        'success'
+      );
+    } catch (err) {
+      addToast(err?.message || (language === 'km' ? 'Token មិនត្រឹមត្រូវ' : 'Invalid bot token'), 'error');
+    } finally {
+      setTgBusy(false);
+    }
+  };
+
+  const handleConnectOrderTg = async () => {
+    setTgBusy(true);
+    try {
+      const data = await adminService.connectOrderTelegramBot();
+      setOrderTgStatus(data);
+      addToast(
+        language === 'km' ? 'បានភ្ជាប់ Telegram Order Bot ជោគជ័យ!' : 'Order Telegram Bot connected!',
+        'success'
+      );
+    } catch (err) {
+      addToast(err?.message || (language === 'km' ? 'មិនអាចភ្ជាប់បានទេ — សូមចុច Start ក្នុង Bot ជាមុនសិន' : 'Could not connect — send /start to your bot first.'), 'error');
+    } finally {
+      setTgBusy(false);
+    }
+  };
+
+  const handleTestOrderTg = async () => {
+    setTgBusy(true);
+    try {
+      await adminService.testOrderTelegramBot();
+      addToast(
+        language === 'km' ? 'បានផ្ញើសារតេស្តចូល Telegram Order Bot!' : 'Test alert sent to Order Telegram Bot!',
+        'success'
+      );
+    } catch (err) {
+      addToast(err?.message || (language === 'km' ? 'ផ្ញើសារតេស្តមិនបានសម្រេច' : 'Failed to send test alert'), 'error');
+    } finally {
+      setTgBusy(false);
+    }
+  };
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await adminService.updateOrderStatus(orderId, newStatus);
+      window.dispatchEvent(new CustomEvent('techtonic:admin-updated'));
+      await refreshOrders();
+      addToast(
+        language === 'km'
+          ? `បានធ្វើបច្ចុប្បន្នភាពការបញ្ជាទិញ ${orderId} ទៅជា ${translateOrderStatusLabel(newStatus, 'km')}`
+          : `Order ${orderId} updated to ${formatOrderStatus(newStatus)}`,
+        'success'
+      );
+    } catch (err) {
+      addToast(err?.message || 'Failed to update order status.', 'error');
+    }
   };
 
   const filtered = orders.filter((o) => {
@@ -40,10 +139,12 @@ export default function AdminOrders() {
     }
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
+      const custName = o.customerName || o.customer?.fullName || '';
+      const custPhone = o.customerPhone || o.customer?.phone || '';
       return (
         o.id.toLowerCase().includes(q) ||
-        o.customerName?.toLowerCase().includes(q) ||
-        o.customerPhone?.includes(q)
+        custName.toLowerCase().includes(q) ||
+        custPhone.includes(q)
       );
     }
     return true;
@@ -72,6 +173,30 @@ export default function AdminOrders() {
               : 'Audit fulfillment workflows, courier handoffs, and manage payment statuses.'}
           </p>
         </div>
+
+        <button
+          type="button"
+          onClick={() => setTgModalOpen(true)}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer self-start sm:self-auto"
+        >
+          <span
+            className={`w-2 h-2 rounded-full ${
+              orderTgStatus?.connected
+                ? 'bg-emerald-500'
+                : orderTgStatus?.botConfigured
+                ? 'bg-amber-500'
+                : 'bg-slate-300'
+            }`}
+          />
+          <Send className="w-3.5 h-3.5 text-blue-600" />
+          <span>
+            {orderTgStatus?.connected && orderTgStatus?.botUsername
+              ? `@${orderTgStatus.botUsername}`
+              : language === 'km'
+              ? 'តភ្ជាប់ Order Telegram Bot'
+              : 'Order Telegram Bot'}
+          </span>
+        </button>
       </div>
 
       {/* Unified Orders Card */}
@@ -135,7 +260,13 @@ export default function AdminOrders() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500">
+                    {language === 'km' ? 'កំពុងផ្ទុកការបញ្ជាទិញ...' : 'Loading orders from database...'}
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-500">
                     <Truck className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -168,7 +299,7 @@ export default function AdminOrders() {
                     </td>
 
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span className="font-semibold text-slate-900 block">{ord.customerName}</span>
+                      <span className="font-semibold text-slate-900 block">{ord.customerName || ord.customer?.fullName || 'Customer'}</span>
                       <span className="text-[11px] text-slate-400">{ord.customerPhone}</span>
                     </td>
 
@@ -343,20 +474,31 @@ export default function AdminOrders() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2">
-              <button
-                type="button"
-                onClick={() => setShowInvoiceModal(true)}
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-blue-600"
-              >
-                <FileText className="w-4 h-4" />
-                <span>{language === 'km' ? 'មើលវិក្កយបត្រពេញលេញ' : 'View Full Invoice Sheet'}</span>
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+              <div className="flex flex-wrap items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => setShowInvoiceModal(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-blue-600 cursor-pointer"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>{language === 'km' ? 'មើលវិក្កយបត្រពេញលេញ' : 'View Full Invoice Sheet'}</span>
+                </button>
+                <a
+                  href={`/orders/${encodeURIComponent(selectedOrder.id)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-800"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>{language === 'km' ? 'តាមដានផ្ទាល់ (ទំព័រអតិថិជន)' : 'Open Live Tracking'}</span>
+                </a>
+              </div>
 
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 cursor-pointer"
               >
                 {language === 'km' ? 'បិទ' : 'Close'}
               </button>
@@ -374,6 +516,103 @@ export default function AdminOrders() {
           size="xl"
         >
           <Invoice order={selectedOrder} onBack={() => setShowInvoiceModal(false)} />
+        </Modal>
+      )}
+
+      {/* Order Telegram Bot Configuration Modal */}
+      {tgModalOpen && (
+        <Modal
+          isOpen={true}
+          onClose={() => setTgModalOpen(false)}
+          title={language === 'km' ? 'កំណត់ Telegram Bot សម្រាប់ការបញ្ជាទិញ' : 'Order Telegram Bot Settings'}
+          size="md"
+        >
+          <div className="space-y-4">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold text-slate-900">
+                  {orderTgStatus?.connected
+                    ? (language === 'km' ? 'បានភ្ជាប់រួចរាល់' : 'Connected')
+                    : orderTgStatus?.botConfigured
+                    ? (language === 'km' ? 'រង់ចាំចុច Start ក្នុង Telegram' : 'Waiting for /start in Telegram')
+                    : (language === 'km' ? 'មិនទាន់កំណត់ Bot ថ្មីទេ' : 'Dedicated Order Bot Not Configured')}
+                </p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {orderTgStatus?.botConfigured
+                    ? `@${orderTgStatus.botUsername}${orderTgStatus.chatUsername ? ` • @${orderTgStatus.chatUsername}` : ''}`
+                    : (language === 'km'
+                        ? 'បច្ចុប្បន្នមិនទាន់មាន Order Bot ដាច់ដោយឡែកទេ — បង្កើតតាម @BotFather រួចបិទភ្ជាប់ Token ខាងក្រោម។'
+                        : 'Create a dedicated bot with @BotFather (/newbot) and paste its HTTP API token below.')}
+                </p>
+              </div>
+              {orderTgStatus?.botConfigured && orderTgStatus?.botUsername && (
+                <a
+                  href={`https://t.me/${orderTgStatus.botUsername}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-[11px] font-semibold text-blue-600 hover:bg-blue-50 shrink-0"
+                >
+                  <span>@{orderTgStatus.botUsername}</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
+
+            <form onSubmit={handleSaveOrderBotToken} className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-700">
+                {language === 'km' ? 'BotFather HTTP API Token' : 'BotFather HTTP API Token'}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="password"
+                  value={botTokenInput}
+                  onChange={(e) => setBotTokenInput(e.target.value)}
+                  placeholder="123456789:AAH..."
+                  className="flex-1 h-9 px-3 rounded-lg border border-slate-200 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                />
+                <button
+                  type="submit"
+                  disabled={tgBusy || !botTokenInput.trim()}
+                  className="h-9 px-3.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold disabled:opacity-50 cursor-pointer shrink-0"
+                >
+                  {language === 'km' ? 'រក្សាទុក Token' : 'Save Token'}
+                </button>
+              </div>
+            </form>
+
+            {orderTgStatus?.botConfigured && (
+              <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-[11px] text-slate-500">
+                  {language === 'km'
+                    ? `១) បើក @${orderTgStatus.botUsername} ហើយចុច Start  ២) ចុច "ភ្ជាប់" ឬ "តេស្ត"`
+                    : `1) Open @${orderTgStatus.botUsername} & tap Start  2) Click Connect or Test`}
+                </p>
+                <div className="flex items-center gap-2">
+                  {!orderTgStatus?.connected ? (
+                    <button
+                      type="button"
+                      disabled={tgBusy}
+                      onClick={handleConnectOrderTg}
+                      className="h-8 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                    >
+                      {tgBusy
+                        ? (language === 'km' ? 'កំពុងភ្ជាប់...' : 'Connecting...')
+                        : (language === 'km' ? 'ភ្ជាប់ Telegram' : 'Connect Telegram')}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={tgBusy}
+                      onClick={handleTestOrderTg}
+                      className="h-8 px-3 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                    >
+                      {language === 'km' ? 'តេស្ត Bot' : 'Test Alert'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </Modal>
       )}
     </div>

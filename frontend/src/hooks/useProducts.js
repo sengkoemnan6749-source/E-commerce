@@ -15,6 +15,15 @@ export function useProducts() {
 
   useEffect(() => {
     refresh();
+    productService.syncFromBackend();
+
+    const handleSync = () => {
+      setProducts(productService.getProducts());
+      setCategories(productService.getCategories());
+    };
+
+    window.addEventListener('techtonic:catalog-updated', handleSync);
+    return () => window.removeEventListener('techtonic:catalog-updated', handleSync);
   }, []);
 
   return {

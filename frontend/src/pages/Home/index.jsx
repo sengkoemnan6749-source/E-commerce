@@ -31,15 +31,44 @@ import {
 import ProductCard from '../../components/product/ProductCard';
 import Button from '../../components/common/Button';
 import { productService } from '../../services/productService';
-import { useLanguage } from '../../store/StoreContext';
+import { api } from '../../services/api';
+import { useLanguage, useToast } from '../../store/StoreContext';
 import { translateCategory } from '../../utils/translations';
 import BrandMarquee from '../../components/home/BrandMarquee';
 import WhyChooseUsBento from '../../components/home/WhyChooseUsBento';
 
 export default function Home() {
   const { t, language } = useLanguage();
+  const { addToast } = useToast();
   const allProducts = productService.getProducts();
   const categories = productService.getCategories();
+  const [activePromos, setActivePromos] = useState([]);
+
+  React.useEffect(() => {
+    let mounted = true;
+    api
+      .get('/promos/active')
+      .then((res) => {
+        if (mounted && Array.isArray(res?.data)) {
+          setActivePromos(res.data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const primaryPromo = activePromos[0] || { code: 'TECH10', type: 'fixed', value: 10 };
+  const handleCopyPromo = (code) => {
+    navigator.clipboard?.writeText(code).catch(() => {});
+    addToast(
+      language === 'km'
+        ? `បានចម្លងកូដប្រូម៉ូសិន "${code}" រួចរាល់!`
+        : `Copied promo code "${code}"!`,
+      'success'
+    );
+  };
 
   const featuredProducts = allProducts.filter((p) => p.isFeatured).slice(0, 4);
   const bestSellers = allProducts.filter((p) => p.rating >= 4.8).slice(0, 4);
@@ -617,17 +646,59 @@ export default function Home() {
                 </span>
               </h2>
 
-              <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-6 max-w-xl">
-                {language === 'km' ? (
-                  <>
-                    ប្រើកូដបញ្ចុះតម្លៃ <span className="font-mono font-bold text-amber-400 bg-slate-900/80 px-2.5 py-1 rounded-md border border-amber-400/30 shadow-xs">TECH10</span> ពេលទូទាត់ ដើម្បីទទួលបានការបញ្ចុះតម្លៃ ១០% ភ្លាមៗ លើគ្រប់ឆ្នាំងសាក និងសម្ភារៈតុធ្វើការ។
-                  </>
-                ) : (
-                  <>
-                    Use promo code <span className="font-mono font-bold text-amber-400 bg-slate-900/80 px-2.5 py-1 rounded-md border border-amber-400/30 shadow-xs">TECH10</span> at checkout for 10% instant discount across all chargers and workspace peripherals.
-                  </>
+              <div className="text-sm sm:text-base text-slate-300 leading-relaxed mb-6 max-w-xl space-y-2.5">
+                <p>
+                  {language === 'km' ? (
+                    <>
+                      ប្រើកូដបញ្ចុះតម្លៃ{' '}
+                      <button
+                        type="button"
+                        onClick={() => handleCopyPromo(primaryPromo.code)}
+                        className="font-mono font-bold text-amber-400 bg-slate-900/80 hover:bg-slate-800 px-2.5 py-1 rounded-md border border-amber-400/30 shadow-xs cursor-pointer"
+                      >
+                        {primaryPromo.code}
+                      </button>{' '}
+                      ពេលទូទាត់ ដើម្បីទទួលបានការបញ្ចុះតម្លៃ{' '}
+                      {primaryPromo.type === 'percentage' ? `${primaryPromo.value}%` : `$${Number(primaryPromo.value || 10).toFixed(0)}`}{' '}
+                      ភ្លាមៗ លើគ្រប់ឆ្នាំងសាក និងសម្ភារៈតុធ្វើការ។
+                    </>
+                  ) : (
+                    <>
+                      Use promo code{' '}
+                      <button
+                        type="button"
+                        onClick={() => handleCopyPromo(primaryPromo.code)}
+                        className="font-mono font-bold text-amber-400 bg-slate-900/80 hover:bg-slate-800 px-2.5 py-1 rounded-md border border-amber-400/30 shadow-xs cursor-pointer"
+                      >
+                        {primaryPromo.code}
+                      </button>{' '}
+                      at checkout for{' '}
+                      {primaryPromo.type === 'percentage' ? `${primaryPromo.value}%` : `$${Number(primaryPromo.value || 10).toFixed(0)}`}{' '}
+                      instant discount across chargers and workspace peripherals.
+                    </>
+                  )}
+                </p>
+                {activePromos.length > 1 && (
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <span className="text-xs text-slate-400">
+                      {language === 'km' ? 'កូដផ្សេងទៀត៖' : 'More active promos:'}
+                    </span>
+                    {activePromos.slice(1, 5).map((p) => (
+                      <button
+                        key={p.code}
+                        type="button"
+                        onClick={() => handleCopyPromo(p.code)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-xs font-mono font-bold text-amber-300 cursor-pointer"
+                      >
+                        <span>{p.code}</span>
+                        <span className="text-[10px] font-sans text-emerald-400">
+                          ({p.type === 'percentage' ? `${p.value}% OFF` : `$${p.value} OFF`})
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 )}
-              </p>
+              </div>
 
               {/* CTAs */}
               <div className="flex flex-wrap items-center gap-4 mb-8">

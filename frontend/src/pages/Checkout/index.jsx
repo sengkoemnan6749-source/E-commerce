@@ -186,8 +186,8 @@ export default function Checkout() {
             estimatedDelivery: 'Today by 5:30 PM (GrabExpress Phnom Penh)'
           };
 
-      // Create new persistent Order tied to the authenticated user
-      const newOrder = orderService.createOrder({
+      // Create new persistent Order via backend transaction (or local fallback)
+      const newOrder = await orderService.createOrderAsync({
         userId: user?.id || null,
         customerName: shippingData.fullName || user?.fullName || user?.name || 'Customer',
         customerPhone: shippingData.phone || user?.phone || '012 345 678',

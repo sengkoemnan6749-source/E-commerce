@@ -13,7 +13,6 @@ import {
   Package,
   User,
   ShoppingBag,
-  LayoutDashboard,
   LogIn,
   Lock,
   CheckCircle2,
@@ -26,21 +25,36 @@ import {
   RotateCcw,
   CreditCard
 } from 'lucide-react';
-import { useLanguage } from '../../store/StoreContext';
+import { useLanguage, useToast } from '../../store/StoreContext';
+import { api } from '../../services/api';
 
 export function Footer() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { addToast } = useToast();
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
 
-  const handleNewsletterSubmit = (e) => {
+  const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
-    if (email.trim()) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || subscribing) return;
+    setSubscribing(true);
+    try {
+      await api.post('/newsletter/subscribe', { email: cleanEmail, language });
       setIsSubscribed(true);
-      setTimeout(() => {
-        setEmail('');
-        setIsSubscribed(false);
-      }, 3500);
+      addToast(
+        language === 'km'
+          ? 'បានចុះឈ្មោះទទួលព័ត៌មានថ្មីៗដោយជោគជ័យ!'
+          : 'Subscribed to TechTonic Dispatch!',
+        'success'
+      );
+      setEmail('');
+      setTimeout(() => setIsSubscribed(false), 3500);
+    } catch (err) {
+      addToast(err?.message || 'Unable to subscribe right now.', 'error');
+    } finally {
+      setSubscribing(false);
     }
   };
 
@@ -121,10 +135,17 @@ export function Footer() {
                   </div>
                   <button
                     type="submit"
-                    className="shrink-0 px-6 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-blue-500/20"
+                    disabled={subscribing}
+                    className="shrink-0 px-6 py-3 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-500 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-blue-500/20 disabled:opacity-60"
                   >
-                    <span>{isSubscribed ? t('footer_subscribed', 'Subscribed!') : t('footer_subscribe', 'Subscribe')}</span>
-                    {!isSubscribed && <ArrowRight className="w-4 h-4" />}
+                    <span>
+                      {subscribing
+                        ? language === 'km' ? 'កំពុងផ្ញើ...' : 'Subscribing...'
+                        : isSubscribed
+                        ? t('footer_subscribed', 'Subscribed!')
+                        : t('footer_subscribe', 'Subscribe')}
+                    </span>
+                    {!isSubscribed && !subscribing && <ArrowRight className="w-4 h-4" />}
                   </button>
                 </div>
                 <p className="text-[11px] text-slate-400 mt-2.5">
@@ -242,12 +263,6 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/TechTonicAdmin" className="text-slate-400 hover:text-white flex items-center gap-2.5 transition-colors group">
-                  <LayoutDashboard className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
-                  <span>{t('footer_admin', 'Admin Management')}</span>
-                </Link>
-              </li>
-              <li>
                 <Link to="/login" className="text-slate-400 hover:text-white flex items-center gap-2.5 transition-colors group">
                   <LogIn className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors" />
                   <span>{t('footer_link_signin_register', 'Sign In / Register')}</span>
@@ -304,23 +319,32 @@ export function Footer() {
                 <Send className="w-4 h-4" />
               </a>
               <a
-                href="#"
+                href="https://www.facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 text-slate-400 hover:text-blue-400 flex items-center justify-center transition-all hover:scale-105"
                 title="Facebook"
+                aria-label="Facebook"
               >
                 <Facebook className="w-4 h-4" />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 text-slate-400 hover:text-blue-400 flex items-center justify-center transition-all hover:scale-105"
                 title="Instagram"
+                aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
               </a>
               <a
-                href="#"
+                href="https://www.youtube.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 text-slate-400 hover:text-blue-400 flex items-center justify-center transition-all hover:scale-105"
                 title="YouTube"
+                aria-label="YouTube"
               >
                 <Youtube className="w-4 h-4" />
               </a>
@@ -349,9 +373,9 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-4 text-[11px] text-slate-400">
-            <span className="hover:text-white cursor-pointer transition">{t('footer_privacy', 'Privacy Policy')}</span>
-            <span className="hover:text-white cursor-pointer transition">{t('footer_terms', 'Terms of Service')}</span>
-            <span className="hover:text-white cursor-pointer transition">{t('footer_warranty', 'Warranty Policy')}</span>
+            <Link to="/privacy" className="hover:text-white transition">{t('footer_privacy', 'Privacy Policy')}</Link>
+            <Link to="/terms" className="hover:text-white transition">{t('footer_terms', 'Terms of Service')}</Link>
+            <Link to="/warranty" className="hover:text-white transition">{t('footer_warranty', 'Warranty Policy')}</Link>
           </div>
         </div>
       </div>
