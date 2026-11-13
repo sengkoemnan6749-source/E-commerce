@@ -18,9 +18,12 @@ import { formatUSD, formatKHR } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
 import { formatOrderStatus } from '../../services/orderService';
 import Button from '../common/Button';
+import { useLanguage } from '../../store/StoreContext';
+import { translateOrderStatusLabel } from '../../utils/translations';
 
 export default function Invoice({ order, onBack }) {
   const [copied, setCopied] = useState(false);
+  const { language } = useLanguage();
 
   if (!order) return null;
 
@@ -58,7 +61,7 @@ export default function Invoice({ order, onBack }) {
         {onBack ? (
           <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-600 hover:text-slate-900">
             <ArrowLeft className="w-4 h-4 mr-1.5" />
-            <span>Back to Orders</span>
+            <span>{language === 'km' ? 'ត្រឡប់ទៅការកុម្ម៉ង់' : 'Back to Orders'}</span>
           </Button>
         ) : <div />}
 
@@ -67,24 +70,26 @@ export default function Invoice({ order, onBack }) {
             onClick={handleCopyId}
             type="button"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
-            title="Copy Order ID"
+            title={language === 'km' ? 'ចម្លងលេខកូដកុម្ម៉ង់' : 'Copy Order ID'}
           >
             {copied ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-emerald-700 font-semibold">Copied!</span>
+                <span className="text-emerald-700 font-semibold">
+                  {language === 'km' ? 'បានចម្លង!' : 'Copied!'}
+                </span>
               </>
             ) : (
               <>
                 <Copy className="w-3.5 h-3.5 text-slate-500" />
-                <span>Copy Order ID</span>
+                <span>{language === 'km' ? 'ចម្លងលេខកូដកុម្ម៉ង់' : 'Copy Order ID'}</span>
               </>
             )}
           </button>
 
           <Button variant="primary" size="sm" onClick={handlePrint} className="shadow-sm">
             <Printer className="w-4 h-4 mr-1.5" />
-            <span>Print / Save as PDF</span>
+            <span>{language === 'km' ? 'បោះពុម្ព / រក្សាទុកជា PDF' : 'Print / Save as PDF'}</span>
           </Button>
         </div>
       </div>
@@ -105,19 +110,23 @@ export default function Invoice({ order, onBack }) {
                   TechTonic Store
                 </span>
                 <span className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider block">
-                  Official Technology Retailer
+                  {language === 'km' ? 'ហាងលក់បច្ចេកវិទ្យាផ្លូវការ' : 'Official Technology Retailer'}
                 </span>
               </div>
             </div>
 
             <p className="text-xs text-slate-500 italic pt-1">
-              "Engineered for the Modern Digital Lifestyle"
+              {language === 'km'
+                ? '"រចនាឡើងសម្រាប់របៀបរស់នៅបែបឌីជីថលសម័យថ្មី"'
+                : '"Engineered for the Modern Digital Lifestyle"'}
             </p>
             <p className="text-xs text-slate-600 leading-relaxed">
-              #271 Monireth Blvd, Toul Kork, Phnom Penh, Kingdom of Cambodia
+              {language === 'km'
+                ? '#271 មហាវិថីមុន្នីរ៉េត ទួលគោក រាជធានីភ្នំពេញ ព្រះរាជាណាចក្រកម្ពុជា'
+                : '#271 Monireth Blvd, Toul Kork, Phnom Penh, Kingdom of Cambodia'}
             </p>
             <div className="flex items-center gap-3 text-xs text-slate-500 pt-0.5">
-              <span>Tel: +855 23 888 999</span>
+              <span>{language === 'km' ? 'ទូរស័ព្ទ៖' : 'Tel:'} +855 23 888 999</span>
               <span>•</span>
               <span className="font-mono font-medium text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">
                 VAT TIN: K009-902381204
@@ -129,10 +138,10 @@ export default function Invoice({ order, onBack }) {
           <div className="md:text-right space-y-2">
             <div className="inline-block">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
-                Official Tax Invoice
+                {language === 'km' ? 'វិក្កយបត្រពន្ធផ្លូវការ' : 'Official Tax Invoice'}
               </span>
               <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
-                INVOICE
+                {language === 'km' ? 'វិក្កយបត្រ' : 'INVOICE'}
               </h1>
             </div>
 
@@ -144,11 +153,15 @@ export default function Invoice({ order, onBack }) {
 
             <div className="text-xs text-slate-500 space-y-0.5">
               <p>
-                <span className="text-slate-400">Date Issued:</span>{' '}
+                <span className="text-slate-400">
+                  {language === 'km' ? 'ថ្ងៃចេញវិក្កយបត្រ៖' : 'Date Issued:'}
+                </span>{' '}
                 <strong className="text-slate-700">{formatDate(order.createdAt)}</strong>
               </p>
               <p>
-                <span className="text-slate-400">Payment:</span>{' '}
+                <span className="text-slate-400">
+                  {language === 'km' ? 'ការទូទាត់៖' : 'Payment:'}
+                </span>{' '}
                 <span className="text-slate-700 font-medium">{order.paymentMethod || 'Bakong KHQR'}</span>
               </p>
             </div>
@@ -156,7 +169,10 @@ export default function Invoice({ order, onBack }) {
             <div className="pt-1">
               <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 shadow-sm">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>{order.paymentStatus || 'PAID'} • NBC Bakong Settled</span>
+                <span>
+                  {order.paymentStatus || 'PAID'} •{' '}
+                  {language === 'km' ? 'បានទូទាត់តាមប្រព័ន្ធបាគង NBC' : 'NBC Bakong Settled'}
+                </span>
               </span>
             </div>
           </div>
@@ -168,7 +184,7 @@ export default function Invoice({ order, onBack }) {
           <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70">
             <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5">
               <MapPin className="w-3.5 h-3.5 text-blue-600" />
-              <span>Billed & Shipped To</span>
+              <span>{language === 'km' ? 'ចេញវិក្កយបត្រ និងដឹកជញ្ជូនទៅ' : 'Billed & Shipped To'}</span>
             </div>
             
             <p className="font-bold text-slate-900 text-sm">{customerName}</p>
@@ -194,19 +210,25 @@ export default function Invoice({ order, onBack }) {
           <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70">
             <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5">
               <Truck className="w-3.5 h-3.5 text-blue-600" />
-              <span>Fulfillment & Delivery Details</span>
+              <span>
+                {language === 'km' ? 'ព័ត៌មានរៀបចំ និងការដឹកជញ្ជូន' : 'Fulfillment & Delivery Details'}
+              </span>
             </div>
 
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Order Status:</span>
+                <span className="text-slate-500">
+                  {language === 'km' ? 'ស្ថានភាពកុម្ម៉ង់៖' : 'Order Status:'}
+                </span>
                 <span className="px-2 py-0.5 rounded-md font-bold text-[11px] bg-blue-100 text-blue-800 uppercase tracking-wide">
-                  {formatOrderStatus(order.status || 'Confirmed')}
+                  {translateOrderStatusLabel(formatOrderStatus(order.status || 'Confirmed'), language)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Carrier / Courier:</span>
+                <span className="text-slate-500">
+                  {language === 'km' ? 'ក្រុមហ៊ុនដឹកជញ្ជូន៖' : 'Carrier / Courier:'}
+                </span>
                 <span className="font-semibold text-slate-800">
                   {order.tracking?.courier || order.carrier || 'TechTonic Express Dispatch'}
                 </span>
@@ -214,7 +236,9 @@ export default function Invoice({ order, onBack }) {
 
               {order.tracking?.trackingCode && (
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Tracking Number:</span>
+                  <span className="text-slate-500">
+                    {language === 'km' ? 'លេខកូដតាមដាន៖' : 'Tracking Number:'}
+                  </span>
                   <span className="font-mono font-bold text-slate-800 bg-white px-1.5 py-0.5 rounded border border-slate-200">
                     {order.tracking.trackingCode}
                   </span>
@@ -222,7 +246,9 @@ export default function Invoice({ order, onBack }) {
               )}
 
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Billing Currency:</span>
+                <span className="text-slate-500">
+                  {language === 'km' ? 'រូបិយប័ណ្ណទូទាត់៖' : 'Billing Currency:'}
+                </span>
                 <span className="font-semibold text-slate-800">USD ($) / KHR (៛)</span>
               </div>
             </div>
@@ -235,10 +261,10 @@ export default function Invoice({ order, onBack }) {
             <thead>
               <tr className="bg-slate-100/90 text-slate-700 font-bold uppercase text-[11px] tracking-wider border-b border-slate-200">
                 <th className="py-3 px-4 w-12 text-center text-slate-500">#</th>
-                <th className="py-3 px-4">Item Description</th>
-                <th className="py-3 px-4 w-24 text-center">Qty</th>
-                <th className="py-3 px-6 w-36 text-right">Unit Price</th>
-                <th className="py-3 px-6 w-36 text-right">Total</th>
+                <th className="py-3 px-4">{language === 'km' ? 'បរិយាយមុខទំនិញ' : 'Item Description'}</th>
+                <th className="py-3 px-4 w-24 text-center">{language === 'km' ? 'ចំនួន' : 'Qty'}</th>
+                <th className="py-3 px-6 w-36 text-right">{language === 'km' ? 'តម្លៃរាយ' : 'Unit Price'}</th>
+                <th className="py-3 px-6 w-36 text-right">{language === 'km' ? 'សរុប' : 'Total'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
@@ -257,7 +283,9 @@ export default function Invoice({ order, onBack }) {
                       {itemVariant && (
                         <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400" />
-                          <span>Variant: {itemVariant}</span>
+                          <span>
+                            {language === 'km' ? 'ជម្រើស៖' : 'Variant:'} {itemVariant}
+                          </span>
                         </div>
                       )}
                     </td>
@@ -286,15 +314,24 @@ export default function Invoice({ order, onBack }) {
           <div className="border border-slate-200/80 bg-slate-50/50 rounded-xl p-4 text-xs space-y-2.5">
             <div className="flex items-center gap-2 text-slate-800 font-bold text-xs">
               <FileCheck2 className="w-4 h-4 text-emerald-600" />
-              <span>Verified Cambodian Electronic Tax Invoice</span>
+              <span>
+                {language === 'km'
+                  ? 'វិក្កយបត្រពន្ធអេឡិចត្រូនិចកម្ពុជាដែលបានបញ្ជាក់'
+                  : 'Verified Cambodian Electronic Tax Invoice'}
+              </span>
             </div>
             
             <p className="text-slate-500 text-[11px] leading-relaxed">
-              This invoice is generated electronically under General Department of Taxation (GDT) guidelines. All products include genuine manufacturer warranty and Cambodia import duty.
+              {language === 'km'
+                ? 'វិក្កយបត្រនេះត្រូវបានបង្កើតតាមប្រព័ន្ធអេឡិចត្រូនិចក្រោមការណែនាំរបស់អគ្គនាយកដ្ឋានពន្ធដារ (GDT)។ ផលិតផលទាំងអស់រួមបញ្ចូលការធានាពីក្រុមហ៊ុនផលិត និងពន្ធនាំចូលកម្ពុជា។'
+                : 'This invoice is generated electronically under General Department of Taxation (GDT) guidelines. All products include genuine manufacturer warranty and Cambodia import duty.'}
             </p>
 
             <div className="pt-2 border-t border-slate-200/70 flex items-center justify-between text-[11px] text-slate-500">
-              <span>National Bakong Switch: <strong>Settled</strong></span>
+              <span>
+                {language === 'km' ? 'ប្រព័ន្ធទូទាត់បាគងជាតិ៖' : 'National Bakong Switch:'}{' '}
+                <strong>{language === 'km' ? 'បានទូទាត់រួចរាល់' : 'Settled'}</strong>
+              </span>
               <span className="font-mono text-emerald-700 font-semibold">REF: NBC-KHQR-OK</span>
             </div>
           </div>
@@ -302,18 +339,18 @@ export default function Invoice({ order, onBack }) {
           {/* Totals Breakdown */}
           <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-5 space-y-3">
             <div className="flex justify-between items-center text-xs text-slate-600">
-              <span>Subtotal:</span>
+              <span>{language === 'km' ? 'តម្លៃទំនិញសរុប៖' : 'Subtotal:'}</span>
               <span className="font-mono font-semibold text-slate-900 text-sm">
                 {formatUSD(subtotal)}
               </span>
             </div>
 
             <div className="flex justify-between items-center text-xs text-slate-600">
-              <span>Delivery / Shipping Fee:</span>
+              <span>{language === 'km' ? 'ថ្លៃដឹកជញ្ជូន៖' : 'Delivery / Shipping Fee:'}</span>
               <span className="font-semibold text-slate-900">
                 {shippingFee === 0 ? (
                   <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold text-xs">
-                    FREE
+                    {language === 'km' ? 'ឥតគិតថ្លៃ' : 'FREE'}
                   </span>
                 ) : (
                   <span className="font-mono">{formatUSD(shippingFee)}</span>
@@ -323,7 +360,7 @@ export default function Invoice({ order, onBack }) {
 
             {discount > 0 && (
               <div className="flex justify-between items-center text-xs text-emerald-700 font-medium">
-                <span>Promo Discount Applied:</span>
+                <span>{language === 'km' ? 'បញ្ចុះតម្លៃប្រូម៉ូសិន៖' : 'Promo Discount Applied:'}</span>
                 <span className="font-mono font-bold">
                   -{formatUSD(discount)}
                 </span>
@@ -331,18 +368,20 @@ export default function Invoice({ order, onBack }) {
             )}
 
             <div className="flex justify-between items-center text-[11px] text-slate-400">
-              <span>Value Added Tax (VAT 10%):</span>
-              <span className="italic">Included in price</span>
+              <span>{language === 'km' ? 'អាករលើតម្លៃបន្ថែម (VAT 10%)៖' : 'Value Added Tax (VAT 10%):'}</span>
+              <span className="italic">
+                {language === 'km' ? 'រួមបញ្ចូលក្នុងតម្លៃ' : 'Included in price'}
+              </span>
             </div>
 
             {/* Grand Total Divider */}
             <div className="pt-3 border-t-2 border-slate-200 flex justify-between items-baseline">
               <div>
                 <span className="text-sm font-black text-slate-900 block uppercase tracking-wide">
-                  Grand Total
+                  {language === 'km' ? 'សរុបរួម' : 'Grand Total'}
                 </span>
                 <span className="text-[11px] text-slate-500 font-medium">
-                  Total Payable (USD & KHR)
+                  {language === 'km' ? 'សរុបត្រូវទូទាត់ (ដុល្លារ និង រៀល)' : 'Total Payable (USD & KHR)'}
                 </span>
               </div>
 
@@ -361,10 +400,24 @@ export default function Invoice({ order, onBack }) {
         {/* Footer Guarantee & Contact */}
         <div className="mt-8 pt-6 border-t border-dashed border-slate-200 text-center text-xs text-slate-500 space-y-1">
           <p className="font-medium text-slate-700">
-            Thank you for shopping with TechTonic Store Cambodia!
+            {language === 'km'
+              ? 'សូមអរគុណសម្រាប់ការទិញទំនិញនៅ TechTonic Store កម្ពុជា!'
+              : 'Thank you for shopping with TechTonic Store Cambodia!'}
           </p>
           <p className="text-[11px] text-slate-400">
-            For returns, warranty claims, or support, email <span className="text-blue-600 font-medium">support@techtonic.store</span> or call hotline <span className="text-slate-600 font-medium">+855 23 888 999</span> (Mon–Sun 8AM–8PM).
+            {language === 'km' ? (
+              <>
+                សម្រាប់ការប្តូរទំនិញ ការទាមទារធានា ឬជំនួយ សូមផ្ញើអ៊ីមែលមកកាន់{' '}
+                <span className="text-blue-600 font-medium">support@techtonic.store</span> ឬទូរស័ព្ទមកកាន់{' '}
+                <span className="text-slate-600 font-medium">+855 23 888 999</span> (ច័ន្ទ–អាទិត្យ ៨ព្រឹក–៨យប់)។
+              </>
+            ) : (
+              <>
+                For returns, warranty claims, or support, email{' '}
+                <span className="text-blue-600 font-medium">support@techtonic.store</span> or call hotline{' '}
+                <span className="text-slate-600 font-medium">+855 23 888 999</span> (Mon–Sun 8AM–8PM).
+              </>
+            )}
           </p>
         </div>
 

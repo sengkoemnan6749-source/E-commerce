@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ShieldCheck, CheckCircle2, Lock, UserCheck } from 'lucide-react';
-import { useCart, useAuth, useToast } from '../../store/StoreContext';
+import { useCart, useAuth, useToast, useLanguage } from '../../store/StoreContext';
 import ShippingForm from '../../components/checkout/ShippingForm';
 import PaymentMethod from '../../components/checkout/PaymentMethod';
 import CardPayment from '../../components/checkout/CardPayment';
@@ -17,14 +17,20 @@ export default function Checkout() {
   const { items, subtotal, shippingFee, discountAmount, total, appliedCoupon, clearCart } = useCart();
   const { user } = useAuth();
   const { addToast } = useToast();
+  const { language } = useLanguage();
 
   // Enforce Option 2: Must Login to Checkout
   useEffect(() => {
     if (!user) {
-      addToast('Please sign in or register to complete your order securely.', 'warning');
+      addToast(
+        language === 'km'
+          ? 'សូមចូលគណនី ឬចុះឈ្មោះដើម្បីបញ្ចប់ការបញ្ជាទិញដោយសុវត្ថិភាព។'
+          : 'Please sign in or register to complete your order securely.',
+        'warning'
+      );
       navigate('/login?redirect=/checkout', { replace: true });
     }
-  }, [user, navigate, addToast]);
+  }, [user, navigate, addToast, language]);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -74,13 +80,17 @@ export default function Checkout() {
         <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4 border border-blue-100 shadow-sm">
           <Lock className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-black text-slate-900 mb-2">Sign In Required</h2>
+        <h2 className="text-2xl font-black text-slate-900 mb-2">
+          {language === 'km' ? 'តម្រូវឱ្យចូលគណនី' : 'Sign In Required'}
+        </h2>
         <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-          Please sign in to your verified TechTonic account or register to complete your order and secure your warranty.
+          {language === 'km'
+            ? 'សូមចូលគណនី TechTonic របស់អ្នក ឬចុះឈ្មោះ ដើម្បីបញ្ចប់ការបញ្ជាទិញ និងទទួលបានការធានា។'
+            : 'Please sign in to your verified TechTonic account or register to complete your order and secure your warranty.'}
         </p>
         <Link to="/login?redirect=/checkout">
           <Button variant="primary" size="lg" className="w-full">
-            Proceed to Sign In / Register
+            {language === 'km' ? 'បន្តទៅការចូលគណនី / ចុះឈ្មោះ' : 'Proceed to Sign In / Register'}
           </Button>
         </Link>
       </div>
@@ -91,10 +101,14 @@ export default function Checkout() {
   if (items.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">No items to checkout</h2>
-        <p className="text-sm text-slate-500 mb-6">Your shopping bag is currently empty.</p>
+        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+          {language === 'km' ? 'មិនមានទំនិញសម្រាប់ទូទាត់ទេ' : 'No items to checkout'}
+        </h2>
+        <p className="text-sm text-slate-500 mb-6">
+          {language === 'km' ? 'កន្ត្រកទំនិញរបស់អ្នកបច្ចុប្បន្ននៅទទេ។' : 'Your shopping bag is currently empty.'}
+        </p>
         <Link to="/shop">
-          <Button variant="primary">Return to Shop</Button>
+          <Button variant="primary">{language === 'km' ? 'ត្រឡប់ទៅហាងទំនិញ' : 'Return to Shop'}</Button>
         </Link>
       </div>
     );
@@ -103,14 +117,23 @@ export default function Checkout() {
   // Step 1 Validation
   const validateStep1 = () => {
     const errs = {};
-    if (!shippingData.fullName.trim()) errs.fullName = 'Full Name is required';
-    if (!shippingData.phone.trim()) {
-      errs.phone = 'Phone number is required';
-    } else if (!validatePhone(shippingData.phone)) {
-      errs.phone = 'Please enter a valid phone number (e.g. 012 345 678)';
+    if (!shippingData.fullName.trim()) {
+      errs.fullName = language === 'km' ? 'ត្រូវការឈ្មោះពេញ' : 'Full Name is required';
     }
-    if (!shippingData.address.trim()) errs.address = 'Street address is required';
-    if (!shippingData.city.trim()) errs.city = 'City or Khan is required';
+    if (!shippingData.phone.trim()) {
+      errs.phone = language === 'km' ? 'ត្រូវការលេខទូរស័ព្ទ' : 'Phone number is required';
+    } else if (!validatePhone(shippingData.phone)) {
+      errs.phone =
+        language === 'km'
+          ? 'សូមបញ្ចូលលេខទូរស័ព្ទត្រឹមត្រូវ (ឧ. 012 345 678)'
+          : 'Please enter a valid phone number (e.g. 012 345 678)';
+    }
+    if (!shippingData.address.trim()) {
+      errs.address = language === 'km' ? 'ត្រូវការអាសយដ្ឋានផ្លូវ' : 'Street address is required';
+    }
+    if (!shippingData.city.trim()) {
+      errs.city = language === 'km' ? 'ត្រូវការទីក្រុង ឬខណ្ឌ' : 'City or Khan is required';
+    }
 
     setShippingErrors(errs);
     return Object.keys(errs).length === 0;
@@ -122,7 +145,10 @@ export default function Checkout() {
       setCurrentStep(2);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      addToast('Please fill all required shipping fields', 'error');
+      addToast(
+        language === 'km' ? 'សូមបំពេញព័ត៌មានដឹកជញ្ជូនដែលចាំបាច់ទាំងអស់' : 'Please fill all required shipping fields',
+        'error'
+      );
     }
   };
 
@@ -187,10 +213,16 @@ export default function Checkout() {
       clearCart();
 
       // Show toast and navigate to success screen
-      addToast('Order confirmed! Generating receipt...', 'success');
+      addToast(
+        language === 'km' ? 'ការកុម្ម៉ង់ត្រូវបានបញ្ជាក់! កំពុងបង្កើតវិក្កយបត្រ...' : 'Order confirmed! Generating receipt...',
+        'success'
+      );
       navigate(`/order-success?orderId=${newOrder.id}`);
     } catch (err) {
-      addToast(err.message || 'Payment processing failed. Please retry.', 'error');
+      addToast(
+        err.message || (language === 'km' ? 'ការទូទាត់បរាជ័យ។ សូមព្យាយាមម្ដងទៀត។' : 'Payment processing failed. Please retry.'),
+        'error'
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -202,8 +234,12 @@ export default function Checkout() {
         {/* Checkout Header & Steps */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-slate-200 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Checkout</h1>
-            <p className="text-xs text-slate-500 mt-0.5">Please review and enter your shipping details</p>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              {language === 'km' ? 'ការទូទាត់' : 'Checkout'}
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {language === 'km' ? 'សូមពិនិត្យ និងបញ្ចូលព័ត៌មានដឹកជញ្ជូនរបស់អ្នក' : 'Please review and enter your shipping details'}
+            </p>
           </div>
 
           {/* Clean Step Navigation */}
@@ -217,7 +253,7 @@ export default function Checkout() {
                   : 'text-slate-500 hover:text-slate-900 bg-slate-100'
               }`}
             >
-              1. Shipping
+              {language === 'km' ? '១. ការដឹកជញ្ជូន' : '1. Shipping'}
             </button>
             <span className="text-slate-300">/</span>
             <button
@@ -231,7 +267,7 @@ export default function Checkout() {
                   : 'text-slate-400 hover:text-slate-700 bg-slate-100'
               }`}
             >
-              2. Payment
+              {language === 'km' ? '២. ការទូទាត់' : '2. Payment'}
             </button>
           </div>
         </div>
@@ -245,9 +281,11 @@ export default function Checkout() {
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900">Delivery address</h2>
+                  <h2 className="text-base font-bold text-slate-900">
+                    {language === 'km' ? 'អាសយដ្ឋានដឹកជញ្ជូន' : 'Delivery address'}
+                  </h2>
                   <p className="text-xs text-slate-500">
-                    Where should we deliver your order?
+                    {language === 'km' ? 'តើគួរដឹកជញ្ជូនការកុម្ម៉ង់របស់អ្នកទៅទីណា?' : 'Where should we deliver your order?'}
                   </p>
                 </div>
               </div>
@@ -255,7 +293,7 @@ export default function Checkout() {
               {/* Account Context Bar */}
               <div className="mb-6 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs text-slate-600">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400">Account:</span>
+                  <span className="text-slate-400">{language === 'km' ? 'គណនី៖' : 'Account:'}</span>
                   <span className="font-semibold text-slate-900">{user?.fullName || user?.name}</span>
                   <span className="text-slate-400">({user?.email})</span>
                 </div>
@@ -263,7 +301,7 @@ export default function Checkout() {
                   to="/login?redirect=/checkout"
                   className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
                 >
-                  Switch account
+                  {language === 'km' ? 'ប្តូរគណនី' : 'Switch account'}
                 </Link>
               </div>
 
@@ -279,11 +317,11 @@ export default function Checkout() {
                   className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Cart</span>
+                  <span>{language === 'km' ? 'ត្រឡប់ទៅកន្ត្រក' : 'Back to Cart'}</span>
                 </Link>
 
                 <Button variant="primary" size="md" onClick={handleNextToPayment}>
-                  <span>Continue to Payment</span>
+                  <span>{language === 'km' ? 'បន្តទៅការទូទាត់' : 'Continue to Payment'}</span>
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -293,9 +331,11 @@ export default function Checkout() {
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
                 <div>
-                  <h2 className="text-base font-bold text-slate-900">Payment method</h2>
+                  <h2 className="text-base font-bold text-slate-900">
+                    {language === 'km' ? 'វិធីសាស្ត្រទូទាត់' : 'Payment method'}
+                  </h2>
                   <p className="text-xs text-slate-500">
-                    All transactions are secure and encrypted
+                    {language === 'km' ? 'ប្រតិបត្តិការទាំងអស់មានសុវត្ថិភាព និងត្រូវបានអ៊ិនគ្រីប' : 'All transactions are secure and encrypted'}
                   </p>
                 </div>
               </div>
@@ -330,7 +370,7 @@ export default function Checkout() {
                   className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  <span>Back to Shipping</span>
+                  <span>{language === 'km' ? 'ត្រឡប់ទៅការដឹកជញ្ជូន' : 'Back to Shipping'}</span>
                 </button>
 
                 <Button
@@ -341,7 +381,7 @@ export default function Checkout() {
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   <Lock className="w-4 h-4 mr-2" />
-                  <span>Confirm & Complete Order</span>
+                  <span>{language === 'km' ? 'បញ្ជាក់ និងបញ្ចប់ការកុម្ម៉ង់' : 'Confirm & Complete Order'}</span>
                 </Button>
               </div>
             </div>

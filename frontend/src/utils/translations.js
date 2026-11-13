@@ -748,3 +748,9 @@ export function getTranslation(lang, key, fallback = '') {
   const dictionary = TRANSLATIONS[normalizedLang] || TRANSLATIONS.en;
   return dictionary[key] !== undefined ? dictionary[key] : (TRANSLATIONS.en[key] !== undefined ? TRANSLATIONS.en[key] : (fallback || key));
 }
+
+export {
+  translateBadge,
+  translateOrderStatusLabel,
+  translateProductField
+} from './productTranslations';

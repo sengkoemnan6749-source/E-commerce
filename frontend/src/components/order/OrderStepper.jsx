@@ -1,15 +1,48 @@
 import React from 'react';
 import { Check, Package, Truck, Bike, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '../../store/StoreContext';
+import { translateOrderStatusLabel } from '../../utils/translations';
 
 const STAGES = [
-  { key: 'confirmed', label: 'Confirmed', icon: Check, description: 'Order verified & paid' },
-  { key: 'processing', label: 'Processing', icon: Package, description: 'Quality checked & packed' },
-  { key: 'shipped', label: 'In Transit', icon: Truck, description: 'Dispatched from hub' },
-  { key: 'out_for_delivery', label: 'Out for Delivery', icon: Bike, description: 'Courier on final route' },
-  { key: 'delivered', label: 'Delivered', icon: CheckCircle2, description: 'Handed over & signed' }
+  {
+    key: 'confirmed',
+    label: 'Confirmed',
+    icon: Check,
+    description: 'Order verified & paid',
+    descriptionKm: 'បានផ្ទៀងផ្ទាត់ និងទូទាត់រួច'
+  },
+  {
+    key: 'processing',
+    label: 'Processing',
+    icon: Package,
+    description: 'Quality checked & packed',
+    descriptionKm: 'បានត្រួតពិនិត្យ និងវេចខ្ចប់'
+  },
+  {
+    key: 'shipped',
+    label: 'In Transit',
+    icon: Truck,
+    description: 'Dispatched from hub',
+    descriptionKm: 'បានដឹកចេញពីមជ្ឈមណ្ឌល'
+  },
+  {
+    key: 'out_for_delivery',
+    label: 'Out for Delivery',
+    icon: Bike,
+    description: 'Courier on final route',
+    descriptionKm: 'អ្នកដឹកជញ្ជូនកំពុងធ្វើដំណើរ'
+  },
+  {
+    key: 'delivered',
+    label: 'Delivered',
+    icon: CheckCircle2,
+    description: 'Handed over & signed',
+    descriptionKm: 'បានប្រគល់ជូន និងចុះហត្ថលេខា'
+  }
 ];
 
 export default function OrderStepper({ currentStatus = 'processing' }) {
+  const { language } = useLanguage();
   const getStageIndex = (status) => {
     const s = (status || '').toLowerCase().replace(/\s+/g, '_');
     if (s.includes('deliver') && !s.includes('out')) return 4;
@@ -64,10 +97,10 @@ export default function OrderStepper({ currentStatus = 'processing' }) {
                     : 'text-slate-400'
                 }`}
               >
-                {stage.label}
+                {language === 'km' ? translateOrderStatusLabel(stage.key, language) : stage.label}
               </span>
               <span className="text-[10px] text-slate-400 leading-tight mt-0.5 max-w-[110px]">
-                {stage.description}
+                {language === 'km' ? stage.descriptionKm : stage.description}
               </span>
             </div>
           );
@@ -105,9 +138,11 @@ export default function OrderStepper({ currentStatus = 'processing' }) {
                     isCurrent ? 'text-blue-600' : isCompleted ? 'text-slate-900' : 'text-slate-400'
                   }`}
                 >
-                  {stage.label}
+                  {language === 'km' ? translateOrderStatusLabel(stage.key, language) : stage.label}
                 </span>
-                <p className="text-[11px] text-slate-500 mt-0.5">{stage.description}</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {language === 'km' ? stage.descriptionKm : stage.description}
+                </p>
               </div>
             </div>
           );

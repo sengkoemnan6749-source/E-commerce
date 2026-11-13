@@ -1,17 +1,22 @@
 import React from 'react';
 import { CreditCard, QrCode } from 'lucide-react';
+import { useLanguage } from '../../store/StoreContext';
 
 export default function PaymentMethod({ selectedMethod, onSelectMethod }) {
+  const { language } = useLanguage();
   const methods = [
     {
       id: 'khqr',
-      title: 'KHQR (Bakong, ABA, Wing, ACLEDA)',
-      subtitle: 'Scan and pay using any Cambodian mobile banking app',
+      title: language === 'km' ? 'KHQR (បាគង, ABA, Wing, អេស៊ីលីដា)' : 'KHQR (Bakong, ABA, Wing, ACLEDA)',
+      subtitle:
+        language === 'km'
+          ? 'ស្កេន និងទូទាត់តាមរយៈកម្មវិធីធនាគារកម្ពុជាណាមួយ'
+          : 'Scan and pay using any Cambodian mobile banking app',
       icon: QrCode
     },
     {
       id: 'card',
-      title: 'Credit / Debit Card',
+      title: language === 'km' ? 'កាតឥណទាន / ឥណពន្ធ' : 'Credit / Debit Card',
       subtitle: 'Visa, Mastercard, JCB, UnionPay',
       icon: CreditCard
     }

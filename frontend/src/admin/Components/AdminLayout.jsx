@@ -20,8 +20,9 @@ import {
 } from 'lucide-react';
 import { productService } from '../../services/productService';
 import { orderService } from '../../services/orderService';
-import { useToast } from '../../store/StoreContext';
+import { useToast, useLanguage } from '../../store/StoreContext';
 import HamburgerButton from '../../components/common/HamburgerButton';
+import LanguageSwitcher from '../../components/common/LanguageSwitcher';
 
 export default function AdminLayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -30,6 +31,7 @@ export default function AdminLayout() {
   const notifRef = useRef(null);
   const navigate = useNavigate();
   const { addToast } = useToast();
+  const { language } = useLanguage();
 
   const location = useLocation();
   const isTechTonicAdminRoute = location.pathname.toLowerCase().startsWith('/techtonicadmin');
@@ -52,11 +54,11 @@ export default function AdminLayout() {
   }, []);
 
   const adminNav = [
-    { to: adminBase, label: 'Dashboard', icon: LayoutDashboard, end: true, badge: null },
-    { to: `${adminBase}/products`, label: 'Products', icon: Package, badge: lowStockCount > 0 ? `${lowStockCount} low` : null, badgeColor: 'bg-amber-500/20 text-amber-400 border border-amber-500/30' },
-    { to: `${adminBase}/categories`, label: 'Categories', icon: FolderTree, badge: null },
-    { to: `${adminBase}/orders`, label: 'Orders', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? `${pendingOrdersCount} new` : null, badgeColor: 'bg-blue-500/20 text-blue-400 border border-blue-500/30' },
-    { to: `${adminBase}/customers`, label: 'Customers', icon: Users, badge: null }
+    { to: adminBase, label: language === 'km' ? 'ផ្ទាំងគ្រប់គ្រង' : 'Dashboard', icon: LayoutDashboard, end: true, badge: null },
+    { to: `${adminBase}/products`, label: language === 'km' ? 'ផលិតផល' : 'Products', icon: Package, badge: lowStockCount > 0 ? (language === 'km' ? `សល់តិច ${lowStockCount}` : `${lowStockCount} low`) : null, badgeColor: 'bg-amber-500/20 text-amber-400 border border-amber-500/30' },
+    { to: `${adminBase}/categories`, label: language === 'km' ? 'ប្រភេទផលិតផល' : 'Categories', icon: FolderTree, badge: null },
+    { to: `${adminBase}/orders`, label: language === 'km' ? 'ការបញ្ជាទិញ' : 'Orders', icon: ShoppingBag, badge: pendingOrdersCount > 0 ? (language === 'km' ? `ថ្មី ${pendingOrdersCount}` : `${pendingOrdersCount} new`) : null, badgeColor: 'bg-blue-500/20 text-blue-400 border border-blue-500/30' },
+    { to: `${adminBase}/customers`, label: language === 'km' ? 'អតិថិជន' : 'Customers', icon: Users, badge: null }
   ];
 
   const handleSearchSubmit = (e) => {
@@ -77,7 +79,7 @@ export default function AdminLayout() {
               color="bg-slate-300"
               activeColor="bg-cyan-400"
               hoverBg="hover:bg-slate-800"
-              ariaLabel="Toggle Navigation"
+              ariaLabel={language === 'km' ? 'បើក/បិទម៉ឺនុយរុករក' : 'Toggle Navigation'}
             />
           </div>
 
@@ -91,7 +93,9 @@ export default function AdminLayout() {
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-base font-black text-white tracking-tight">TechTonic</span>
-              <span className="text-xs font-semibold text-slate-400">Admin</span>
+              <span className="text-xs font-semibold text-slate-400">
+                {language === 'km' ? 'អ្នកគ្រប់គ្រង' : 'Admin'}
+              </span>
             </div>
           </Link>
         </div>
@@ -102,7 +106,7 @@ export default function AdminLayout() {
             <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search products, orders, or customers..."
+              placeholder={language === 'km' ? 'ស្វែងរកផលិតផល ការបញ្ជាទិញ ឬអតិថិជន...' : 'Search products, orders, or customers...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all"
@@ -112,13 +116,16 @@ export default function AdminLayout() {
 
         {/* Right Action Icons & Profile */}
         <div className="flex items-center gap-3">
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {/* Notifications Dropdown */}
           <div className="relative" ref={notifRef}>
             <button
               type="button"
               onClick={() => setNotificationsOpen(!notificationsOpen)}
               className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-              aria-label="Notifications"
+              aria-label={language === 'km' ? 'ការជូនដំណឹង' : 'Notifications'}
             >
               <Bell className="w-4 h-4" />
               {(lowStockCount > 0 || pendingOrdersCount > 0) && (
@@ -130,9 +137,11 @@ export default function AdminLayout() {
               <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
                   <span className="text-xs font-bold text-white uppercase tracking-wider">
-                    System Notifications
+                    {language === 'km' ? 'ការជូនដំណឹងប្រព័ន្ធ' : 'System Notifications'}
                   </span>
-                  <span className="text-[10px] text-blue-400 font-semibold">Live Feed</span>
+                  <span className="text-[10px] text-blue-400 font-semibold">
+                    {language === 'km' ? 'ព័ត៌មានផ្ទាល់' : 'Live Feed'}
+                  </span>
                 </div>
 
                 <div className="space-y-2.5 text-xs">
@@ -140,9 +149,13 @@ export default function AdminLayout() {
                     <div className="flex items-start gap-2.5 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300">
                       <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-bold block">Inventory Warning</span>
+                        <span className="font-bold block">
+                          {language === 'km' ? 'ការព្រមានស្តុកទំនិញ' : 'Inventory Warning'}
+                        </span>
                         <span className="text-[11px] text-amber-400/80">
-                          {lowStockCount} hardware devices require replenishment.
+                          {language === 'km'
+                            ? `ឧបករណ៍ចំនួន ${lowStockCount} ត្រូវការបំពេញស្តុកបន្ថែម។`
+                            : `${lowStockCount} hardware devices require replenishment.`}
                         </span>
                       </div>
                     </div>
@@ -151,9 +164,13 @@ export default function AdminLayout() {
                   <div className="flex items-start gap-2.5 p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300">
                     <CheckCircle2 className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold block">NBC Bakong Gateway</span>
+                      <span className="font-bold block">
+                        {language === 'km' ? 'ច្រកទូទាត់បាគង NBC' : 'NBC Bakong Gateway'}
+                      </span>
                       <span className="text-[11px] text-blue-400/80">
-                        KHQR payment network operating at 99.98% uptime.
+                        {language === 'km'
+                          ? 'បណ្ដាញទូទាត់ KHQR ដំណើរការ 99.98% យ៉ាងរលូន។'
+                          : 'KHQR payment network operating at 99.98% uptime.'}
                       </span>
                     </div>
                   </div>
@@ -161,9 +178,13 @@ export default function AdminLayout() {
                   <div className="flex items-start gap-2.5 p-2 rounded-xl bg-slate-800/60 border border-slate-700/60 text-slate-300">
                     <ShoppingBag className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold block">GrabExpress Logistics</span>
+                      <span className="font-bold block">
+                        {language === 'km' ? 'សេវាដឹកជញ្ជូន GrabExpress' : 'GrabExpress Logistics'}
+                      </span>
                       <span className="text-[11px] text-slate-400">
-                        Couriers active across Phnom Penh metropolitan district.
+                        {language === 'km'
+                          ? 'អ្នកដឹកជញ្ជូនកំពុងសកម្មទូទាំងរាជធានីភ្នំពេញ។'
+                          : 'Couriers active across Phnom Penh metropolitan district.'}
                       </span>
                     </div>
                   </div>
@@ -180,7 +201,9 @@ export default function AdminLayout() {
             className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 transition-colors"
           >
             <Store className="w-3.5 h-3.5 text-blue-400" />
-            <span className="hidden sm:inline">Storefront</span>
+            <span className="hidden sm:inline">
+              {language === 'km' ? 'ហាងទំនិញ' : 'Storefront'}
+            </span>
             <ExternalLink className="w-3 h-3 text-slate-400" />
           </Link>
 
@@ -191,7 +214,9 @@ export default function AdminLayout() {
             </div>
             <div className="hidden xl:flex flex-col text-left">
               <span className="text-xs font-bold text-white leading-tight">Alex Vance</span>
-              <span className="text-[10px] text-emerald-400 font-mono font-bold">Role: TechTonicAdmin</span>
+              <span className="text-[10px] text-emerald-400 font-mono font-bold">
+                {language === 'km' ? 'តួនាទី៖ TechTonicAdmin' : 'Role: TechTonicAdmin'}
+              </span>
             </div>
           </div>
         </div>
@@ -202,7 +227,7 @@ export default function AdminLayout() {
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800/80 p-4 gap-2 text-slate-400">
           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 py-2">
-            Store Management
+            {language === 'km' ? 'ការគ្រប់គ្រងហាង' : 'Store Management'}
           </div>
 
           <nav className="space-y-1">
@@ -245,17 +270,21 @@ export default function AdminLayout() {
             >
               <div className="flex items-center gap-2.5">
                 <Store className="w-4 h-4 text-blue-400" />
-                <span>View Live Store</span>
+                <span>{language === 'km' ? 'មើលហាងទំនិញផ្ទាល់' : 'View Live Store'}</span>
               </div>
               <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
             </Link>
 
             <div className="px-3 py-2 text-[11px] text-slate-500">
               <div className="flex items-center justify-between font-medium text-slate-400">
-                <span>TechTonic Electronics</span>
-                <span className="text-[10px] text-emerald-400 font-medium">Online</span>
+                <span>{language === 'km' ? 'TechTonic អេឡិចត្រូនិច' : 'TechTonic Electronics'}</span>
+                <span className="text-[10px] text-emerald-400 font-medium">
+                  {language === 'km' ? 'កំពុងដំណើរការ' : 'Online'}
+                </span>
               </div>
-              <p className="text-[10px] text-slate-600 mt-0.5">Phnom Penh, Cambodia</p>
+              <p className="text-[10px] text-slate-600 mt-0.5">
+                {language === 'km' ? 'រាជធានីភ្នំពេញ កម្ពុជា' : 'Phnom Penh, Cambodia'}
+              </p>
             </div>
           </div>
         </aside>
@@ -269,7 +298,9 @@ export default function AdminLayout() {
             />
             <div className="relative w-64 h-full bg-slate-900 p-4 flex flex-col gap-2 z-50 border-r border-slate-800">
               <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-2">
-                <span className="font-bold text-white text-sm">Navigation Menu</span>
+                <span className="font-bold text-white text-sm">
+                  {language === 'km' ? 'ម៉ឺនុយរុករក' : 'Navigation Menu'}
+                </span>
                 <button
                   onClick={() => setMobileSidebarOpen(false)}
                   className="p-1 rounded-lg text-slate-400 hover:text-white"
@@ -279,7 +310,7 @@ export default function AdminLayout() {
               </div>
 
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 py-1">
-                Store Management
+                {language === 'km' ? 'ការគ្រប់គ្រងហាង' : 'Store Management'}
               </div>
 
               {adminNav.map((item) => {

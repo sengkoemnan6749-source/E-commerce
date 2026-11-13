@@ -8,10 +8,12 @@ import { formatDate } from '../../utils/formatDate';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Invoice from '../../components/order/Invoice';
+import { useLanguage } from '../../store/StoreContext';
 
 export default function OrderSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { language } = useLanguage();
   const orderId = searchParams.get('orderId');
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
@@ -27,10 +29,16 @@ export default function OrderSuccess() {
   if (!order) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Order Not Found</h2>
-        <p className="text-xs text-slate-500 mb-6">We could not retrieve this order ID.</p>
+        <h2 className="text-xl font-bold text-slate-900 mb-2">
+          {language === 'km' ? 'រកមិនឃើញការកុម្ម៉ង់ទេ' : 'Order Not Found'}
+        </h2>
+        <p className="text-xs text-slate-500 mb-6">
+          {language === 'km' ? 'យើងមិនអាចទាញយកលេខកូដកុម្ម៉ង់នេះបានទេ។' : 'We could not retrieve this order ID.'}
+        </p>
         <Link to="/shop">
-          <Button variant="primary">Continue to Shop</Button>
+          <Button variant="primary">
+            {language === 'km' ? 'បន្តទៅហាងទំនិញ' : 'Continue to Shop'}
+          </Button>
         </Link>
       </div>
     );
@@ -45,25 +53,29 @@ export default function OrderSuccess() {
         </div>
 
         <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-          Payment Confirmed
+          {language === 'km' ? 'ការទូទាត់ត្រូវបានបញ្ជាក់' : 'Payment Confirmed'}
         </span>
 
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-3 mb-2">
-          Thank You For Your Order!
+          {language === 'km' ? 'សូមអរគុណសម្រាប់ការកុម្ម៉ង់របស់អ្នក!' : 'Thank You For Your Order!'}
         </h1>
 
         <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mb-6">
-          Your payment has been successfully processed. We have dispatched our logistics team at the Toul Kork Flagship center to prepare your hardware.
+          {language === 'km'
+            ? 'ការទូទាត់របស់អ្នកត្រូវបានដំណើរការដោយជោគជ័យ។ ក្រុមការងារដឹកជញ្ជូននៅមជ្ឈមណ្ឌលទួលគោកកំពុងរៀបចំផលិតផលរបស់អ្នក។'
+            : 'Your payment has been successfully processed. We have dispatched our logistics team at the Toul Kork Flagship center to prepare your hardware.'}
         </p>
 
         {/* Order Identifier Box */}
         <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-6 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 text-xs text-slate-600 mb-6 font-mono">
           <div>
-            Order Reference: <strong className="text-blue-600 text-sm font-black">{order.id}</strong>
+            {language === 'km' ? 'លេខយោងកុម្ម៉ង់៖' : 'Order Reference:'}{' '}
+            <strong className="text-blue-600 text-sm font-black">{order.id}</strong>
           </div>
           <div className="hidden sm:block text-slate-300">•</div>
           <div>
-            Payment Method: <strong className="text-slate-900">{order.paymentMethod || 'KHQR'}</strong>
+            {language === 'km' ? 'វិធីសាស្ត្រទូទាត់៖' : 'Payment Method:'}{' '}
+            <strong className="text-slate-900">{order.paymentMethod || 'KHQR'}</strong>
           </div>
         </div>
 
@@ -76,7 +88,7 @@ export default function OrderSuccess() {
             className="shadow-md shadow-blue-500/20"
           >
             <Truck className="w-4 h-4 mr-2" />
-            <span>Track Order Status</span>
+            <span>{language === 'km' ? 'តាមដានស្ថានភាពកុម្ម៉ង់' : 'Track Order Status'}</span>
           </Button>
 
           <Button
@@ -85,13 +97,13 @@ export default function OrderSuccess() {
             onClick={() => setIsInvoiceOpen(true)}
           >
             <Printer className="w-4 h-4 mr-2" />
-            <span>Download Invoice</span>
+            <span>{language === 'km' ? 'ទាញយកវិក្កយបត្រ' : 'Download Invoice'}</span>
           </Button>
 
           <Link to="/shop">
             <Button variant="ghost" size="md">
               <ShoppingBag className="w-4 h-4 mr-2" />
-              <span>Continue Shopping</span>
+              <span>{language === 'km' ? 'បន្តទិញទំនិញ' : 'Continue Shopping'}</span>
             </Button>
           </Link>
         </div>
@@ -100,14 +112,14 @@ export default function OrderSuccess() {
       {/* Order Details & Summary Card */}
       <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-6">
         <h3 className="text-base font-extrabold text-slate-900 pb-3 border-b border-slate-100">
-          Order Summary & Delivery Details
+          {language === 'km' ? 'សង្ខេបការកុម្ម៉ង់ និងព័ត៌មានដឹកជញ្ជូន' : 'Order Summary & Delivery Details'}
         </h3>
 
         {/* Delivery Address & ETA Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-              Shipping Destination
+              {language === 'km' ? 'គោលដៅដឹកជញ្ជូន' : 'Shipping Destination'}
             </span>
             <p className="font-bold text-slate-900">{order.shippingAddress?.fullName}</p>
             <p className="text-slate-600">{order.shippingAddress?.phone}</p>
@@ -120,14 +132,19 @@ export default function OrderSuccess() {
 
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-              Estimated Delivery
+              {language === 'km' ? 'ការដឹកជញ្ជូនប៉ាន់ស្មាន' : 'Estimated Delivery'}
             </span>
-            <p className="font-bold text-slate-900 text-sm">{order.estimatedDelivery || 'Today by 5:30 PM'}</p>
+            <p className="font-bold text-slate-900 text-sm">
+              {order.estimatedDelivery || (language === 'km' ? 'ថ្ងៃនេះមុនម៉ោង ៥:៣០ ល្ងាច' : 'Today by 5:30 PM')}
+            </p>
             <p className="text-slate-500 mt-1">
-              Handled by <strong className="text-slate-800">{order.carrier || 'GrabExpress Phnom Penh'}</strong>
+              {language === 'km' ? 'ដឹកជញ្ជូនដោយ' : 'Handled by'}{' '}
+              <strong className="text-slate-800">{order.carrier || 'GrabExpress Phnom Penh'}</strong>
             </p>
             <p className="text-emerald-600 font-semibold mt-2">
-              SMS notification will be sent upon dispatch
+              {language === 'km'
+                ? 'សារជូនដំណឹង SMS នឹងត្រូវបានផ្ញើពេលដឹកចេញ'
+                : 'SMS notification will be sent upon dispatch'}
             </p>
           </div>
         </div>
@@ -135,7 +152,7 @@ export default function OrderSuccess() {
         {/* Purchased Items List */}
         <div>
           <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block mb-3">
-            Purchased Devices
+            {language === 'km' ? 'ឧបករណ៍ដែលបានទិញ' : 'Purchased Devices'}
           </span>
           <div className="divide-y divide-slate-100">
             {(order.items || []).map((item, idx) => {
@@ -149,7 +166,8 @@ export default function OrderSuccess() {
                     <div>
                       <span className="font-bold text-slate-900 block">{item.name}</span>
                       <span className="text-slate-400">
-                        Qty: {item.quantity} {item.selectedVariant ? `• ${item.selectedVariant}` : ''}
+                        {language === 'km' ? 'ចំនួន៖' : 'Qty:'} {item.quantity}{' '}
+                        {item.selectedVariant ? `• ${item.selectedVariant}` : ''}
                       </span>
                     </div>
                   </div>
@@ -165,23 +183,29 @@ export default function OrderSuccess() {
         {/* Pricing Subtotals */}
         <div className="pt-4 border-t border-slate-100 space-y-2 text-xs text-slate-600">
           <div className="flex justify-between">
-            <span>Subtotal:</span>
+            <span>{language === 'km' ? 'តម្លៃទំនិញសរុប៖' : 'Subtotal:'}</span>
             <span className="font-semibold text-slate-900">{formatUSD(order.subtotal || order.total)}</span>
           </div>
           <div className="flex justify-between">
-            <span>Express Delivery:</span>
+            <span>{language === 'km' ? 'ថ្លៃដឹកជញ្ជូនរហ័ស៖' : 'Express Delivery:'}</span>
             <span className="font-semibold text-slate-900">
-              {order.shippingFee === 0 ? 'FREE' : formatUSD(order.shippingFee || 0)}
+              {order.shippingFee === 0
+                ? language === 'km'
+                  ? 'ឥតគិតថ្លៃ'
+                  : 'FREE'
+                : formatUSD(order.shippingFee || 0)}
             </span>
           </div>
           {order.discountAmount > 0 && (
             <div className="flex justify-between text-emerald-600 font-semibold">
-              <span>Discount ({order.appliedCoupon}):</span>
+              <span>
+                {language === 'km' ? 'បញ្ចុះតម្លៃ' : 'Discount'} ({order.appliedCoupon}):
+              </span>
               <span>-{formatUSD(order.discountAmount)}</span>
             </div>
           )}
           <div className="pt-2 border-t border-slate-200 flex justify-between items-baseline text-sm font-bold text-slate-900">
-            <span>Total Paid:</span>
+            <span>{language === 'km' ? 'សរុបដែលបានទូទាត់៖' : 'Total Paid:'}</span>
             <div className="text-right">
               <span className="text-xl font-black text-slate-950 block">{formatUSD(order.total)}</span>
               <span className="text-xs text-slate-500 font-semibold">{formatKHR(order.total)}</span>
@@ -194,7 +218,7 @@ export default function OrderSuccess() {
       <Modal
         isOpen={isInvoiceOpen}
         onClose={() => setIsInvoiceOpen(false)}
-        title="Official Tax Invoice"
+        title={language === 'km' ? 'វិក្កយបត្រពន្ធផ្លូវការ' : 'Official Tax Invoice'}
         size="xl"
       >
         <Invoice order={order} onBack={() => setIsInvoiceOpen(false)} />

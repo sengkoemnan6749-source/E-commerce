@@ -8,10 +8,13 @@ import ProductReviews from '../../components/product/ProductReviews';
 import ProductCard from '../../components/product/ProductCard';
 import Button from '../../components/common/Button';
 import { productService } from '../../services/productService';
+import { useLanguage } from '../../store/StoreContext';
+import { translateCategory, translateBadge } from '../../utils/translations';
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { language } = useLanguage();
 
   const product = useMemo(() => {
     return productService.getProductById(id);
@@ -65,12 +68,16 @@ export default function ProductDetail() {
         <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4">
           <PackageX className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl font-black text-slate-900 mb-2">Product Not Found</h2>
+        <h2 className="text-2xl font-black text-slate-900 mb-2">
+          {language === 'km' ? 'រកមិនឃើញផលិតផលទេ' : 'Product Not Found'}
+        </h2>
         <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
-          The hardware item you are looking for may have been archived or removed from our inventory.
+          {language === 'km'
+            ? 'ផលិតផលបច្ចេកវិទ្យាដែលអ្នកកំពុងស្វែងរក អាចត្រូវបានលុបចេញ ឬមិនមាននៅក្នុងស្តុករបស់យើងទៀតទេ។'
+            : 'The hardware item you are looking for may have been archived or removed from our inventory.'}
         </p>
         <Button variant="primary" size="md" onClick={() => navigate('/shop')}>
-          Back to Shop
+          {language === 'km' ? 'ត្រឡប់ទៅហាងទំនិញ' : 'Back to Shop'}
         </Button>
       </div>
     );
@@ -85,18 +92,18 @@ export default function ProductDetail() {
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-xs text-slate-500 mb-8 overflow-x-auto whitespace-nowrap pb-1">
         <Link to="/" className="hover:text-blue-600 transition-colors">
-          Home
+          {language === 'km' ? 'ទំព័រដើម' : 'Home'}
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
         <Link to="/shop" className="hover:text-blue-600 transition-colors">
-          Shop
+          {language === 'km' ? 'ហាងទំនិញ' : 'Shop'}
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
         <Link
           to={`/shop?category=${encodeURIComponent(product.category)}`}
           className="hover:text-blue-600 transition-colors"
         >
-          {product.category}
+          {translateCategory(product.category, language)}
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
         <span className="font-semibold text-slate-900 truncate max-w-xs">{product.name}</span>
@@ -111,7 +118,7 @@ export default function ProductDetail() {
             onSelectImage={handleImageSelect}
             name={product.name}
             discountPercent={discountPercent}
-            badge={product.badge}
+            badge={translateBadge(product.badge, language)}
             selectedVariant={selectedVariant}
           />
         </div>
@@ -130,10 +137,12 @@ export default function ProductDetail() {
       <div className="mb-16 sm:mb-20 pt-12 border-t border-slate-200">
         <div className="mb-8">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Technical Specifications
+            {language === 'km' ? 'លក្ខណៈបច្ចេកទេស' : 'Technical Specifications'}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Product specifications, dimensions, and box contents
+            {language === 'km'
+              ? 'ព័ត៌មានលម្អិតផលិតផល វិមាត្រ និងសម្ភារៈក្នុងប្រអប់'
+              : 'Product specifications, dimensions, and box contents'}
           </p>
         </div>
         <ProductSpecs
@@ -147,10 +156,12 @@ export default function ProductDetail() {
       <div className="mb-16 sm:mb-20 pt-12 border-t border-slate-200">
         <div className="mb-8">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Customer Reviews
+            {language === 'km' ? 'មតិយោបល់អតិថិជន' : 'Customer Reviews'}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Real feedback from verified purchasers
+            {language === 'km'
+              ? 'មតិយោបល់ពិតពីអតិថិជនដែលបានទិញប្រើប្រាស់'
+              : 'Real feedback from verified purchasers'}
           </p>
         </div>
         <ProductReviews
@@ -165,17 +176,19 @@ export default function ProductDetail() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-blue-600">
-                Complete The Ecosystem
+                {language === 'km' ? 'បំពេញឈុតឧបករណ៍របស់អ្នក' : 'Complete The Ecosystem'}
               </span>
               <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight mt-1">
-                Related {product.category}
+                {language === 'km'
+                  ? `${translateCategory(product.category, language)} ដែលពាក់ព័ន្ធ`
+                  : `Related ${product.category}`}
               </h2>
             </div>
             <Link
               to={`/shop?category=${encodeURIComponent(product.category)}`}
               className="text-xs font-bold text-blue-600 hover:text-blue-700 hidden sm:inline"
             >
-              View Category →
+              {language === 'km' ? 'មើលប្រភេទនេះ →' : 'View Category →'}
             </Link>
           </div>
 

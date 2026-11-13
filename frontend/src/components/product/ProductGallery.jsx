@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import Badge from '../common/Badge';
+import { useLanguage } from '../../store/StoreContext';
+import { translateBadge } from '../../utils/translations';
 
 export default function ProductGallery({
   images = [],
@@ -11,6 +13,8 @@ export default function ProductGallery({
   selectedVariant = ''
 }) {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const { language } = useLanguage();
+  const displayBadge = translateBadge(badge, language);
 
   const withVersion = (url) => {
     if (!url || typeof url !== 'string') return url;
@@ -44,9 +48,13 @@ export default function ProductGallery({
                   ? 'bg-slate-100/90 shadow-md scale-105 opacity-100'
                   : 'bg-slate-50/70 hover:bg-slate-100/70 opacity-50 hover:opacity-90'
               }`}
-              aria-label={`Select image ${idx + 1}`}
+              aria-label={language === 'km' ? `ជ្រើសរើសរូបភាពទី ${idx + 1}` : `Select image ${idx + 1}`}
             >
-              <img src={withVersion(img)} alt={`${name} thumbnail ${idx + 1}`} className="w-full h-full object-contain p-2" />
+              <img
+                src={withVersion(img)}
+                alt={language === 'km' ? `${name} រូបភាពតូចទី ${idx + 1}` : `${name} thumbnail ${idx + 1}`}
+                className="w-full h-full object-contain p-2"
+              />
             </button>
           );
         })}

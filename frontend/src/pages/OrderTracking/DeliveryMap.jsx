@@ -13,6 +13,7 @@ import {
   Home,
   Compass
 } from 'lucide-react';
+import { useLanguage } from '../../store/StoreContext';
 
 // Real GPS waypoints across Phnom Penh (Toul Kork Hub -> Russian Blvd -> Monivong Blvd -> St 310, BKK1)
 const ROUTE_COORDINATES = [
@@ -27,6 +28,7 @@ const ROUTE_COORDINATES = [
 ];
 
 export default function DeliveryMap({ orderStatus = 'out_for_delivery', shippingAddress }) {
+  const { language } = useLanguage();
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const tileLayerRef = useRef(null);
@@ -40,48 +42,48 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
     if (s.includes('deliver') && !s.includes('out')) {
       return {
         coord: ROUTE_COORDINATES[7],
-        eta: 'Delivered',
-        statusText: 'Successfully Delivered',
-        subtext: 'Received and signed by customer',
+        eta: language === 'km' ? 'បានប្រគល់ជោគជ័យ' : 'Delivered',
+        statusText: language === 'km' ? 'បានប្រគល់ជូនដោយជោគជ័យ' : 'Successfully Delivered',
+        subtext: language === 'km' ? 'អតិថិជនបានទទួល និងចុះហត្ថលេខា' : 'Received and signed by customer',
       };
     }
     if (s.includes('out')) {
       return {
         coord: ROUTE_COORDINATES[6],
-        eta: 'Arriving Shortly (~8 mins)',
-        statusText: 'Courier on Final Route',
-        subtext: 'Approaching BKK1 delivery destination',
+        eta: language === 'km' ? 'ជិតមកដល់ (~៨ នាទី)' : 'Arriving Shortly (~8 mins)',
+        statusText: language === 'km' ? 'អ្នកដឹកជញ្ជូនកំពុងធ្វើដំណើរដល់គោលដៅ' : 'Courier on Final Route',
+        subtext: language === 'km' ? 'កំពុងចូលជិតទីតាំងដឹកជញ្ជូននៅ BKK1' : 'Approaching BKK1 delivery destination',
       };
     }
     if (s.includes('ship')) {
       return {
         coord: ROUTE_COORDINATES[3],
-        eta: 'In Transit (~35 mins)',
-        statusText: 'In Transit across Phnom Penh',
-        subtext: 'Dispatched via GrabExpress fleet',
+        eta: language === 'km' ? 'កំពុងដឹកជញ្ជូន (~៣៥ នាទី)' : 'In Transit (~35 mins)',
+        statusText: language === 'km' ? 'កំពុងដឹកជញ្ជូនឆ្លងកាត់ភ្នំពេញ' : 'In Transit across Phnom Penh',
+        subtext: language === 'km' ? 'បានដឹកចេញតាមរយៈក្រុម GrabExpress' : 'Dispatched via GrabExpress fleet',
       };
     }
     if (s.includes('process')) {
       return {
         coord: ROUTE_COORDINATES[1],
-        eta: 'Today by 5:15 PM',
-        statusText: 'Packaging & Quality Verified',
-        subtext: 'Assembled and packed at Toul Kork Service Center',
+        eta: language === 'km' ? 'ថ្ងៃនេះមុនម៉ោង ៥:១៥ ល្ងាច' : 'Today by 5:15 PM',
+        statusText: language === 'km' ? 'កំពុងវេចខ្ចប់ និងត្រួតពិនិត្យគុណភាព' : 'Packaging & Quality Verified',
+        subtext: language === 'km' ? 'បានរៀបចំ និងវេចខ្ចប់នៅមជ្ឈមណ្ឌលទួលគោក' : 'Assembled and packed at Toul Kork Service Center',
       };
     }
     if (s.includes('confirm')) {
       return {
         coord: ROUTE_COORDINATES[0],
-        eta: 'Today by 5:30 PM',
-        statusText: 'Order Confirmed at Toul Kork Hub',
-        subtext: 'Package queued for dispatch',
+        eta: language === 'km' ? 'ថ្ងៃនេះមុនម៉ោង ៥:៣០ ល្ងាច' : 'Today by 5:30 PM',
+        statusText: language === 'km' ? 'បានបញ្ជាក់ការកុម្ម៉ង់នៅមជ្ឈមណ្ឌលទួលគោក' : 'Order Confirmed at Toul Kork Hub',
+        subtext: language === 'km' ? 'កញ្ចប់ទំនិញកំពុងរង់ចាំការដឹកចេញ' : 'Package queued for dispatch',
       };
     }
     return {
       coord: ROUTE_COORDINATES[5],
-      eta: 'Arriving in 15 mins',
-      statusText: 'In Transit to Destination',
-      subtext: 'Delivery in progress across Phnom Penh',
+      eta: language === 'km' ? 'មកដល់ក្នុងរយៈពេល ១៥ នាទី' : 'Arriving in 15 mins',
+      statusText: language === 'km' ? 'កំពុងដឹកជញ្ជូនទៅគោលដៅ' : 'In Transit to Destination',
+      subtext: language === 'km' ? 'កំពុងដំណើរការដឹកជញ្ជូននៅភ្នំពេញ' : 'Delivery in progress across Phnom Penh',
     };
   };
 
@@ -267,7 +269,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
       <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between gap-3 bg-white">
         <div>
           <h3 className="text-sm font-bold text-slate-900">
-            Delivery Route
+            {language === 'km' ? 'ផ្លូវដឹកជញ្ជូន' : 'Delivery Route'}
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
             {telemetry.statusText}
@@ -285,7 +287,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
                 : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            Satellite
+            {language === 'km' ? 'ផ្កាយរណប' : 'Satellite'}
           </button>
           <button
             type="button"
@@ -296,7 +298,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
                 : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            Map
+            {language === 'km' ? 'ផែនទី' : 'Map'}
           </button>
         </div>
       </div>
@@ -312,7 +314,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
             type="button"
             onClick={handleZoomIn}
             className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center text-white transition"
-            title="Zoom In"
+            title={language === 'km' ? 'ពង្រីក' : 'Zoom In'}
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -320,7 +322,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
             type="button"
             onClick={handleZoomOut}
             className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center text-white transition"
-            title="Zoom Out"
+            title={language === 'km' ? 'បង្រួម' : 'Zoom Out'}
           >
             <Minus className="w-4 h-4" />
           </button>
@@ -328,7 +330,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
             type="button"
             onClick={handleRecenter}
             className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center text-white transition"
-            title="Recenter Route"
+            title={language === 'km' ? 'តម្រឹមផ្លូវឡើងវិញ' : 'Recenter Route'}
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>

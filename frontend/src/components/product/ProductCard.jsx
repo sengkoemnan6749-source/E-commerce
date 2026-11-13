@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Star, Heart, ShoppingBag, Check, Eye } from 'lucide-react';
 import { formatUSD } from '../../utils/formatPrice';
 import { useCart, useWishlist, useToast, useLanguage } from '../../store/StoreContext';
-import { translateCategory, translateSubcategory } from '../../utils/translations';
+import { translateCategory, translateSubcategory, translateBadge, translateProductField } from '../../utils/translations';
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCart();
@@ -109,7 +109,7 @@ export default function ProductCard({ product }) {
           )}
           {product.badge && (
             <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-slate-900 text-white">
-              {product.badge}
+              {translateBadge(product.badge, language)}
             </span>
           )}
           {product.stock <= 5 && product.stock > 0 && (
@@ -181,7 +181,7 @@ export default function ProductCard({ product }) {
 
         {/* Short Specs / Subtitle */}
         <p className="text-xs text-slate-500 line-clamp-1 mb-2">
-          {product.tagline || product.description}
+          {translateProductField(product, 'tagline', language) || translateProductField(product, 'description', language)}
         </p>
 
         {/* Interactive Color Finishes Swatches */}

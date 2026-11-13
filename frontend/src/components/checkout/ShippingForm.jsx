@@ -1,6 +1,7 @@
 import React from 'react';
 import Input from '../common/Input';
 import { Truck } from 'lucide-react';
+import { useLanguage } from '../../store/StoreContext';
 
 export const DELIVERY_PARTNERS = [
   {
@@ -8,7 +9,9 @@ export const DELIVERY_PARTNERS = [
     name: 'Vireak Buntham Express (VET)',
     khmerName: 'វីរៈ ប៊ុនថាំ អេចប្រេស',
     badge: 'All 25 Provinces',
+    badgeKm: '២៥ រាជធានី-ខេត្ត',
     eta: '1 - 2 Business Days',
+    etaKm: '១ - ២ ថ្ងៃធ្វើការ',
     fee: 1.75,
     website: 'https://vireakbuntham.com/'
   },
@@ -17,7 +20,9 @@ export const DELIVERY_PARTNERS = [
     name: 'J&T Express Cambodia',
     khmerName: 'ជេ&ធី អេចប្រេស',
     badge: 'Door-to-Door Delivery',
+    badgeKm: 'ដឹកជញ្ជូនដល់មុខផ្ទះ',
     eta: '1 - 2 Business Days',
+    etaKm: '១ - ២ ថ្ងៃធ្វើការ',
     fee: 2.00,
     website: 'https://www.jtexpresskh.com/'
   },
@@ -26,7 +31,9 @@ export const DELIVERY_PARTNERS = [
     name: 'GrabExpress Phnom Penh',
     khmerName: 'ហ្គ្រែប អេចប្រេស',
     badge: 'Same-Day Fast (1-3 hrs)',
+    badgeKm: 'រហ័សក្នុងថ្ងៃតែមួយ (១-៣ ម៉ោង)',
     eta: 'Today (Within 3 Hours)',
+    etaKm: 'ថ្ងៃនេះ (ក្នុងរយៈពេល ៣ ម៉ោង)',
     fee: 2.50,
     website: 'https://www.grab.com/kh/express/'
   }
@@ -59,7 +66,35 @@ const CAMBODIA_PROVINCES = [
   'Tbong Khmum'
 ];
 
+const CAMBODIA_PROVINCES_KM = {
+  'Phnom Penh': 'រាជធានីភ្នំពេញ',
+  Kandal: 'កណ្តាល',
+  'Siem Reap': 'សៀមរាប',
+  Battambang: 'បាត់ដំបង',
+  'Preah Sihanouk (Kompong Som)': 'ព្រះសីហនុ (កំពង់សោម)',
+  Kampot: 'កំពត',
+  Kep: 'កែប',
+  Takeo: 'តាកែវ',
+  'Kampong Cham': 'កំពង់ចាម',
+  'Kampong Chhnang': 'កំពង់ឆ្នាំង',
+  'Kampong Speu': 'កំពង់ស្ពឺ',
+  'Kampong Thom': 'កំពង់ធំ',
+  'Koh Kong': 'កោះកុង',
+  Kratie: 'ក្រចេះ',
+  Mondulkiri: 'មណ្ឌលគិរី',
+  'Otdar Meanchey': 'ឧត្តរមានជ័យ',
+  Pailin: 'ប៉ៃលិន',
+  'Preah Vihear': 'ព្រះវិហារ',
+  'Prey Veng': 'ព្រៃវែង',
+  Pursat: 'ពោធិ៍សាត់',
+  Ratanakiri: 'រតនគិរី',
+  'Stung Treng': 'ស្ទឹងត្រែង',
+  'Svay Rieng': 'ស្វាយរៀង',
+  'Tbong Khmum': 'ត្បូងឃ្មុំ'
+};
+
 export default function ShippingForm({ formData, onChange, errors = {} }) {
+  const { language } = useLanguage();
   const handleChange = (field, value) => {
     onChange({ ...formData, [field]: value });
   };
@@ -68,8 +103,8 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
-          label="Full name *"
-          placeholder="e.g. Sara Meng"
+          label={language === 'km' ? 'ឈ្មោះពេញ *' : 'Full name *'}
+          placeholder={language === 'km' ? 'ឧ. Sara Meng' : 'e.g. Sara Meng'}
           value={formData.fullName || ''}
           onChange={(e) => handleChange('fullName', e.target.value)}
           error={errors.fullName}
@@ -77,19 +112,27 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
         />
 
         <Input
-          label="Phone number *"
-          placeholder="e.g. 012 345 678"
+          label={language === 'km' ? 'លេខទូរស័ព្ទ *' : 'Phone number *'}
+          placeholder={language === 'km' ? 'ឧ. 012 345 678' : 'e.g. 012 345 678'}
           value={formData.phone || ''}
           onChange={(e) => handleChange('phone', e.target.value)}
           error={errors.phone}
-          helperText="Used for courier delivery updates"
+          helperText={
+            language === 'km'
+              ? 'ប្រើសម្រាប់ការជូនដំណឹងអំពីការដឹកជញ្ជូន'
+              : 'Used for courier delivery updates'
+          }
           required
         />
       </div>
 
       <Input
-        label="Street address / Building *"
-        placeholder="e.g. #14B, Street 310, Boeng Keng Kang 1"
+        label={language === 'km' ? 'អាសយដ្ឋានផ្លូវ / អគារ *' : 'Street address / Building *'}
+        placeholder={
+          language === 'km'
+            ? 'ឧ. #14B, ផ្លូវ 310, បឹងកេងកង ១'
+            : 'e.g. #14B, Street 310, Boeng Keng Kang 1'
+        }
         value={formData.address || ''}
         onChange={(e) => handleChange('address', e.target.value)}
         error={errors.address}
@@ -99,11 +142,11 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-            City / Khan *
+            {language === 'km' ? 'ទីក្រុង / ខណ្ឌ *' : 'City / Khan *'}
           </label>
           <input
             type="text"
-            placeholder="e.g. Boeng Keng Kang"
+            placeholder={language === 'km' ? 'ឧ. បឹងកេងកង' : 'e.g. Boeng Keng Kang'}
             value={formData.city || ''}
             onChange={(e) => handleChange('city', e.target.value)}
             className="w-full rounded-2xl border border-slate-200/90 hover:border-slate-300 px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-600 transition duration-200 bg-white"
@@ -114,7 +157,7 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-            Province *
+            {language === 'km' ? 'ខេត្ត / រាជធានី *' : 'Province *'}
           </label>
           <select
             value={formData.province || 'Phnom Penh'}
@@ -123,7 +166,7 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
           >
             {CAMBODIA_PROVINCES.map((prov) => (
               <option key={prov} value={prov}>
-                {prov}
+                {language === 'km' ? CAMBODIA_PROVINCES_KM[prov] || prov : prov}
               </option>
             ))}
           </select>
@@ -131,7 +174,7 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-            Postal code (optional)
+            {language === 'km' ? 'លេខកូដប្រៃសណីយ៍ (ជាជម្រើស)' : 'Postal code (optional)'}
           </label>
           <input
             type="text"
@@ -151,7 +194,11 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
             onChange={(e) => handleChange('saveAddress', e.target.checked)}
             className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
           />
-          <span>Save this delivery address to my account for future orders</span>
+          <span>
+            {language === 'km'
+              ? 'រក្សាទុកអាសយដ្ឋានដឹកជញ្ជូននេះក្នុងគណនីរបស់ខ្ញុំសម្រាប់ការកុម្ម៉ង់លើកក្រោយ'
+              : 'Save this delivery address to my account for future orders'}
+          </span>
         </label>
       </div>
 
@@ -159,10 +206,12 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
       <div className="pt-6 border-t border-slate-100">
         <div className="mb-3">
           <h3 className="text-xs font-semibold text-slate-900">
-            Shipping method
+            {language === 'km' ? 'វិធីសាស្ត្រដឹកជញ្ជូន' : 'Shipping method'}
           </h3>
           <p className="text-[11px] text-slate-500 mt-0.5">
-            Select an official courier service for Phnom Penh and provincial delivery
+            {language === 'km'
+              ? 'ជ្រើសរើសសេវាដឹកជញ្ជូនផ្លូវការសម្រាប់ភ្នំពេញ និងតាមខេត្ត'
+              : 'Select an official courier service for Phnom Penh and provincial delivery'}
           </p>
         </div>
 
@@ -188,14 +237,14 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs sm:text-sm font-semibold text-slate-900">
-                        {partner.name}
+                        {language === 'km' ? partner.khmerName : partner.name}
                       </span>
                       <span className="text-[11px] text-slate-400">
-                        ({partner.khmerName})
+                        ({language === 'km' ? partner.name : partner.khmerName})
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 mt-0.5">
-                      {partner.eta} • {partner.badge}
+                      {language === 'km' ? partner.etaKm : partner.eta} • {language === 'km' ? partner.badgeKm : partner.badge}
                     </p>
                   </div>
                 </div>

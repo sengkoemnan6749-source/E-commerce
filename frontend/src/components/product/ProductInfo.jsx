@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Star, ShieldCheck, Truck, RotateCcw, Plus, Minus, ShoppingBag, Zap, Heart, Check } from 'lucide-react';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
 import { useCart, useWishlist, useToast, useAuth, useLanguage } from '../../store/StoreContext';
-import { translateCategory } from '../../utils/translations';
+import { translateCategory, translateProductField } from '../../utils/translations';
 import Button from '../common/Button';
 import Badge from '../common/Badge';
 
@@ -128,7 +128,7 @@ export default function ProductInfo({
 
       {/* Short Summary Description */}
       <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-6">
-        {product.description}
+        {translateProductField(product, 'description', language)}
       </p>
 
       {/* Variant Selector */}

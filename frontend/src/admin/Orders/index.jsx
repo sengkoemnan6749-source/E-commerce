@@ -6,7 +6,8 @@ import { formatDate } from '../../utils/formatDate';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
 import Invoice from '../../components/order/Invoice';
-import { useToast } from '../../store/StoreContext';
+import { useToast, useLanguage } from '../../store/StoreContext';
+import { translateOrderStatusLabel } from '../../utils/translations';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState(orderService.getOrders());
@@ -15,6 +16,7 @@ export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const { addToast } = useToast();
+  const { language } = useLanguage();
 
   const refreshOrders = () => {
     setOrders(orderService.getOrders());
@@ -23,7 +25,12 @@ export default function AdminOrders() {
   const handleStatusChange = (orderId, newStatus) => {
     orderService.updateOrderStatus(orderId, newStatus);
     refreshOrders();
-    addToast(`Order ${orderId} updated to ${formatOrderStatus(newStatus)}`, 'success');
+    addToast(
+      language === 'km'
+        ? `បានធ្វើបច្ចុប្បន្នភាពការបញ្ជាទិញ ${orderId} ទៅជា ${translateOrderStatusLabel(newStatus, 'km')}`
+        : `Order ${orderId} updated to ${formatOrderStatus(newStatus)}`,
+      'success'
+    );
   };
 
   const filtered = orders.filter((o) => {
@@ -47,9 +54,13 @@ export default function AdminOrders() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Orders Management</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            {language === 'km' ? 'ការគ្រប់គ្រងការបញ្ជាទិញ' : 'Orders Management'}
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Audit fulfillment workflows, courier handoffs, and manage payment statuses.
+            {language === 'km'
+              ? 'ត្រួតពិនិត្យដំណើរការរៀបចំទំនិញ ការប្រគល់ជូនអ្នកដឹកជញ្ជូន និងគ្រប់គ្រងស្ថានភាពទូទាត់។'
+              : 'Audit fulfillment workflows, courier handoffs, and manage payment statuses.'}
           </p>
         </div>
       </div>
@@ -60,7 +71,11 @@ export default function AdminOrders() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search by order ID, customer name, or phone..."
+            placeholder={
+              language === 'km'
+                ? 'ស្វែងរកតាមលេខកូដកុម្ម៉ង់ ឈ្មោះអតិថិជន ឬលេខទូរស័ព្ទ...'
+                : 'Search by order ID, customer name, or phone...'
+            }
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-slate-900"
@@ -68,18 +83,20 @@ export default function AdminOrders() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">Status:</span>
+          <span className="text-xs text-slate-400">
+            {language === 'km' ? 'ស្ថានភាព៖' : 'Status:'}
+          </span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-600"
           >
-            <option value="All">All Statuses</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="out_for_delivery">Out for Delivery</option>
-            <option value="delivered">Delivered</option>
+            <option value="All">{language === 'km' ? 'ស្ថានភាពទាំងអស់' : 'All Statuses'}</option>
+            <option value="confirmed">{translateOrderStatusLabel('Confirmed', language)}</option>
+            <option value="processing">{translateOrderStatusLabel('Processing', language)}</option>
+            <option value="shipped">{translateOrderStatusLabel('Shipped', language)}</option>
+            <option value="out_for_delivery">{translateOrderStatusLabel('Out for Delivery', language)}</option>
+            <option value="delivered">{translateOrderStatusLabel('Delivered', language)}</option>
           </select>
         </div>
       </div>
@@ -90,14 +107,14 @@ export default function AdminOrders() {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-400 uppercase text-[10px] tracking-wider">
-                <th className="py-3 px-4">Order ID</th>
-                <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4">Courier Service</th>
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Payment</th>
-                <th className="py-3 px-4">Total</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4">{language === 'km' ? 'លេខកូដកុម្ម៉ង់' : 'Order ID'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'អតិថិជន' : 'Customer'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'សេវាដឹកជញ្ជូន' : 'Courier Service'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'កាលបរិច្ឆេទ' : 'Date'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'ការទូទាត់' : 'Payment'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'សរុប' : 'Total'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'ស្ថានភាព' : 'Status'}</th>
+                <th className="py-3 px-4 text-right">{language === 'km' ? 'សកម្មភាព' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -142,7 +159,13 @@ export default function AdminOrders() {
                       {ord.paymentMethod || 'KHQR'}
                     </span>
                     <span className="text-[10px] text-emerald-600 font-bold uppercase">
-                      {ord.paymentStatus || 'PAID'}
+                      {language === 'km'
+                        ? (ord.paymentStatus || 'PAID').toUpperCase() === 'PAID'
+                          ? 'បានទូទាត់'
+                          : (ord.paymentStatus || 'PAID').toUpperCase() === 'PENDING'
+                            ? 'រង់ចាំទូទាត់'
+                            : ord.paymentStatus
+                        : ord.paymentStatus || 'PAID'}
                     </span>
                   </td>
 
@@ -156,11 +179,11 @@ export default function AdminOrders() {
                       onChange={(e) => handleStatusChange(ord.id, e.target.value)}
                       className="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-600"
                     >
-                      <option value="confirmed">Confirmed</option>
-                      <option value="processing">Processing</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="out_for_delivery">Out for Delivery</option>
-                      <option value="delivered">Delivered</option>
+                      <option value="confirmed">{translateOrderStatusLabel('Confirmed', language)}</option>
+                      <option value="processing">{translateOrderStatusLabel('Processing', language)}</option>
+                      <option value="shipped">{translateOrderStatusLabel('Shipped', language)}</option>
+                      <option value="out_for_delivery">{translateOrderStatusLabel('Out for Delivery', language)}</option>
+                      <option value="delivered">{translateOrderStatusLabel('Delivered', language)}</option>
                     </select>
                   </td>
 
@@ -169,7 +192,7 @@ export default function AdminOrders() {
                       type="button"
                       onClick={() => setSelectedOrder(ord)}
                       className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                      title="View Order Details"
+                      title={language === 'km' ? 'មើលព័ត៌មានលម្អិតការបញ្ជាទិញ' : 'View Order Details'}
                     >
                       <Eye className="w-3.5 h-3.5" />
                     </button>
@@ -186,7 +209,7 @@ export default function AdminOrders() {
         <Modal
           isOpen={true}
           onClose={() => setSelectedOrder(null)}
-          title={`Order Details: ${selectedOrder.id}`}
+          title={`${language === 'km' ? 'ព័ត៌មានលម្អិតការបញ្ជាទិញ៖' : 'Order Details:'} ${selectedOrder.id}`}
           size="lg"
         >
           <div className="space-y-6 text-xs">
@@ -194,7 +217,7 @@ export default function AdminOrders() {
             <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  Customer & Contact
+                  {language === 'km' ? 'អតិថិជន និងព័ត៌មានទំនាក់ទំនង' : 'Customer & Contact'}
                 </span>
                 <p className="font-bold text-slate-900 text-sm">{selectedOrder.customerName}</p>
                 <p className="text-slate-600">{selectedOrder.customerPhone}</p>
@@ -203,7 +226,7 @@ export default function AdminOrders() {
 
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                  Delivery Destination & Courier
+                  {language === 'km' ? 'ទីតាំងដឹកជញ្ជូន និងក្រុមហ៊ុនដឹកជញ្ជូន' : 'Delivery Destination & Courier'}
                 </span>
                 <p className="text-slate-800">{selectedOrder.shippingAddress?.address || 'Street 310, BKK1'}</p>
                 <p className="text-slate-600 text-xs">
@@ -215,7 +238,7 @@ export default function AdminOrders() {
                       {selectedOrder.deliveryPartner || selectedOrder.tracking?.courier || 'Vireak Buntham (VET)'}
                     </span>
                     <span className="text-[10px] font-mono text-slate-500">
-                      Tracking: {selectedOrder.trackingNumber || selectedOrder.tracking?.trackingCode || 'VET-KH-889210'}
+                      {language === 'km' ? 'លេខតាមដាន៖' : 'Tracking:'} {selectedOrder.trackingNumber || selectedOrder.tracking?.trackingCode || 'VET-KH-889210'}
                     </span>
                   </div>
                   <a
@@ -224,7 +247,7 @@ export default function AdminOrders() {
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 underline"
                   >
-                    <span>Carrier Link</span>
+                    <span>{language === 'km' ? 'តំណភ្ជាប់តាមដាន' : 'Carrier Link'}</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
@@ -234,7 +257,7 @@ export default function AdminOrders() {
             {/* Line items list */}
             <div>
               <span className="font-bold text-slate-900 uppercase text-[10px] tracking-wider block mb-2">
-                Purchased Hardware Items
+                {language === 'km' ? 'បញ្ជីទំនិញដែលបានបញ្ជាទិញ' : 'Purchased Hardware Items'}
               </span>
               <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
                 {(selectedOrder.items || []).map((item, idx) => (
@@ -248,7 +271,7 @@ export default function AdminOrders() {
                       <div>
                         <span className="font-bold text-slate-900 block">{item.name}</span>
                         <span className="text-slate-400">
-                          Qty: {item.quantity} {item.selectedVariant ? `• ${item.selectedVariant}` : ''}
+                          {language === 'km' ? 'ចំនួន៖' : 'Qty:'} {item.quantity} {item.selectedVariant ? `• ${item.selectedVariant}` : ''}
                         </span>
                       </div>
                     </div>
@@ -263,15 +286,21 @@ export default function AdminOrders() {
             {/* Order Totals */}
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
               <div className="flex justify-between">
-                <span>Subtotal:</span>
+                <span>{language === 'km' ? 'តម្លៃទំនិញសរុប៖' : 'Subtotal:'}</span>
                 <span className="font-semibold">{formatUSD(selectedOrder.subtotal || selectedOrder.total)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Shipping:</span>
-                <span className="font-semibold">{selectedOrder.shippingFee === 0 ? 'FREE' : formatUSD(selectedOrder.shippingFee || 0)}</span>
+                <span>{language === 'km' ? 'ថ្លៃដឹកជញ្ជូន៖' : 'Shipping:'}</span>
+                <span className="font-semibold">
+                  {selectedOrder.shippingFee === 0
+                    ? language === 'km'
+                      ? 'ឥតគិតថ្លៃ'
+                      : 'FREE'
+                    : formatUSD(selectedOrder.shippingFee || 0)}
+                </span>
               </div>
               <div className="flex justify-between text-sm font-bold pt-2 border-t border-slate-200">
-                <span>Grand Total:</span>
+                <span>{language === 'km' ? 'សរុបរួម៖' : 'Grand Total:'}</span>
                 <span className="font-mono text-base text-blue-600">{formatUSD(selectedOrder.total)}</span>
               </div>
             </div>
@@ -283,7 +312,7 @@ export default function AdminOrders() {
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-blue-600"
               >
                 <FileText className="w-4 h-4" />
-                <span>View Full Invoice Sheet</span>
+                <span>{language === 'km' ? 'មើលវិក្កយបត្រពេញលេញ' : 'View Full Invoice Sheet'}</span>
               </button>
 
               <button
@@ -291,7 +320,7 @@ export default function AdminOrders() {
                 onClick={() => setSelectedOrder(null)}
                 className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800"
               >
-                Close
+                {language === 'km' ? 'បិទ' : 'Close'}
               </button>
             </div>
           </div>
@@ -303,7 +332,7 @@ export default function AdminOrders() {
         <Modal
           isOpen={true}
           onClose={() => setShowInvoiceModal(false)}
-          title="Print Tax Invoice"
+          title={language === 'km' ? 'បោះពុម្ពវិក្កយបត្រពន្ធ' : 'Print Tax Invoice'}
           size="xl"
         >
           <Invoice order={selectedOrder} onBack={() => setShowInvoiceModal(false)} />

@@ -2,8 +2,11 @@ import React from 'react';
 import Badge from '../common/Badge';
 import { formatOrderStatus } from '../../services/orderService';
 import { Truck, Calendar, Clock, MapPin } from 'lucide-react';
+import { useLanguage } from '../../store/StoreContext';
+import { translateOrderStatusLabel } from '../../utils/translations';
 
 export default function OrderStatus({ order }) {
+  const { language } = useLanguage();
   const getBadgeVariant = (status) => {
     const s = (status || '').toLowerCase();
     if (s.includes('delivered')) return 'success';
@@ -16,13 +19,15 @@ export default function OrderStatus({ order }) {
     <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <span className="text-xs text-slate-400 block mb-0.5">Order Tracking</span>
+          <span className="text-xs text-slate-400 block mb-0.5">
+            {language === 'km' ? 'តាមដានការកុម្ម៉ង់' : 'Order Tracking'}
+          </span>
           <h2 className="text-lg sm:text-xl font-black text-slate-900 font-mono">
             {order.id}
           </h2>
         </div>
         <Badge variant={getBadgeVariant(order.status)} size="md" className="text-xs font-bold px-3 py-1">
-          {formatOrderStatus(order.status || 'Processing')}
+          {translateOrderStatusLabel(formatOrderStatus(order.status || 'Processing'), language)}
         </Badge>
       </div>
 
@@ -32,7 +37,9 @@ export default function OrderStatus({ order }) {
             <Truck className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] uppercase text-slate-400 font-semibold block">Carrier</span>
+            <span className="text-[10px] uppercase text-slate-400 font-semibold block">
+              {language === 'km' ? 'ក្រុមហ៊ុនដឹកជញ្ជូន' : 'Carrier'}
+            </span>
             <span className="font-bold text-slate-800">{order.carrier || 'GrabExpress Express Phnom Penh'}</span>
           </div>
         </div>
@@ -42,8 +49,12 @@ export default function OrderStatus({ order }) {
             <Calendar className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] uppercase text-slate-400 font-semibold block">Estimated Delivery</span>
-            <span className="font-bold text-slate-800">{order.estimatedDelivery || 'Today by 5:30 PM'}</span>
+            <span className="text-[10px] uppercase text-slate-400 font-semibold block">
+              {language === 'km' ? 'ការដឹកជញ្ជូនប៉ាន់ស្មាន' : 'Estimated Delivery'}
+            </span>
+            <span className="font-bold text-slate-800">
+              {order.estimatedDelivery || (language === 'km' ? 'ថ្ងៃនេះមុនម៉ោង ៥:៣០ ល្ងាច' : 'Today by 5:30 PM')}
+            </span>
           </div>
         </div>
 
@@ -52,7 +63,9 @@ export default function OrderStatus({ order }) {
             <MapPin className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] uppercase text-slate-400 font-semibold block">Destination</span>
+            <span className="text-[10px] uppercase text-slate-400 font-semibold block">
+              {language === 'km' ? 'គោលដៅដឹកជញ្ជូន' : 'Destination'}
+            </span>
             <span className="font-bold text-slate-800 truncate block max-w-[170px]">
               {order.shippingAddress?.city || 'Phnom Penh'}, {order.shippingAddress?.province || 'Cambodia'}
             </span>

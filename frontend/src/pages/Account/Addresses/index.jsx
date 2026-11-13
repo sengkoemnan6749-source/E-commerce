@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { MapPin, Plus, Trash2, CheckCircle2, Home, Building2 } from 'lucide-react';
-import { useAuth, useToast } from '../../../store/StoreContext';
+import { useAuth, useToast, useLanguage } from '../../../store/StoreContext';
 import Button from '../../../components/common/Button';
 import Modal from '../../../components/common/Modal';
 import Input from '../../../components/common/Input';
@@ -8,6 +8,7 @@ import Input from '../../../components/common/Input';
 export default function AccountAddresses() {
   const { user, addAddress, deleteAddress, setDefaultAddress } = useAuth();
   const { addToast } = useToast();
+  const { language } = useLanguage();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newAddress, setNewAddress] = useState({
@@ -24,7 +25,12 @@ export default function AccountAddresses() {
   const handleAdd = (e) => {
     e.preventDefault();
     if (!newAddress.address.trim() || !newAddress.fullName.trim() || !newAddress.phone.trim()) {
-      addToast('Please fill all required address fields', 'error');
+      addToast(
+        language === 'km'
+          ? 'សូមបំពេញព័ត៌មានអាសយដ្ឋានចាំបាច់ទាំងអស់'
+          : 'Please fill all required address fields',
+        'error'
+      );
       return;
     }
 
@@ -40,7 +46,12 @@ export default function AccountAddresses() {
       postalCode: '120101',
       isDefault: false
     });
-    addToast('New address saved to your address book', 'success');
+    addToast(
+      language === 'km'
+        ? 'បានរក្សាទុកអាសយដ្ឋានថ្មីក្នុងសៀវភៅអាសយដ្ឋានរបស់អ្នក'
+        : 'New address saved to your address book',
+      'success'
+    );
   };
 
   const addresses = user?.addresses || [];
@@ -49,21 +60,29 @@ export default function AccountAddresses() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 mb-6 gap-4">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Saved Delivery Addresses</h2>
+          <h2 className="text-lg font-bold text-slate-900">
+            {language === 'km' ? 'អាសយដ្ឋានដឹកជញ្ជូនដែលបានរក្សាទុក' : 'Saved Delivery Addresses'}
+          </h2>
           <p className="text-xs text-slate-500">
-            Manage your preferred drop-off locations across Phnom Penh and provinces.
+            {language === 'km'
+              ? 'គ្រប់គ្រងទីតាំងទទួលទំនិញរបស់អ្នកនៅរាជធានីភ្នំពេញ និងតាមបណ្តាខេត្ត។'
+              : 'Manage your preferred drop-off locations across Phnom Penh and provinces.'}
           </p>
         </div>
 
         <Button variant="primary" size="sm" onClick={() => setIsModalOpen(true)}>
           <Plus className="w-4 h-4 mr-1.5" />
-          <span>Add New Address</span>
+          <span>{language === 'km' ? 'បន្ថែមអាសយដ្ឋានថ្មី' : 'Add New Address'}</span>
         </Button>
       </div>
 
       {addresses.length === 0 ? (
         <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-          <p className="text-xs text-slate-500">No saved addresses found. Add one above.</p>
+          <p className="text-xs text-slate-500">
+            {language === 'km'
+              ? 'មិនទាន់មានអាសយដ្ឋានរក្សាទុកនៅឡើយទេ។ សូមបន្ថែមខាងលើ។'
+              : 'No saved addresses found. Add one above.'}
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -79,10 +98,16 @@ export default function AccountAddresses() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">{addr.label || 'Address'}</span>
+                    <span className="text-xs font-bold text-slate-900">
+                      {addr.label === 'Home' && language === 'km'
+                        ? 'ផ្ទះ'
+                        : addr.label === 'Work / Studio' && language === 'km'
+                        ? 'ការិយាល័យ / ស្ទូឌីយោ'
+                        : addr.label || (language === 'km' ? 'អាសយដ្ឋាន' : 'Address')}
+                    </span>
                     {addr.isDefault && (
                       <span className="text-[10px] font-semibold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
-                        Default
+                        {language === 'km' ? 'លំនាំដើម' : 'Default'}
                       </span>
                     )}
                   </div>
@@ -91,10 +116,10 @@ export default function AccountAddresses() {
                     type="button"
                     onClick={() => {
                       deleteAddress(addr.id);
-                      addToast('Address removed', 'info');
+                      addToast(language === 'km' ? 'បានលុបអាសយដ្ឋាន' : 'Address removed', 'info');
                     }}
                     className="text-slate-400 hover:text-rose-600 p-1"
-                    title="Delete address"
+                    title={language === 'km' ? 'លុបអាសយដ្ឋាន' : 'Delete address'}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -113,11 +138,16 @@ export default function AccountAddresses() {
                     type="button"
                     onClick={() => {
                       setDefaultAddress(addr.id);
-                      addToast('Default address updated', 'success');
+                      addToast(
+                        language === 'km'
+                          ? 'បានធ្វើបច្ចុប្បន្នភាពអាសយដ្ឋានលំនាំដើម'
+                          : 'Default address updated',
+                        'success'
+                      );
                     }}
                     className="text-xs font-semibold text-blue-600 hover:text-blue-700"
                   >
-                    Set as default
+                    {language === 'km' ? 'កំណត់ជាលំនាំដើម' : 'Set as default'}
                   </button>
                 </div>
               )}
@@ -130,7 +160,7 @@ export default function AccountAddresses() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Add New Delivery Address"
+        title={language === 'km' ? 'បន្ថែមអាសយដ្ឋានដឹកជញ្ជូនថ្មី' : 'Add New Delivery Address'}
       >
         <form onSubmit={handleAdd} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
@@ -144,7 +174,7 @@ export default function AccountAddresses() {
               }`}
             >
               <Home className="w-3.5 h-3.5" />
-              <span>Home</span>
+              <span>{language === 'km' ? 'ផ្ទះ' : 'Home'}</span>
             </button>
             <button
               type="button"
@@ -156,27 +186,27 @@ export default function AccountAddresses() {
               }`}
             >
               <Building2 className="w-3.5 h-3.5" />
-              <span>Work / Studio</span>
+              <span>{language === 'km' ? 'ការិយាល័យ / ស្ទូឌីយោ' : 'Work / Studio'}</span>
             </button>
           </div>
 
           <Input
-            label="Full Name *"
+            label={language === 'km' ? 'ឈ្មោះពេញ *' : 'Full Name *'}
             value={newAddress.fullName}
             onChange={(e) => setNewAddress({ ...newAddress, fullName: e.target.value })}
             required
           />
 
           <Input
-            label="Contact Phone *"
+            label={language === 'km' ? 'លេខទូរស័ព្ទទំនាក់ទំនង *' : 'Contact Phone *'}
             value={newAddress.phone}
             onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
             required
           />
 
           <Input
-            label="Street Address / Room / Floor *"
-            placeholder="e.g. #14B, St. 310"
+            label={language === 'km' ? 'អាសយដ្ឋានផ្លូវ / បន្ទប់ / ជាន់ *' : 'Street Address / Room / Floor *'}
+            placeholder={language === 'km' ? 'ឧ. #14B, ផ្លូវ 310' : 'e.g. #14B, St. 310'}
             value={newAddress.address}
             onChange={(e) => setNewAddress({ ...newAddress, address: e.target.value })}
             required
@@ -184,13 +214,13 @@ export default function AccountAddresses() {
 
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="City / Khan *"
+              label={language === 'km' ? 'ក្រុង / ខណ្ឌ *' : 'City / Khan *'}
               value={newAddress.city}
               onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
               required
             />
             <Input
-              label="Province *"
+              label={language === 'km' ? 'ខេត្ត / រាជធានី *' : 'Province *'}
               value={newAddress.province}
               onChange={(e) => setNewAddress({ ...newAddress, province: e.target.value })}
               required
@@ -204,15 +234,19 @@ export default function AccountAddresses() {
               onChange={(e) => setNewAddress({ ...newAddress, isDefault: e.target.checked })}
               className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
             />
-            <span>Make this my default shipping address</span>
+            <span>
+              {language === 'km'
+                ? 'កំណត់ជាអាសយដ្ឋានដឹកជញ្ជូនលំនាំដើមរបស់ខ្ញុំ'
+                : 'Make this my default shipping address'}
+            </span>
           </label>
 
           <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
             <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)}>
-              Cancel
+              {language === 'km' ? 'បោះបង់' : 'Cancel'}
             </Button>
             <Button variant="primary" type="submit">
-              Save Address
+              {language === 'km' ? 'រក្សាទុកអាសយដ្ឋាន' : 'Save Address'}
             </Button>
           </div>
         </form>

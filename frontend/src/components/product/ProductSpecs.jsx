@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Package } from 'lucide-react';
+import { useLanguage } from '../../store/StoreContext';
 
 export default function ProductSpecs({ specs = {}, inBox = [], warranty = '' }) {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
+  const { language } = useLanguage();
   const specEntries = Object.entries(specs);
 
   return (
@@ -15,7 +17,7 @@ export default function ProductSpecs({ specs = {}, inBox = [], warranty = '' }) 
           <div className="flex items-center justify-between pb-3 border-b border-slate-200">
             <div>
               <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                Hardware Specifications
+                {language === 'km' ? 'លក្ខណៈបច្ចេកទេសផលិតផល' : 'Hardware Specifications'}
               </h3>
             </div>
 
@@ -30,7 +32,7 @@ export default function ProductSpecs({ specs = {}, inBox = [], warranty = '' }) 
                     : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                Cards
+                {language === 'km' ? 'កាត' : 'Cards'}
               </button>
               <button
                 type="button"
@@ -41,7 +43,7 @@ export default function ProductSpecs({ specs = {}, inBox = [], warranty = '' }) 
                     : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
-                Table
+                {language === 'km' ? 'តារាង' : 'Table'}
               </button>
             </div>
           </div>
@@ -90,7 +92,9 @@ export default function ProductSpecs({ specs = {}, inBox = [], warranty = '' }) 
             )
           ) : (
             <p className="text-sm text-slate-500 py-6 text-center bg-slate-50 rounded-xl border border-slate-200">
-              Standard hardware architecture applies to this model.
+              {language === 'km'
+                ? 'លក្ខណៈបច្ចេកទេសស្តង់ដារត្រូវបានអនុវត្តសម្រាប់ម៉ូដែលនេះ។'
+                : 'Standard hardware architecture applies to this model.'}
             </p>
           )}
         </div>
@@ -103,7 +107,9 @@ export default function ProductSpecs({ specs = {}, inBox = [], warranty = '' }) 
             <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs">
               <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-100">
                 <Package className="w-4 h-4 text-blue-600" />
-                <h4 className="text-sm font-bold text-slate-900">In the Box</h4>
+                <h4 className="text-sm font-bold text-slate-900">
+                  {language === 'km' ? 'សម្ភារៈក្នុងប្រអប់' : 'In the Box'}
+                </h4>
               </div>
 
               <ul className="space-y-2.5">
@@ -125,13 +131,15 @@ export default function ProductSpecs({ specs = {}, inBox = [], warranty = '' }) 
             <div className="flex items-center gap-2 mb-2">
               <ShieldCheck className="w-4 h-4 text-blue-600" />
               <h4 className="text-sm font-bold text-slate-900">
-                1-Year Official Warranty
+                {language === 'km' ? 'ការធានាផ្លូវការរយៈពេល ១ ឆ្នាំ' : '1-Year Official Warranty'}
               </h4>
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
               {warranty ||
-                'Includes 12 months comprehensive warranty through TechTonic Flagship Service Center (Street 271, Phnom Penh).'}
+                (language === 'km'
+                  ? 'រួមបញ្ចូលការធានាពេញលេញរយៈពេល ១២ ខែ តាមរយៈមជ្ឈមណ្ឌលសេវាកម្មផ្លូវការ TechTonic (ផ្លូវ ២៧១ រាជធានីភ្នំពេញ)។'
+                  : 'Includes 12 months comprehensive warranty through TechTonic Flagship Service Center (Street 271, Phnom Penh).')}
             </p>
           </div>
 

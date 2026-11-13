@@ -6,12 +6,14 @@ import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
 import Input from '../../components/common/Input';
-import { useToast } from '../../store/StoreContext';
+import { useToast, useLanguage } from '../../store/StoreContext';
+import { translateCategory } from '../../utils/translations';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState(productService.getProducts());
   const categories = productService.getCategories();
   const { addToast } = useToast();
+  const { language } = useLanguage();
 
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('All');
@@ -68,7 +70,10 @@ export default function AdminProducts() {
   const handleSaveProduct = (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      addToast('Please enter a product name', 'error');
+      addToast(
+        language === 'km' ? 'សូមបញ្ចូលឈ្មោះផលិតផល' : 'Please enter a product name',
+        'error'
+      );
       return;
     }
 
@@ -82,7 +87,12 @@ export default function AdminProducts() {
         reviewsCount: 1,
         isFeatured: true
       });
-      addToast('Product added to catalog successfully', 'success');
+      addToast(
+        language === 'km'
+          ? 'បានបន្ថែមផលិតផលទៅក្នុងកាតាឡុកដោយជោគជ័យ'
+          : 'Product added to catalog successfully',
+        'success'
+      );
     } else if (modalMode === 'edit') {
       productService.updateProduct(activeProduct.id, {
         ...formData,
@@ -90,7 +100,10 @@ export default function AdminProducts() {
         originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
         stock: Number(formData.stock)
       });
-      addToast('Product updated successfully', 'success');
+      addToast(
+        language === 'km' ? 'បានធ្វើបច្ចុប្បន្នភាពផលិតផលដោយជោគជ័យ' : 'Product updated successfully',
+        'success'
+      );
     }
 
     refreshProducts();
@@ -101,7 +114,10 @@ export default function AdminProducts() {
     if (activeProduct) {
       productService.deleteProduct(activeProduct.id);
       refreshProducts();
-      addToast('Product removed from catalog', 'info');
+      addToast(
+        language === 'km' ? 'បានលុបផលិតផលចេញពីកាតាឡុក' : 'Product removed from catalog',
+        'info'
+      );
       setModalMode(null);
     }
   };
@@ -120,15 +136,19 @@ export default function AdminProducts() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Products Management</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            {language === 'km' ? 'ការគ្រប់គ្រងផលិតផល' : 'Products Management'}
+          </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Create, edit pricing, audit inventory stock, and curate hardware catalog.
+            {language === 'km'
+              ? 'បង្កើត កែសម្រួលតម្លៃ ត្រួតពិនិត្យស្តុក និងរៀបចំកាតាឡុកផលិតផល។'
+              : 'Create, edit pricing, audit inventory stock, and curate hardware catalog.'}
           </p>
         </div>
 
         <Button variant="primary" size="sm" onClick={handleOpenAdd}>
           <Plus className="w-4 h-4 mr-1.5" />
-          <span>Add New Product</span>
+          <span>{language === 'km' ? 'បន្ថែមផលិតផលថ្មី' : 'Add New Product'}</span>
         </Button>
       </div>
 
@@ -138,7 +158,7 @@ export default function AdminProducts() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search products by title or category..."
+            placeholder={language === 'km' ? 'ស្វែងរកផលិតផលតាមឈ្មោះ ឬប្រភេទ...' : 'Search products by title or category...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-slate-900"
@@ -146,16 +166,20 @@ export default function AdminProducts() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs font-medium text-slate-500 whitespace-nowrap">Category:</span>
+          <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
+            {language === 'km' ? 'ប្រភេទ៖' : 'Category:'}
+          </span>
           <select
             value={filterCat}
             onChange={(e) => setFilterCat(e.target.value)}
             className="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-600"
           >
-            <option value="All">All Categories</option>
+            <option value="All">
+              {language === 'km' ? 'គ្រប់ប្រភេទទាំងអស់' : 'All Categories'}
+            </option>
             {categories.map((c) => (
               <option key={c.id} value={c.name}>
-                {c.name}
+                {translateCategory(c.name, language)}
               </option>
             ))}
           </select>
@@ -168,12 +192,12 @@ export default function AdminProducts() {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-400 uppercase text-[10px] tracking-wider">
-                <th className="py-3 px-4">Product</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Price</th>
-                <th className="py-3 px-4">Stock Status</th>
-                <th className="py-3 px-4">Rating</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4">{language === 'km' ? 'ផលិតផល' : 'Product'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'ប្រភេទ' : 'Category'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'តម្លៃ' : 'Price'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'ស្ថានភាពស្តុក' : 'Stock Status'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'ការវាយតម្លៃ' : 'Rating'}</th>
+                <th className="py-3 px-4 text-right">{language === 'km' ? 'សកម្មភាព' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -191,13 +215,15 @@ export default function AdminProducts() {
                           {prod.name}
                         </span>
                         <span className="text-[10px] text-slate-400 font-mono">
-                          ID: #{prod.id}
+                          {language === 'km' ? `លេខសម្គាល់៖ #${prod.id}` : `ID: #${prod.id}`}
                         </span>
                       </div>
                     </div>
                   </td>
 
-                  <td className="py-3 px-4 font-semibold text-slate-600">{prod.category}</td>
+                  <td className="py-3 px-4 font-semibold text-slate-600">
+                    {translateCategory(prod.category, language)}
+                  </td>
 
                   <td className="py-3 px-4 font-mono font-bold text-slate-900">
                     {formatUSD(prod.price)}
@@ -206,15 +232,15 @@ export default function AdminProducts() {
                   <td className="py-3 px-4">
                     {prod.stock === 0 ? (
                       <Badge variant="neutral" size="sm">
-                        Out of Stock
+                        {language === 'km' ? 'អស់ពីស្តុក' : 'Out of Stock'}
                       </Badge>
                     ) : prod.stock <= 5 ? (
                       <Badge variant="warning" size="sm">
-                        Low ({prod.stock})
+                        {language === 'km' ? `នៅសល់តិច (${prod.stock})` : `Low (${prod.stock})`}
                       </Badge>
                     ) : (
                       <Badge variant="success" size="sm">
-                        In Stock ({prod.stock})
+                        {language === 'km' ? `មានក្នុងស្តុក (${prod.stock})` : `In Stock (${prod.stock})`}
                       </Badge>
                     )}
                   </td>
@@ -232,7 +258,7 @@ export default function AdminProducts() {
                         type="button"
                         onClick={() => handleOpenEdit(prod)}
                         className="p-1.5 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                        title="Edit hardware"
+                        title={language === 'km' ? 'កែសម្រួលផលិតផល' : 'Edit hardware'}
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -241,7 +267,7 @@ export default function AdminProducts() {
                         type="button"
                         onClick={() => handleOpenDelete(prod)}
                         className="p-1.5 rounded-lg text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        title="Delete hardware"
+                        title={language === 'km' ? 'លុបផលិតផល' : 'Delete hardware'}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -259,11 +285,19 @@ export default function AdminProducts() {
         <Modal
           isOpen={true}
           onClose={() => setModalMode(null)}
-          title={modalMode === 'add' ? 'Add New Hardware Product' : `Edit "${activeProduct?.name}"`}
+          title={
+            modalMode === 'add'
+              ? language === 'km'
+                ? 'បន្ថែមផលិតផលថ្មី'
+                : 'Add New Hardware Product'
+              : language === 'km'
+                ? `កែសម្រួល "${activeProduct?.name}"`
+                : `Edit "${activeProduct?.name}"`
+          }
         >
           <form onSubmit={handleSaveProduct} className="space-y-4">
             <Input
-              label="Product Title *"
+              label={language === 'km' ? 'ឈ្មោះផលិតផល *' : 'Product Title *'}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
@@ -272,7 +306,7 @@ export default function AdminProducts() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Category *
+                  {language === 'km' ? 'ប្រភេទ *' : 'Category *'}
                 </label>
                 <select
                   value={formData.category}
@@ -281,14 +315,14 @@ export default function AdminProducts() {
                 >
                   {categories.map((c) => (
                     <option key={c.id} value={c.name}>
-                      {c.name}
+                      {translateCategory(c.name, language)}
                     </option>
                   ))}
                 </select>
               </div>
 
               <Input
-                label="Stock Quantity *"
+                label={language === 'km' ? 'ចំនួនស្តុក *' : 'Stock Quantity *'}
                 type="number"
                 value={formData.stock}
                 onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
@@ -298,7 +332,7 @@ export default function AdminProducts() {
 
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Selling Price ($) *"
+                label={language === 'km' ? 'តម្លៃលក់ ($) *' : 'Selling Price ($) *'}
                 type="number"
                 step="0.01"
                 value={formData.price}
@@ -307,7 +341,7 @@ export default function AdminProducts() {
               />
 
               <Input
-                label="Original Price ($)"
+                label={language === 'km' ? 'តម្លៃដើម ($)' : 'Original Price ($)'}
                 type="number"
                 step="0.01"
                 value={formData.originalPrice}
@@ -316,14 +350,14 @@ export default function AdminProducts() {
             </div>
 
             <Input
-              label="Image URL"
+              label={language === 'km' ? 'តំណភ្ជាប់រូបភាព (URL)' : 'Image URL'}
               value={formData.image}
               onChange={(e) => setFormData({ ...formData, image: e.target.value })}
             />
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Description
+                {language === 'km' ? 'ការពិពណ៌នា' : 'Description'}
               </label>
               <textarea
                 rows={3}
@@ -335,10 +369,16 @@ export default function AdminProducts() {
 
             <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
               <Button variant="ghost" type="button" onClick={() => setModalMode(null)}>
-                Cancel
+                {language === 'km' ? 'បោះបង់' : 'Cancel'}
               </Button>
               <Button variant="primary" type="submit">
-                {modalMode === 'add' ? 'Create Product' : 'Save Changes'}
+                {modalMode === 'add'
+                  ? language === 'km'
+                    ? 'បង្កើតផលិតផល'
+                    : 'Create Product'
+                  : language === 'km'
+                    ? 'រក្សាទុកការផ្លាស់ប្តូរ'
+                    : 'Save Changes'}
               </Button>
             </div>
           </form>
@@ -350,19 +390,27 @@ export default function AdminProducts() {
         <Modal
           isOpen={true}
           onClose={() => setModalMode(null)}
-          title="Delete Product Confirmation"
+          title={language === 'km' ? 'បញ្ជាក់ការលុបផលិតផល' : 'Delete Product Confirmation'}
         >
           <div className="space-y-4">
             <p className="text-xs text-slate-600">
-              Are you sure you want to remove <strong>"{activeProduct?.name}"</strong> from the store catalog? This action will update your inventory in real-time.
+              {language === 'km' ? (
+                <>
+                  តើអ្នកប្រាកដថាចង់លុប <strong>"{activeProduct?.name}"</strong> ចេញពីកាតាឡុកហាងមែនទេ? សកម្មភាពនេះនឹងធ្វើបច្ចុប្បន្នភាពស្តុករបស់អ្នកភ្លាមៗ។
+                </>
+              ) : (
+                <>
+                  Are you sure you want to remove <strong>"{activeProduct?.name}"</strong> from the store catalog? This action will update your inventory in real-time.
+                </>
+              )}
             </p>
 
             <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setModalMode(null)}>
-                Cancel
+                {language === 'km' ? 'បោះបង់' : 'Cancel'}
               </Button>
               <Button variant="danger" onClick={handleDeleteConfirm}>
-                Confirm Delete
+                {language === 'km' ? 'បញ្ជាក់ការលុប' : 'Confirm Delete'}
               </Button>
             </div>
           </div>

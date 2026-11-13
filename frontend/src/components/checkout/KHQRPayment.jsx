@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle2, Copy, Check, Smartphone, Sparkles, RefreshCw } from 'lucide-react';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
-import { useToast } from '../../store/StoreContext';
+import { useToast, useLanguage } from '../../store/StoreContext';
 import Button from '../common/Button';
 
 export default function KHQRPayment({ totalAmount = 0, onSimulateSuccess }) {
   const { addToast } = useToast();
+  const { language } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [verifying, setVerifying] = useState(false);
 
@@ -15,7 +16,12 @@ export default function KHQRPayment({ totalAmount = 0, onSimulateSuccess }) {
   const handleCopy = () => {
     navigator.clipboard?.writeText(khqrString);
     setCopied(true);
-    addToast('KHQR payment string copied to clipboard', 'info');
+    addToast(
+      language === 'km'
+        ? 'បានចម្លងកូដទូទាត់ KHQR ទៅកាន់ក្ដារតម្បៀតខ្ទាស់'
+        : 'KHQR payment string copied to clipboard',
+      'info'
+    );
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -42,7 +48,7 @@ export default function KHQRPayment({ totalAmount = 0, onSimulateSuccess }) {
             <span>BAKONG</span>
           </div>
           <span className="text-[10px] font-semibold tracking-wide uppercase text-red-100">
-            NBC Standard
+            {language === 'km' ? 'ស្តង់ដារ NBC' : 'NBC Standard'}
           </span>
         </div>
 
@@ -51,7 +57,9 @@ export default function KHQRPayment({ totalAmount = 0, onSimulateSuccess }) {
           <h4 className="text-xs font-bold text-slate-900 tracking-tight">
             TECHTONIC STORE CAMBODIA
           </h4>
-          <p className="text-[10px] text-slate-500">Merchant ID: 000184920</p>
+          <p className="text-[10px] text-slate-500">
+            {language === 'km' ? 'លេខសម្គាល់ហាង៖ 000184920' : 'Merchant ID: 000184920'}
+          </p>
         </div>
 
         {/* Dynamic High-Contrast Mock SVG QR Code */}
@@ -128,7 +136,9 @@ export default function KHQRPayment({ totalAmount = 0, onSimulateSuccess }) {
       {/* Instructions & Supported Banks */}
       <div className="max-w-md space-y-3">
         <p className="text-xs text-slate-600 font-medium">
-          Open your preferred Cambodian banking app and scan this QR code to complete payment instantly:
+          {language === 'km'
+            ? 'បើកកម្មវិធីធនាគារកម្ពុជាដែលអ្នកពេញចិត្ត ហើយស្កេនកូដ QR នេះដើម្បីទូទាត់ភ្លាមៗ៖'
+            : 'Open your preferred Cambodian banking app and scan this QR code to complete payment instantly:'}
         </p>
 
         {/* Supported Banking Apps Badges */}
@@ -153,7 +163,15 @@ export default function KHQRPayment({ totalAmount = 0, onSimulateSuccess }) {
             className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-blue-600 bg-white px-3 py-1.5 rounded-lg border border-slate-200 transition-colors"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? 'Copied Deep Link' : 'Copy KHQR String'}</span>
+            <span>
+              {copied
+                ? language === 'km'
+                  ? 'បានចម្លងតំណភ្ជាប់'
+                  : 'Copied Deep Link'
+                : language === 'km'
+                ? 'ចម្លងកូដ KHQR'
+                : 'Copy KHQR String'}
+            </span>
           </button>
 
           <Button
@@ -165,7 +183,9 @@ export default function KHQRPayment({ totalAmount = 0, onSimulateSuccess }) {
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             <Smartphone className="w-3.5 h-3.5 mr-1.5" />
-            <span>Confirm Mobile Payment</span>
+            <span>
+              {language === 'km' ? 'បញ្ជាក់ការទូទាត់តាមទូរស័ព្ទ' : 'Confirm Mobile Payment'}
+            </span>
           </Button>
         </div>
       </div>
