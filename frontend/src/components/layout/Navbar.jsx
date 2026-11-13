@@ -32,7 +32,6 @@ const CATEGORIES = [
     slug: 'audio',
     description: 'Studio ANC headphones, wireless buds & lossless sound',
     icon: Headphones,
-    color: 'bg-blue-50 text-blue-600',
     subcategories: [
       { name: 'Wireless Earbuds', slug: 'wireless-earbuds' },
       { name: 'Bluetooth Headphones', slug: 'bluetooth-headphones' },
@@ -47,7 +46,6 @@ const CATEGORIES = [
     slug: 'wearables',
     description: 'AMOLED fitness smartwatches & biometric rings',
     icon: Watch,
-    color: 'bg-emerald-50 text-emerald-600',
     subcategories: [
       { name: 'Smartwatches', slug: 'smartwatches' },
       { name: 'Fitness Trackers', slug: 'fitness-trackers' },
@@ -61,7 +59,6 @@ const CATEGORIES = [
     slug: 'workspace',
     description: 'Mechanical tactile keyboards & precision desk gear',
     icon: Keyboard,
-    color: 'bg-purple-50 text-purple-600',
     subcategories: [
       { name: 'Mechanical Keyboards', slug: 'mechanical-keyboards' },
       { name: 'Gaming Mice', slug: 'gaming-mice' },
@@ -76,7 +73,6 @@ const CATEGORIES = [
     slug: 'power',
     description: 'GaN III fast chargers, cables & magnetic power banks',
     icon: Zap,
-    color: 'bg-amber-50 text-amber-600',
     subcategories: [
       { name: 'GaN Chargers', slug: 'gan-chargers' },
       { name: 'Power Banks', slug: 'power-banks' },
@@ -365,9 +361,7 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
                               onClick={() => setIsCategoryOpen(false)}
                               className="flex items-start gap-3"
                             >
-                              <div className={`p-2 rounded-xl shrink-0 ${cat.color} group-hover:scale-105 transition-transform`}>
-                                <IconComponent className="w-4 h-4" />
-                              </div>
+                              <IconComponent className="w-4 h-4 mt-0.5 shrink-0 text-slate-400 group-hover:text-sky-400 transition-colors" />
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between">
                                   <span className="text-sm font-bold text-slate-200 group-hover:text-sky-400 transition-colors">
