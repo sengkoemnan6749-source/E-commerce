@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, FolderTree, Edit2, Trash2, Package } from 'lucide-react';
+import { Plus, FolderTree, Edit2, Trash2, Search } from 'lucide-react';
 import { productService } from '../../services/productService';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
@@ -12,6 +12,7 @@ export default function AdminCategories() {
   const { addToast } = useToast();
   const { language, t } = useLanguage();
 
+  const [search, setSearch] = useState('');
   const [modalMode, setModalMode] = useState(null); // 'add' | 'edit' | 'delete'
   const [activeCategory, setActiveCategory] = useState(null);
   const [formData, setFormData] = useState({
@@ -37,6 +38,11 @@ export default function AdminCategories() {
       description: cat.description || ''
     });
     setModalMode('edit');
+  };
+
+  const handleOpenDelete = (cat) => {
+    setActiveCategory(cat);
+    setModalMode('delete');
   };
 
   const handleSaveCategory = (e) => {
@@ -78,28 +84,35 @@ export default function AdminCategories() {
     setModalMode(null);
   };
 
-  const handleDeleteCategory = (cat) => {
-    const displayName = translateCategory(cat.name, language);
-    const confirmMsg =
-      language === 'km'
-        ? `តើអ្នកប្រាកដថាចង់លុបប្រភេទផលិតផល "${displayName}" មែនទេ?`
-        : `Are you sure you want to delete category "${cat.name}"?`;
-    if (window.confirm(confirmMsg)) {
-      productService.deleteCategory(cat.id);
+  const handleDeleteConfirm = () => {
+    if (activeCategory) {
+      productService.deleteCategory(activeCategory.id);
       refreshCategories();
       addToast(language === 'km' ? 'បានលុបប្រភេទផលិតផល' : 'Category deleted', 'info');
+      setModalMode(null);
     }
   };
 
+  const filtered = categories.filter((cat) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    const translated = translateCategory(cat.name, language).toLowerCase();
+    return (
+      cat.name.toLowerCase().includes(q) ||
+      translated.includes(q) ||
+      (cat.slug || '').toLowerCase().includes(q)
+    );
+  });
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-5 max-w-7xl mx-auto">
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             {language === 'km' ? 'ការគ្រប់គ្រងប្រភេទផលិតផល' : 'Categories Management'}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             {language === 'km'
               ? 'រៀបចំផ្នែកផលិតផលអេឡិចត្រូនិច និងចាត់ថ្នាក់រចនាសម្ព័ន្ធកាតាឡុក។'
               : 'Organize electronic departments and classify hardware catalog hierarchy.'}
@@ -112,59 +125,101 @@ export default function AdminCategories() {
         </Button>
       </div>
 
-      {/* Categories Table Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+      {/* Unified Categories Card */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden">
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
+            <FolderTree className="w-4 h-4 text-slate-400" />
+            <span>
+              {language === 'km'
+                ? `ប្រភេទសរុប ${filtered.length}`
+                : `${filtered.length} ${filtered.length === 1 ? 'category' : 'categories'}`}
+            </span>
+          </div>
+
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder={language === 'km' ? 'ស្វែងរកប្រភេទផលិតផល...' : 'Search categories...'}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200/90 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 transition-all"
+            />
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-400 uppercase text-[10px] tracking-wider">
+              <tr className="border-b border-slate-200/80 bg-slate-50/70 text-slate-500 font-semibold">
                 <th className="py-3 px-4">{language === 'km' ? 'ឈ្មោះប្រភេទ' : 'Category Name'}</th>
-                <th className="py-3 px-4">{language === 'km' ? 'URL Slug' : 'URL Slug'}</th>
+                <th className="py-3 px-4">{language === 'km' ? 'URL Slug' : 'Slug'}</th>
                 <th className="py-3 px-4">{language === 'km' ? 'ការពិពណ៌នា' : 'Description'}</th>
-                <th className="py-3 px-4 text-center">{language === 'km' ? 'ចំនួនផលិតផល' : 'Hardware Count'}</th>
+                <th className="py-3 px-4 text-center">{language === 'km' ? 'ចំនួនទំនិញ' : 'Items'}</th>
                 <th className="py-3 px-4 text-right">{language === 'km' ? 'សកម្មភាព' : 'Actions'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {categories.map((cat) => (
-                <tr key={cat.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3.5 px-4 font-bold text-slate-900">
-                    {translateCategory(cat.name, language)}
-                  </td>
-                  <td className="py-3.5 px-4 font-mono text-blue-600 font-semibold">{cat.slug}</td>
-                  <td className="py-3.5 px-4 text-slate-500 max-w-sm truncate">
-                    {language === 'km' && ['audio', 'wearables', 'workspace', 'power'].includes(cat.id)
-                      ? t(`cat_desc_${cat.id}`, cat.description)
-                      : cat.description}
-                  </td>
-                  <td className="py-3.5 px-4 text-center font-bold text-slate-700">
-                    <span className="bg-slate-100 px-2.5 py-1 rounded-full text-xs font-mono">
-                      {cat.count || 0}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(cat)}
-                        className="p-1.5 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                        title={language === 'km' ? 'កែសម្រួលប្រភេទ' : 'Edit category'}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteCategory(cat)}
-                        className="p-1.5 rounded-lg text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        title={language === 'km' ? 'លុបប្រភេទ' : 'Delete category'}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-slate-500">
+                    <FolderTree className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="font-medium text-slate-700">
+                      {language === 'km' ? 'រកមិនឃើញប្រភេទផលិតផលឡើយ' : 'No categories found'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setSearch('')}
+                      className="mt-2 text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
+                    >
+                      {language === 'km' ? 'សម្អាតតម្រង' : 'Clear search'}
+                    </button>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((cat) => (
+                  <tr key={cat.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3.5 px-4 font-semibold text-slate-900 whitespace-nowrap">
+                      {translateCategory(cat.name, language)}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-slate-500 whitespace-nowrap">
+                      /{cat.slug}
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-500 max-w-md truncate">
+                      {language === 'km' && ['audio', 'wearables', 'workspace', 'power'].includes(cat.id)
+                        ? t(`cat_desc_${cat.id}`, cat.description)
+                        : cat.description}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="inline-flex items-center justify-center min-w-8 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold tabular-nums">
+                        {cat.count || 0}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                      <div className="inline-flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(cat)}
+                          className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                          title={language === 'km' ? 'កែសម្រួលប្រភេទ' : 'Edit category'}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDelete(cat)}
+                          className="p-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title={language === 'km' ? 'លុបប្រភេទ' : 'Delete category'}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -202,7 +257,7 @@ export default function AdminCategories() {
             />
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 {language === 'km' ? 'ការពិពណ៌នា' : 'Description'}
               </label>
               <textarea
@@ -233,6 +288,38 @@ export default function AdminCategories() {
               </Button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Delete Category Confirmation Modal */}
+      {modalMode === 'delete' && (
+        <Modal
+          isOpen={true}
+          onClose={() => setModalMode(null)}
+          title={language === 'km' ? 'បញ្ជាក់ការលុបប្រភេទផលិតផល' : 'Delete Category Confirmation'}
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-600">
+              {language === 'km' ? (
+                <>
+                  តើអ្នកប្រាកដថាចង់លុបប្រភេទផលិតផល <strong>"{translateCategory(activeCategory?.name, language)}"</strong> មែនទេ?
+                </>
+              ) : (
+                <>
+                  Are you sure you want to delete the category <strong>"{activeCategory?.name}"</strong>?
+                </>
+              )}
+            </p>
+
+            <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setModalMode(null)}>
+                {language === 'km' ? 'បោះបង់' : 'Cancel'}
+              </Button>
+              <Button variant="danger" onClick={handleDeleteConfirm}>
+                {language === 'km' ? 'បញ្ជាក់ការលុប' : 'Confirm Delete'}
+              </Button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>

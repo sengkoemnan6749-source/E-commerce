@@ -49,15 +49,24 @@ export default function AdminOrders() {
     return true;
   });
 
+  const statusTabs = [
+    { id: 'All', label: language === 'km' ? 'ទាំងអស់' : 'All' },
+    { id: 'confirmed', label: translateOrderStatusLabel('Confirmed', language) },
+    { id: 'processing', label: translateOrderStatusLabel('Processing', language) },
+    { id: 'shipped', label: translateOrderStatusLabel('Shipped', language) },
+    { id: 'out_for_delivery', label: translateOrderStatusLabel('Out for Delivery', language) },
+    { id: 'delivered', label: translateOrderStatusLabel('Delivered', language) }
+  ];
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-5 max-w-7xl mx-auto">
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             {language === 'km' ? 'ការគ្រប់គ្រងការបញ្ជាទិញ' : 'Orders Management'}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             {language === 'km'
               ? 'ត្រួតពិនិត្យដំណើរការរៀបចំទំនិញ ការប្រគល់ជូនអ្នកដឹកជញ្ជូន និងគ្រប់គ្រងស្ថានភាពទូទាត់។'
               : 'Audit fulfillment workflows, courier handoffs, and manage payment statuses.'}
@@ -65,48 +74,56 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      {/* Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 bg-white rounded-2xl border border-slate-200/90 shadow-sm">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder={
-              language === 'km'
-                ? 'ស្វែងរកតាមលេខកូដកុម្ម៉ង់ ឈ្មោះអតិថិជន ឬលេខទូរស័ព្ទ...'
-                : 'Search by order ID, customer name, or phone...'
-            }
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-slate-900"
-          />
+      {/* Unified Orders Card */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden">
+        {/* Toolbar: 1-Click Status Filter Pills + Search */}
+        <div className="p-4 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
+            {statusTabs.map((tab) => {
+              const active = statusFilter === tab.id;
+              const count =
+                tab.id === 'All'
+                  ? orders.length
+                  : orders.filter(
+                      (o) => (o.status || '').toLowerCase().replace(/\s+/g, '_') === tab.id
+                    ).length;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setStatusFilter(tab.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                    active
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-100/80 text-slate-600 hover:bg-slate-200/70 hover:text-slate-900'
+                  }`}
+                >
+                  {tab.label} ({count})
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="relative w-full lg:w-72 shrink-0">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder={
+                language === 'km'
+                  ? 'ស្វែងរកតាមលេខកូដ ឈ្មោះ ឬទូរស័ព្ទ...'
+                  : 'Search order ID, name, or phone...'
+              }
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200/90 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 transition-all"
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">
-            {language === 'km' ? 'ស្ថានភាព៖' : 'Status:'}
-          </span>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-600"
-          >
-            <option value="All">{language === 'km' ? 'ស្ថានភាពទាំងអស់' : 'All Statuses'}</option>
-            <option value="confirmed">{translateOrderStatusLabel('Confirmed', language)}</option>
-            <option value="processing">{translateOrderStatusLabel('Processing', language)}</option>
-            <option value="shipped">{translateOrderStatusLabel('Shipped', language)}</option>
-            <option value="out_for_delivery">{translateOrderStatusLabel('Out for Delivery', language)}</option>
-            <option value="delivered">{translateOrderStatusLabel('Delivered', language)}</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Orders Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-400 uppercase text-[10px] tracking-wider">
+              <tr className="border-b border-slate-200/80 bg-slate-50/70 text-slate-500 font-semibold">
                 <th className="py-3 px-4">{language === 'km' ? 'លេខកូដកុម្ម៉ង់' : 'Order ID'}</th>
                 <th className="py-3 px-4">{language === 'km' ? 'អតិថិជន' : 'Customer'}</th>
                 <th className="py-3 px-4">{language === 'km' ? 'សេវាដឹកជញ្ជូន' : 'Courier Service'}</th>
@@ -118,87 +135,108 @@ export default function AdminOrders() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.map((ord) => (
-                <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3.5 px-4 font-mono font-bold text-blue-600">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500">
+                    <Truck className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="font-medium text-slate-700">
+                      {language === 'km' ? 'រកមិនឃើញការបញ្ជាទិញឡើយ' : 'No orders match your filter'}
+                    </p>
                     <button
                       type="button"
-                      onClick={() => setSelectedOrder(ord)}
-                      className="hover:underline"
+                      onClick={() => {
+                        setSearchTerm('');
+                        setStatusFilter('All');
+                      }}
+                      className="mt-2 text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
                     >
-                      {ord.id}
-                    </button>
-                  </td>
-
-                  <td className="py-3.5 px-4">
-                    <span className="font-bold text-slate-900 block">{ord.customerName}</span>
-                    <span className="text-[10px] text-slate-400">{ord.customerPhone}</span>
-                  </td>
-
-                  <td className="py-3.5 px-4">
-                    <span className="font-semibold text-slate-800 block text-[11px]">
-                      {ord.deliveryPartner || ord.tracking?.courier || 'Vireak Buntham (VET)'}
-                    </span>
-                    <a
-                      href={ord.carrierWebsite || (ord.deliveryPartner?.includes('J&T') ? 'https://www.jtexpresskh.com/' : 'https://vireakbuntham.com/')}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-[10px] text-blue-600 hover:underline inline-flex items-center gap-1 font-mono"
-                    >
-                      <span>{ord.trackingNumber || ord.tracking?.trackingCode || 'VET-KH-889210'}</span>
-                      <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
-                  </td>
-
-                  <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap">
-                    {formatDate(ord.createdAt)}
-                  </td>
-
-                  <td className="py-3.5 px-4">
-                    <span className="font-semibold text-slate-800 block">
-                      {ord.paymentMethod || 'KHQR'}
-                    </span>
-                    <span className="text-[10px] text-emerald-600 font-bold uppercase">
-                      {language === 'km'
-                        ? (ord.paymentStatus || 'PAID').toUpperCase() === 'PAID'
-                          ? 'បានទូទាត់'
-                          : (ord.paymentStatus || 'PAID').toUpperCase() === 'PENDING'
-                            ? 'រង់ចាំទូទាត់'
-                            : ord.paymentStatus
-                        : ord.paymentStatus || 'PAID'}
-                    </span>
-                  </td>
-
-                  <td className="py-3.5 px-4 font-mono font-bold text-slate-900 whitespace-nowrap">
-                    {formatUSD(ord.total)}
-                  </td>
-
-                  <td className="py-3.5 px-4">
-                    <select
-                      value={ord.status.toLowerCase().replace(/\s+/g, '_')}
-                      onChange={(e) => handleStatusChange(ord.id, e.target.value)}
-                      className="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-600"
-                    >
-                      <option value="confirmed">{translateOrderStatusLabel('Confirmed', language)}</option>
-                      <option value="processing">{translateOrderStatusLabel('Processing', language)}</option>
-                      <option value="shipped">{translateOrderStatusLabel('Shipped', language)}</option>
-                      <option value="out_for_delivery">{translateOrderStatusLabel('Out for Delivery', language)}</option>
-                      <option value="delivered">{translateOrderStatusLabel('Delivered', language)}</option>
-                    </select>
-                  </td>
-
-                  <td className="py-3.5 px-4 text-right">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedOrder(ord)}
-                      className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                      title={language === 'km' ? 'មើលព័ត៌មានលម្អិតការបញ្ជាទិញ' : 'View Order Details'}
-                    >
-                      <Eye className="w-3.5 h-3.5" />
+                      {language === 'km' ? 'សម្អាតតម្រង' : 'Clear filters'}
                     </button>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((ord) => (
+                  <tr key={ord.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3.5 px-4 font-mono font-semibold text-blue-600 whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrder(ord)}
+                        className="hover:underline cursor-pointer"
+                      >
+                        {ord.id}
+                      </button>
+                    </td>
+
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span className="font-semibold text-slate-900 block">{ord.customerName}</span>
+                      <span className="text-[11px] text-slate-400">{ord.customerPhone}</span>
+                    </td>
+
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span className="font-medium text-slate-800 block text-[11px]">
+                        {ord.deliveryPartner || ord.tracking?.courier || 'Vireak Buntham (VET)'}
+                      </span>
+                      <a
+                        href={ord.carrierWebsite || (ord.deliveryPartner?.includes('J&T') ? 'https://www.jtexpresskh.com/' : 'https://vireakbuntham.com/')}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-1 font-mono"
+                      >
+                        <span>{ord.trackingNumber || ord.tracking?.trackingCode || 'VET-KH-889210'}</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    </td>
+
+                    <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap">
+                      {formatDate(ord.createdAt)}
+                    </td>
+
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span className="font-medium text-slate-800 block">
+                        {ord.paymentMethod || 'KHQR'}
+                      </span>
+                      <span className="text-[11px] text-emerald-600 font-semibold">
+                        {language === 'km'
+                          ? (ord.paymentStatus || 'PAID').toUpperCase() === 'PAID'
+                            ? 'បានទូទាត់'
+                            : (ord.paymentStatus || 'PAID').toUpperCase() === 'PENDING'
+                              ? 'រង់ចាំទូទាត់'
+                              : ord.paymentStatus
+                          : ord.paymentStatus || 'PAID'}
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-4 tabular-nums font-semibold text-slate-900 whitespace-nowrap">
+                      {formatUSD(ord.total)}
+                    </td>
+
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <select
+                        value={ord.status.toLowerCase().replace(/\s+/g, '_')}
+                        onChange={(e) => handleStatusChange(ord.id, e.target.value)}
+                        className="text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
+                      >
+                        <option value="confirmed">{translateOrderStatusLabel('Confirmed', language)}</option>
+                        <option value="processing">{translateOrderStatusLabel('Processing', language)}</option>
+                        <option value="shipped">{translateOrderStatusLabel('Shipped', language)}</option>
+                        <option value="out_for_delivery">{translateOrderStatusLabel('Out for Delivery', language)}</option>
+                        <option value="delivered">{translateOrderStatusLabel('Delivered', language)}</option>
+                      </select>
+                    </td>
+
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedOrder(ord)}
+                        className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                        title={language === 'km' ? 'មើលព័ត៌មានលម្អិតការបញ្ជាទិញ' : 'View Order Details'}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

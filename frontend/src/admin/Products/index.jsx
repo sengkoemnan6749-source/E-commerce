@@ -139,14 +139,14 @@ export default function AdminProducts() {
   });
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-5 max-w-7xl mx-auto">
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             {language === 'km' ? 'ការគ្រប់គ្រងផលិតផល' : 'Products Management'}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             {language === 'km'
               ? 'បង្កើត កែសម្រួលតម្លៃ ត្រួតពិនិត្យស្តុក និងរៀបចំកាតាឡុកផលិតផល។'
               : 'Create, edit pricing, audit inventory stock, and curate hardware catalog.'}
@@ -159,46 +159,60 @@ export default function AdminProducts() {
         </Button>
       </div>
 
-      {/* Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 bg-white rounded-2xl border border-slate-200/90 shadow-sm">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder={language === 'km' ? 'ស្វែងរកផលិតផលតាមឈ្មោះ ឬប្រភេទ...' : 'Search products by title or category...'}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-slate-900"
-          />
+      {/* Unified Table & Filter Card */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden">
+        {/* Toolbar */}
+        <div className="p-4 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          {/* Quick Category Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
+            <button
+              type="button"
+              onClick={() => setFilterCat('All')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                filterCat === 'All'
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-slate-100/80 text-slate-600 hover:bg-slate-200/70 hover:text-slate-900'
+              }`}
+            >
+              {language === 'km' ? 'ទាំងអស់' : 'All'} ({products.length})
+            </button>
+            {categories.map((c) => {
+              const active = filterCat === c.name;
+              const count = products.filter((p) => p.category === c.name).length;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setFilterCat(c.name)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                    active
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-100/80 text-slate-600 hover:bg-slate-200/70 hover:text-slate-900'
+                  }`}
+                >
+                  {translateCategory(c.name, language)} ({count})
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Search Box */}
+          <div className="relative w-full lg:w-72 shrink-0">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder={language === 'km' ? 'ស្វែងរកផលិតផល...' : 'Search products...'}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-9 pl-9 pr-3 text-xs bg-slate-50 border border-slate-200/90 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 transition-all"
+            />
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs font-medium text-slate-500 whitespace-nowrap">
-            {language === 'km' ? 'ប្រភេទ៖' : 'Category:'}
-          </span>
-          <select
-            value={filterCat}
-            onChange={(e) => setFilterCat(e.target.value)}
-            className="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-600"
-          >
-            <option value="All">
-              {language === 'km' ? 'គ្រប់ប្រភេទទាំងអស់' : 'All Categories'}
-            </option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.name}>
-                {translateCategory(c.name, language)}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Products Table Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/50 text-slate-400 uppercase text-[10px] tracking-wider">
+              <tr className="border-b border-slate-200/80 bg-slate-50/70 text-slate-500 font-semibold">
                 <th className="py-3 px-4">{language === 'km' ? 'ផលិតផល' : 'Product'}</th>
                 <th className="py-3 px-4">{language === 'km' ? 'ប្រភេទ' : 'Category'}</th>
                 <th className="py-3 px-4">{language === 'km' ? 'តម្លៃ' : 'Price'}</th>
@@ -208,80 +222,104 @@ export default function AdminProducts() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.map((prod) => (
-                <tr key={prod.id} className="hover:bg-slate-50/80 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={prod.image}
-                        alt={prod.name}
-                        className="w-10 h-10 rounded-xl object-cover bg-slate-50 border border-slate-200 flex-shrink-0"
-                      />
-                      <div>
-                        <span className="font-bold text-slate-900 block truncate max-w-xs sm:max-w-md">
-                          {prod.name}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          {language === 'km' ? `លេខសម្គាល់៖ #${prod.id}` : `ID: #${prod.id}`}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-
-                  <td className="py-3 px-4 font-semibold text-slate-600">
-                    {translateCategory(prod.category, language)}
-                  </td>
-
-                  <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                    {formatUSD(prod.price)}
-                  </td>
-
-                  <td className="py-3 px-4">
-                    {prod.stock === 0 ? (
-                      <Badge variant="neutral" size="sm">
-                        {language === 'km' ? 'អស់ពីស្តុក' : 'Out of Stock'}
-                      </Badge>
-                    ) : prod.stock <= 5 ? (
-                      <Badge variant="warning" size="sm">
-                        {language === 'km' ? `នៅសល់តិច (${prod.stock})` : `Low (${prod.stock})`}
-                      </Badge>
-                    ) : (
-                      <Badge variant="success" size="sm">
-                        {language === 'km' ? `មានក្នុងស្តុក (${prod.stock})` : `In Stock (${prod.stock})`}
-                      </Badge>
-                    )}
-                  </td>
-
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-1 font-semibold text-slate-700">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      <span>{prod.rating}</span>
-                    </div>
-                  </td>
-
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(prod)}
-                        className="p-1.5 rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                        title={language === 'km' ? 'កែសម្រួលផលិតផល' : 'Edit hardware'}
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenDelete(prod)}
-                        className="p-1.5 rounded-lg text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        title={language === 'km' ? 'លុបផលិតផល' : 'Delete hardware'}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
+                    <Package className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                    <p className="font-medium text-slate-700">
+                      {language === 'km' ? 'រកមិនឃើញផលិតផលឡើយ' : 'No products found'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearch('');
+                        setFilterCat('All');
+                      }}
+                      className="mt-2 text-xs font-semibold text-blue-600 hover:underline cursor-pointer"
+                    >
+                      {language === 'km' ? 'សម្អាតតម្រង' : 'Clear filters'}
+                    </button>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((prod) => (
+                  <tr key={prod.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={prod.image}
+                          alt={prod.name}
+                          className="w-10 h-10 rounded-xl object-contain bg-slate-50 border border-slate-200/80 p-1 flex-shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <span className="font-semibold text-slate-900 block truncate max-w-xs sm:max-w-sm">
+                            {prod.name}
+                          </span>
+                          <span className="text-[11px] text-slate-400 tabular-nums">
+                            #{prod.id}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="py-3 px-4 font-medium text-slate-600 whitespace-nowrap">
+                      {translateCategory(prod.category, language)}
+                    </td>
+
+                    <td className="py-3 px-4 tabular-nums font-semibold text-slate-900 whitespace-nowrap">
+                      {formatUSD(prod.price)}
+                    </td>
+
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      {prod.stock === 0 ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                          {language === 'km' ? 'អស់ពីស្តុក' : 'Out of Stock'}
+                        </span>
+                      ) : prod.stock <= 5 ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          {language === 'km' ? `នៅសល់តិច (${prod.stock})` : `Low (${prod.stock})`}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          {language === 'km' ? `មានក្នុងស្តុក (${prod.stock})` : `In Stock (${prod.stock})`}
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <div className="inline-flex items-center gap-1 font-medium text-slate-700 tabular-nums">
+                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        <span>{prod.rating}</span>
+                      </div>
+                    </td>
+
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <div className="inline-flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(prod)}
+                          className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                          title={language === 'km' ? 'កែសម្រួលផលិតផល' : 'Edit product'}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDelete(prod)}
+                          className="p-2 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title={language === 'km' ? 'លុបផលិតផល' : 'Delete product'}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

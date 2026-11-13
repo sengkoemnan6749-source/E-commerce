@@ -89,9 +89,9 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Top Clean Header Bar */}
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200/80">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
           {/* Left: Brand Identity */}
           <Link to={adminBase} className="flex items-center gap-2.5 group shrink-0">
@@ -232,44 +232,46 @@ export default function AdminLayout() {
           </div>
         </div>
 
-        {/* Clean Horizontal 5-Tab Navigation Bar */}
+        {/* Clean Segmented 5-Tab Navigation Bar */}
         <nav
           aria-label={language === 'km' ? 'ការរុករកអ្នកគ្រប់គ្រង' : 'Admin Navigation'}
-          className="bg-white border-t border-slate-100"
+          className="border-t border-slate-100 bg-white/80"
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            {adminNav.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  className={({ isActive }) =>
-                    `relative inline-flex items-center gap-2 px-3.5 py-3 text-xs sm:text-sm whitespace-nowrap border-b-2 transition-colors shrink-0 ${
-                      isActive
-                        ? 'border-blue-600 text-blue-600 font-bold bg-blue-50/40'
-                        : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-                      <span>{item.label}</span>
-                      {item.count !== null && (
-                        <span
-                          title={item.countTitle}
-                          className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full leading-none tabular-nums ${item.countClass}`}
-                        >
-                          {item.count}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </NavLink>
-              );
-            })}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <div className="inline-flex max-w-full items-center gap-1 p-1 rounded-xl bg-slate-100/90 border border-slate-200/60 overflow-x-auto no-scrollbar">
+              {adminNav.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    className={({ isActive }) =>
+                      `inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-[13px] whitespace-nowrap transition-all shrink-0 ${
+                        isActive
+                          ? 'bg-white text-slate-900 font-semibold shadow-xs ring-1 ring-slate-200/70'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium'
+                      }`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                        <span>{item.label}</span>
+                        {item.count !== null && (
+                          <span
+                            title={item.countTitle}
+                            className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full leading-none tabular-nums ${item.countClass}`}
+                          >
+                            {item.count}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
           </div>
         </nav>
       </header>

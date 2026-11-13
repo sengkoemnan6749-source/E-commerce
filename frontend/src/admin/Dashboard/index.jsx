@@ -202,11 +202,11 @@ export default function AdminDashboard() {
   }, [pathD, pointsCoordinates]);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto pb-8 font-sans">
       {/* 1. CLEAN EXECUTIVE HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-200/80">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             {language === 'km' ? 'ផ្ទាំងគ្រប់គ្រង' : 'Dashboard'}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
@@ -216,9 +216,9 @@ export default function AdminDashboard() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Timeframe Switcher Tabs */}
-          <div className="flex items-center rounded-xl bg-white border border-slate-200 p-1 shadow-2xs">
+          <div className="flex items-center rounded-xl bg-slate-100 border border-slate-200/70 p-1">
             {[
               { id: 'today', label: language === 'km' ? 'ថ្ងៃនេះ' : 'Today' },
               { id: '7d', label: language === 'km' ? '៧ ថ្ងៃ' : '7D' },
@@ -229,10 +229,10 @@ export default function AdminDashboard() {
                 key={t.id}
                 type="button"
                 onClick={() => setTimeframe(t.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   timeframe === t.id
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {t.label}
@@ -244,7 +244,7 @@ export default function AdminDashboard() {
           <button
             type="button"
             onClick={refreshData}
-            className="p-2 rounded-xl bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 shadow-2xs transition-colors cursor-pointer"
+            className="h-9 w-9 rounded-xl bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200/90 flex items-center justify-center transition-colors cursor-pointer"
             title={language === 'km' ? 'ផ្ទុកទិន្នន័យឡើងវិញ' : 'Refresh Data'}
           >
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
@@ -255,15 +255,15 @@ export default function AdminDashboard() {
             variant="outline"
             size="sm"
             onClick={() => setIsExportModalOpen(true)}
-            className="text-slate-700 border-slate-300 bg-white hover:bg-slate-50 shadow-2xs"
+            className="text-slate-700 border-slate-200/90 bg-white hover:bg-slate-50"
           >
-            <Download className="w-4 h-4 mr-1.5 text-blue-600" />
+            <Download className="w-4 h-4 mr-1.5 text-slate-500" />
             <span>{language === 'km' ? 'នាំចេញ' : 'Export'}</span>
           </Button>
 
           {/* Quick Add Product */}
           <Link to={`${adminBase}/products`}>
-            <Button variant="primary" size="sm" className="shadow-xs shadow-blue-500/20">
+            <Button variant="primary" size="sm">
               <Plus className="w-4 h-4 mr-1.5" />
               <span>{language === 'km' ? 'បន្ថែមផលិតផល' : 'Add Product'}</span>
             </Button>
@@ -274,24 +274,24 @@ export default function AdminDashboard() {
       {/* 2. FOUR CLEAN, ACTIONABLE METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric 1: Total Revenue */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-slate-300/80 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500">
               {language === 'km' ? 'ចំណូលសរុប' : 'Total Revenue'}
             </span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200/70 text-slate-600 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+            <div className="text-2xl font-bold text-slate-900 tabular-nums tracking-tight">
               {formatUSD(totalCalculatedRevenue)}
             </div>
-            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+            <div className="text-[11px] text-slate-400 tabular-nums mt-0.5">
               ≈ {formatKHR(totalCalculatedRevenue)}
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-semibold mt-3 pt-2.5 border-t border-slate-100">
+          <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium mt-3 pt-2.5 border-t border-slate-100">
             <TrendingUp className="w-3.5 h-3.5" />
             <span>
               {language === 'km' ? '+14.2% ធៀបនឹងរយៈពេលមុន' : '+14.2% vs previous period'}
@@ -300,17 +300,17 @@ export default function AdminDashboard() {
         </div>
 
         {/* Metric 2: Orders Volume */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-slate-300/80 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500">
               {language === 'km' ? 'ការបញ្ជាទិញសរុប' : 'Total Orders'}
             </span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200/70 text-slate-600 flex items-center justify-center">
               <ShoppingBag className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+            <div className="text-2xl font-bold text-slate-900 tabular-nums tracking-tight">
               {totalCalculatedOrders.toLocaleString()}
             </div>
             <div className="text-[11px] text-slate-500 mt-0.5">
@@ -319,7 +319,7 @@ export default function AdminDashboard() {
                 : `${orders.filter(o => o.status === 'confirmed' || o.status === 'processing').length} orders pending fulfillment`}
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-semibold mt-3 pt-2.5 border-t border-slate-100">
+          <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium mt-3 pt-2.5 border-t border-slate-100">
             <TrendingUp className="w-3.5 h-3.5" />
             <span>
               {language === 'km' ? '+8.4% កំណើនបរិមាណបញ្ជាទិញ' : '+8.4% volume growth'}
@@ -328,25 +328,25 @@ export default function AdminDashboard() {
         </div>
 
         {/* Metric 3: Average Order Value (AOV) */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-slate-300/80 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500">
               {language === 'km' ? 'តម្លៃមធ្យមក្នុងមួយការបញ្ជាទិញ' : 'Avg Order Value'}
             </span>
-            <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200/70 text-slate-600 flex items-center justify-center">
               <ArrowUpRight className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+            <div className="text-2xl font-bold text-slate-900 tabular-nums tracking-tight">
               ${averageOrderValue}
             </div>
             <div className="text-[11px] text-slate-500 mt-0.5">
               {language === 'km' ? 'ក្នុងការទូទាត់ជោគជ័យនីមួយៗ' : 'Per completed checkout'}
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-purple-600 font-semibold mt-3 pt-2.5 border-t border-slate-100">
-            <TrendingUp className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-600 font-medium mt-3 pt-2.5 border-t border-slate-100">
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
             <span>
               {language === 'km' ? '+$5.20 ធៀបនឹងខែមុន' : '+$5.20 vs last month'}
             </span>
@@ -354,20 +354,20 @@ export default function AdminDashboard() {
         </div>
 
         {/* Metric 4: Inventory Alert */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 flex flex-col justify-between hover:border-slate-300/80 transition-colors">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-slate-500">
               {language === 'km' ? 'ការព្រមានស្តុកទំនិញ' : 'Inventory Alert'}
             </span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200/70 text-slate-600 flex items-center justify-center">
+              <AlertTriangle className={`w-4 h-4 ${lowStockProducts.length > 0 ? 'text-amber-500' : 'text-slate-500'}`} />
             </div>
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 tabular-nums tracking-tight">
+            <div className="text-2xl font-bold text-slate-900 tabular-nums tracking-tight">
               {language === 'km' ? `${lowStockProducts.length} ផលិតផល` : `${lowStockProducts.length} Products`}
             </div>
-            <div className="text-[11px] text-amber-600 font-semibold mt-0.5">
+            <div className={`text-[11px] font-medium mt-0.5 ${lowStockProducts.length > 0 ? 'text-amber-600' : 'text-slate-500'}`}>
               {language === 'km' ? 'ត្រូវការបំពេញស្តុក (≤ ៥ គ្រឿង)' : 'Require restock (≤ 5 units)'}
             </div>
           </div>
@@ -375,7 +375,7 @@ export default function AdminDashboard() {
             <span>
               {language === 'km' ? `សកម្ម ${products.length} ក្នុងកាតាឡុក` : `${products.length} active in catalog`}
             </span>
-            <Link to={`${adminBase}/products`} className="text-blue-600 font-bold hover:underline">
+            <Link to={`${adminBase}/products`} className="text-blue-600 font-semibold hover:underline">
               {language === 'km' ? 'ត្រួតពិនិត្យ →' : 'Audit →'}
             </Link>
           </div>
@@ -569,39 +569,39 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-3">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-red-50 text-red-600 border border-red-200">
+                  <div className="p-2 rounded-lg bg-white text-slate-700 border border-slate-200/80">
                     <QrCode className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">
+                    <span className="text-xs font-semibold text-slate-900 block">
                       {language === 'km' ? 'KHQR បាគង' : 'KHQR Bakong'}
                     </span>
                     <span className="text-[10px] text-slate-500">ABA, Wing, ACLEDA, Sathapana</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-mono font-bold text-slate-900 block">68.2%</span>
-                  <span className="text-[10px] text-slate-500 font-mono">$87,346</span>
+                  <span className="text-xs tabular-nums font-bold text-slate-900 block">68.2%</span>
+                  <span className="text-[10px] text-slate-500 tabular-nums">$87,346</span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
+                  <div className="p-2 rounded-lg bg-white text-slate-700 border border-slate-200/80">
                     <CreditCard className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">
+                    <span className="text-xs font-semibold text-slate-900 block">
                       {language === 'km' ? 'កាតឥណទាន / ឥណពន្ធ' : 'Credit / Debit Card'}
                     </span>
                     <span className="text-[10px] text-slate-500">Visa, MasterCard, JCB</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-mono font-bold text-slate-900 block">31.8%</span>
-                  <span className="text-[10px] text-slate-500 font-mono">$41,104</span>
+                  <span className="text-xs tabular-nums font-bold text-slate-900 block">31.8%</span>
+                  <span className="text-[10px] text-slate-500 tabular-nums">$41,104</span>
                 </div>
               </div>
             </div>
