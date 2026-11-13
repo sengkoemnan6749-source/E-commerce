@@ -7,6 +7,7 @@ import {
   ShoppingBag,
   Users,
   Store,
+  X,
   Bell,
   Search,
   CheckCircle2,
@@ -16,9 +17,11 @@ import {
 import { productService } from '../../services/productService';
 import { orderService } from '../../services/orderService';
 import { useLanguage } from '../../store/StoreContext';
+import HamburgerButton from '../../components/common/HamburgerButton';
 import LanguageSwitcher from '../../components/common/LanguageSwitcher';
 
 export default function AdminLayout() {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const notifRef = useRef(null);
@@ -58,7 +61,7 @@ export default function AdminLayout() {
       icon: Package,
       count: lowStockCount > 0 ? lowStockCount : null,
       countTitle: language === 'km' ? `សល់តិច ${lowStockCount}` : `${lowStockCount} low stock`,
-      countClass: 'bg-amber-100 text-amber-700'
+      countClass: 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
     },
     {
       to: `${adminBase}/categories`,
@@ -72,7 +75,7 @@ export default function AdminLayout() {
       icon: ShoppingBag,
       count: pendingOrdersCount > 0 ? pendingOrdersCount : null,
       countTitle: language === 'km' ? `ថ្មី ${pendingOrdersCount}` : `${pendingOrdersCount} pending`,
-      countClass: 'bg-blue-100 text-blue-700'
+      countClass: 'bg-blue-500/25 text-blue-200 border border-blue-400/30'
     },
     {
       to: `${adminBase}/customers`,
@@ -88,14 +91,56 @@ export default function AdminLayout() {
     navigate(`${adminBase}/products?q=${encodeURIComponent(searchQuery.trim())}`);
   };
 
+  const renderNavLinks = (onItemClick) => (
+    <nav className="px-3 space-y-1">
+      {adminNav.map((item) => {
+        const Icon = item.icon;
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            onClick={onItemClick}
+            className={({ isActive }) =>
+              `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13px] sm:text-sm transition-all ${
+                isActive
+                  ? 'bg-[#2563eb] text-white font-semibold shadow-sm shadow-blue-600/30'
+                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white font-medium'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <div className="flex items-center gap-3 min-w-0">
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                  <span className="truncate">{item.label}</span>
+                </div>
+                {item.count !== null && (
+                  <span
+                    title={item.countTitle}
+                    className={`text-[11px] font-semibold px-2 py-0.5 rounded-full leading-none tabular-nums shrink-0 ${
+                      isActive ? 'bg-white/20 text-white' : item.countClass
+                    }`}
+                  >
+                    {item.count}
+                  </span>
+                )}
+              </>
+            )}
+          </NavLink>
+        );
+      })}
+    </nav>
+  );
+
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
-      {/* Top Clean Header Bar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
-          {/* Left: Brand Identity */}
-          <Link to={adminBase} className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-slate-900 p-1 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex font-sans selection:bg-blue-600 selection:text-white">
+      {/* Desktop Dark Theme Left Sidebar Panel (per Design System Spec) */}
+      <aside className="hidden md:flex flex-col w-64 shrink-0 bg-[#0f172a] text-slate-300 border-r border-slate-800/90 sticky top-0 h-screen z-30">
+        {/* Sidebar Brand Header */}
+        <div className="h-14 px-5 flex items-center justify-between border-b border-slate-800/80 shrink-0">
+          <Link to={adminBase} className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-lg bg-slate-950 border border-slate-800 p-1 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img
                 src="/images/logo/techtonic-crest.png"
                 alt="TechTonic Logo"
@@ -103,16 +148,129 @@ export default function AdminLayout() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-black text-slate-900 tracking-tight">TechTonic</span>
-              <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-md">
+              <span className="text-base font-bold text-white tracking-tight">TechTonic</span>
+              <span className="text-[11px] font-medium text-slate-300 bg-slate-800 border border-slate-700/80 px-2 py-0.5 rounded-md">
                 {language === 'km' ? 'អ្នកគ្រប់គ្រង' : 'Admin'}
               </span>
             </div>
           </Link>
+        </div>
 
-          {/* Center: Clean Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md">
-            <form onSubmit={handleSearchSubmit} className="relative w-full">
+        {/* Navigation Section Label */}
+        <div className="px-5 pt-5 pb-2 text-[11px] font-semibold text-slate-400">
+          {language === 'km' ? 'ការគ្រប់គ្រងហាង' : 'Store Management'}
+        </div>
+
+        {/* 5 Clean Left Panel Tabs */}
+        <div className="flex-1 overflow-y-auto py-1">
+          {renderNavLinks()}
+        </div>
+
+        {/* Sidebar Bottom Utility */}
+        <div className="p-3.5 border-t border-slate-800/80 space-y-2.5 shrink-0">
+          <Link
+            to="/"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-slate-800/50 hover:bg-slate-800 border border-slate-800 transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <Store className="w-4 h-4 text-blue-400 shrink-0" />
+              <span>{language === 'km' ? 'មើលហាងទំនិញផ្ទាល់' : 'View Live Store'}</span>
+            </div>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+          </Link>
+
+          <div className="px-2 flex items-center justify-between text-[11px] text-slate-400">
+            <span className="truncate">
+              {language === 'km' ? 'ភ្នំពេញ កម្ពុជា' : 'Phnom Penh, KH'}
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-emerald-400 font-medium shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              {language === 'km' ? 'ដំណើរការ' : 'Online'}
+            </span>
+          </div>
+        </div>
+      </aside>
+
+      {/* Mobile Slide-Out Left Panel Drawer */}
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <aside className="relative w-64 max-w-[80vw] h-full bg-[#0f172a] text-slate-300 border-r border-slate-800 flex flex-col z-10 shadow-2xl">
+            <div className="h-14 px-4 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <img
+                  src="/images/logo/techtonic-crest.png"
+                  alt="TechTonic Logo"
+                  className="w-7 h-7 object-contain"
+                />
+                <span className="font-bold text-white text-sm">
+                  {language === 'km' ? 'ម៉ឺនុយគ្រប់គ្រង' : 'Admin Menu'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileSidebarOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="px-5 pt-4 pb-2 text-[11px] font-semibold text-slate-400">
+              {language === 'km' ? 'ការគ្រប់គ្រងហាង' : 'Store Management'}
+            </div>
+
+            <div className="flex-1 overflow-y-auto py-1">
+              {renderNavLinks(() => setMobileSidebarOpen(false))}
+            </div>
+
+            <div className="p-3.5 border-t border-slate-800">
+              <Link
+                to="/"
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setMobileSidebarOpen(false)}
+                className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-slate-800/60 border border-slate-800"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Store className="w-4 h-4 text-blue-400" />
+                  <span>{language === 'km' ? 'មើលហាងទំនិញផ្ទាល់' : 'View Live Store'}</span>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+              </Link>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* Right Column: Top Clean Utility Header + Main Canvas */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 h-14 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+          {/* Left: Mobile Menu Toggle + Page Context Search */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="md:hidden">
+              <HamburgerButton
+                isOpen={mobileSidebarOpen}
+                onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                color="bg-slate-700"
+                activeColor="bg-blue-600"
+                hoverBg="hover:bg-slate-100"
+                ariaLabel={language === 'km' ? 'បើក/បិទម៉ឺនុយរុករក' : 'Toggle Navigation'}
+              />
+            </div>
+
+            <Link to={adminBase} className="md:hidden flex items-center gap-2 shrink-0">
+              <span className="text-sm font-bold text-slate-900">TechTonic</span>
+            </Link>
+
+            {/* Clean Search Input */}
+            <form onSubmit={handleSearchSubmit} className="hidden sm:block relative w-full max-w-sm">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
@@ -124,7 +282,7 @@ export default function AdminLayout() {
             </form>
           </div>
 
-          {/* Right: Language Switcher, Alerts, Storefront, Profile */}
+          {/* Right: Language Switcher, Alerts, Profile */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             <LanguageSwitcher variant="light" />
 
@@ -146,7 +304,7 @@ export default function AdminLayout() {
               {notificationsOpen && (
                 <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white border border-slate-200 shadow-xl p-4 z-50">
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-                    <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    <span className="text-xs font-bold text-slate-900">
                       {language === 'km' ? 'ការជូនដំណឹងប្រព័ន្ធ' : 'System Notifications'}
                     </span>
                     <span className="text-[11px] text-blue-600 font-semibold">
@@ -203,20 +361,6 @@ export default function AdminLayout() {
               )}
             </div>
 
-            {/* Storefront Link */}
-            <Link
-              to="/"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-200/70 border border-slate-200/80 transition-colors"
-            >
-              <Store className="w-3.5 h-3.5 text-blue-600" />
-              <span className="hidden sm:inline">
-                {language === 'km' ? 'ហាងទំនិញ' : 'Storefront'}
-              </span>
-              <ExternalLink className="w-3 h-3 text-slate-400" />
-            </Link>
-
             {/* Admin Profile */}
             <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
               <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
@@ -230,73 +374,13 @@ export default function AdminLayout() {
               </div>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Clean Segmented 5-Tab Navigation Bar */}
-        <nav
-          aria-label={language === 'km' ? 'ការរុករកអ្នកគ្រប់គ្រង' : 'Admin Navigation'}
-          className="border-t border-slate-100 bg-white/80"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
-            <div className="inline-flex max-w-full items-center gap-1 p-1 rounded-xl bg-slate-100/90 border border-slate-200/60 overflow-x-auto no-scrollbar">
-              {adminNav.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    className={({ isActive }) =>
-                      `inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-[13px] whitespace-nowrap transition-all shrink-0 ${
-                        isActive
-                          ? 'bg-white text-slate-900 font-semibold shadow-xs ring-1 ring-slate-200/70'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 font-medium'
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-                        <span>{item.label}</span>
-                        {item.count !== null && (
-                          <span
-                            title={item.countTitle}
-                            className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full leading-none tabular-nums ${item.countClass}`}
-                          >
-                            {item.count}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </NavLink>
-                );
-              })}
-            </div>
-          </div>
-        </nav>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="flex-1 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <Outlet />
-        </div>
-      </main>
-
-      {/* Minimal Status Footer */}
-      <footer className="border-t border-slate-200/80 bg-white py-3.5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-[11px] text-slate-500">
-          <span>
-            {language === 'km'
-              ? 'TechTonic អេឡិចត្រូនិច • រាជធានីភ្នំពេញ កម្ពុជា'
-              : 'TechTonic Electronics • Phnom Penh, Cambodia'}
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-emerald-600 font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            {language === 'km' ? 'កំពុងដំណើរការ' : 'Online'}
-          </span>
-        </div>
-      </footer>
+        </main>
+      </div>
     </div>
   );
 }
