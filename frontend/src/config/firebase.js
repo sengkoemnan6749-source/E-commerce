@@ -2,14 +2,15 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 
+// Public Firebase Web SDK client configuration (safe for browser bundles; backend Admin credentials remain private)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || '',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDJ9og8NPmiRS_DcRfsn2gz7CCNLc2M3W4',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'techtonic-store.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'techtonic-store',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'techtonic-store.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '682902942732',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:682902942732:web:289baea865dae05635ea29',
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-2BQVSZ90E3',
 };
 
 export const isFirebaseConfigured = Boolean(
