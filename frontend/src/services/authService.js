@@ -50,6 +50,36 @@ function ensureFirebaseReady() {
   }
 }
 
+function isBackendUnavailableError(err) {
+  // Network/DNS error or static-host 404/HTML response without structured API JSON payload
+  if (!err) return true;
+  if (err.payload && typeof err.payload === 'object') return false;
+  return err.status === 404 || err.status === 405 || !err.status;
+}
+
+function buildFirebaseFallbackUser(fbUser, overrides = {}) {
+  if (!fbUser) return null;
+  const email = overrides.email || fbUser.email || '';
+  const name =
+    overrides.fullName ||
+    overrides.name ||
+    fbUser.displayName ||
+    (email ? email.split('@')[0] : 'TechTonic Customer');
+  const fallback = {
+    id: fbUser.uid,
+    uid: fbUser.uid,
+    email,
+    name,
+    fullName: name,
+    phone: overrides.phone || fbUser.phoneNumber || '',
+    photoURL: fbUser.photoURL || '',
+    role: 'customer',
+    savedAddresses: [],
+  };
+  saveStoredUser(fallback);
+  return fallback;
+}
+
 export const authService = {
   getCurrentUser() {
     return getStoredUser();
@@ -181,13 +211,20 @@ export const authService = {
     return { mode: 'set' };
   },
 
-  async syncBackendProfile() {
-    const res = await api.get('/auth/me');
-    if (res?.data) {
-      saveStoredUser(res.data);
-      return res.data;
+  async syncBackendProfile(fbUser = firebaseAuth?.currentUser) {
+    try {
+      const res = await api.get('/auth/me');
+      if (res?.data) {
+        saveStoredUser(res.data);
+        return res.data;
+      }
+      return fbUser ? buildFirebaseFallbackUser(fbUser) : null;
+    } catch (err) {
+      if (fbUser && isBackendUnavailableError(err)) {
+        return buildFirebaseFallbackUser(fbUser);
+      }
+      throw err;
     }
-    return null;
   },
 
   async loginWithEmail(email, password) {
@@ -201,7 +238,7 @@ export const authService = {
       if (twoFactor.enabled && !twoFactor.verified) {
         return { requires2fa: true, email: credential.user.email || cleanEmail };
       }
-      const profile = await this.syncBackendProfile();
+      const profile = await this.syncBackendProfile(credential.user);
       if (!profile) {
         throw new Error('Unable to load user profile from server.');
       }
@@ -236,7 +273,13 @@ export const authService = {
       );
     }
 
-    await api.post('/auth/check-registration-email', { email: cleanEmail });
+    try {
+      await api.post('/auth/check-registration-email', { email: cleanEmail });
+    } catch (err) {
+      if (!isBackendUnavailableError(err)) {
+        throw err;
+      }
+    }
 
     try {
       const credential = await createUserWithEmailAndPassword(
@@ -248,19 +291,26 @@ export const authService = {
       const idToken = await credential.user.getIdToken(true);
       api.setAuthToken(idToken);
 
-      const res = await api.put('/auth/profile', {
-        fullName: displayName,
-        name: displayName,
-        phone: userData.phone || '',
-      });
-      if (res?.data) {
-        saveStoredUser(res.data);
-        this.reportSecurityEvent('REGISTER_SUCCESS', 'Created new customer account', res.data.email || cleanEmail);
-        return res.data;
+      try {
+        const res = await api.put('/auth/profile', {
+          fullName: displayName,
+          name: displayName,
+          phone: userData.phone || '',
+        });
+        if (res?.data) {
+          saveStoredUser(res.data);
+          this.reportSecurityEvent('REGISTER_SUCCESS', 'Created new customer account', res.data.email || cleanEmail);
+          return res.data;
+        }
+      } catch (err) {
+        if (!isBackendUnavailableError(err)) {
+          throw err;
+        }
       }
-      const synced = await this.syncBackendProfile();
-      this.reportSecurityEvent('REGISTER_SUCCESS', 'Created new customer account', synced?.email || cleanEmail);
-      return synced;
+      const synced = await this.syncBackendProfile(credential.user);
+      const result = synced || buildFirebaseFallbackUser(credential.user, { fullName: displayName, phone: userData.phone || '' });
+      this.reportSecurityEvent('REGISTER_SUCCESS', 'Created new customer account', result?.email || cleanEmail);
+      return result;
     } catch (err) {
       this.reportSecurityEvent('REGISTER_FAILED', err?.code || err?.message || 'Registration failed', cleanEmail);
       throw err;
@@ -280,7 +330,7 @@ export const authService = {
       if (twoFactor.enabled && !twoFactor.verified) {
         return { requires2fa: true, email: credential.user.email || '' };
       }
-      const profile = await this.syncBackendProfile();
+      const profile = await this.syncBackendProfile(credential.user);
       if (!profile) {
         throw new Error('Unable to load user profile from server.');
       }
