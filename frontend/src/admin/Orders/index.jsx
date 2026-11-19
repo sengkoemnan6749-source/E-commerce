@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Search, Eye, Truck, FileText, CheckCircle2, ExternalLink, Send } from 'lucide-react';
 import { formatOrderStatus } from '../../services/orderService';
 import { adminService } from '../../services/adminService';
-import { formatUSD } from '../../utils/formatPrice';
+import { formatUSD, formatKHR } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
 import Invoice from '../../components/order/Invoice';
 import { useToast, useLanguage } from '../../store/StoreContext';
 import { translateOrderStatusLabel } from '../../utils/translations';
+import { toSafeExternalUrl } from '../../utils/urlSecurity';
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -308,9 +309,14 @@ export default function AdminOrders() {
                         {ord.deliveryPartner || ord.tracking?.courier || 'Vireak Buntham (VET)'}
                       </span>
                       <a
-                        href={ord.carrierWebsite || (ord.deliveryPartner?.includes('J&T') ? 'https://www.jtexpresskh.com/' : 'https://vireakbuntham.com/')}
+                        href={toSafeExternalUrl(
+                          ord.carrierWebsite,
+                          ord.deliveryPartner?.includes('J&T')
+                            ? 'https://www.jtexpresskh.com/'
+                            : 'https://vireakbuntham.com/'
+                        )}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className="text-[11px] text-blue-600 hover:underline inline-flex items-center gap-1 font-mono"
                       >
                         <span>{ord.trackingNumber || ord.tracking?.trackingCode || 'VET-KH-889210'}</span>
@@ -338,7 +344,12 @@ export default function AdminOrders() {
                     </td>
 
                     <td className="py-3.5 px-4 tabular-nums font-semibold text-slate-900 whitespace-nowrap">
-                      {formatUSD(ord.total)}
+                      <span className="block">{formatUSD(ord.total)}</span>
+                      {String(ord.paymentMethod || '').toLowerCase().includes('(khr)') && (
+                        <span className="text-[11px] font-mono font-semibold text-emerald-600 block">
+                          {formatKHR(ord.total)}
+                        </span>
+                      )}
                     </td>
 
                     <td className="py-3.5 px-4 whitespace-nowrap">
@@ -411,9 +422,14 @@ export default function AdminOrders() {
                     </span>
                   </div>
                   <a
-                    href={selectedOrder.carrierWebsite || (selectedOrder.deliveryPartner?.includes('J&T') ? 'https://www.jtexpresskh.com/' : 'https://vireakbuntham.com/')}
+                    href={toSafeExternalUrl(
+                      selectedOrder.carrierWebsite,
+                      selectedOrder.deliveryPartner?.includes('J&T')
+                        ? 'https://www.jtexpresskh.com/'
+                        : 'https://vireakbuntham.com/'
+                    )}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 underline"
                   >
                     <span>{language === 'km' ? 'តំណភ្ជាប់តាមដាន' : 'Carrier Link'}</span>

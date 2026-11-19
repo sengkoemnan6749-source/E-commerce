@@ -85,13 +85,22 @@ export const authService = {
     return getStoredUser();
   },
 
-  reportSecurityEvent(eventType, details = '', email = null) {
+  reportSecurityEvent(eventType, details = '') {
     try {
+      const allowedAuthenticatedEvents = new Set([
+        'LOGIN_SUCCESS',
+        'REGISTER_SUCCESS',
+        'LOGOUT',
+        'PASSWORD_CHANGED',
+        'PASSWORD_SET',
+      ]);
+      if (!api.getAuthToken() || !allowedAuthenticatedEvents.has(eventType)) {
+        return;
+      }
       api
         .post('/auth/audit', {
           eventType,
-          details,
-          email: email ? String(email).trim().slice(0, 120) : null,
+          details: String(details || '').slice(0, 240),
         })
         .catch(() => {});
     } catch {
@@ -124,12 +133,12 @@ export const authService = {
   },
 
   async getTwoFactorStatus() {
-    try {
-      const res = await api.get('/auth/2fa/status');
-      return res?.data || { enabled: false, verified: true, remainingRecoveryCodes: 0 };
-    } catch {
-      return { enabled: false, verified: true, remainingRecoveryCodes: 0 };
+    // Fail closed: never return { enabled: false, verified: true } when the backend check errors.
+    const res = await api.get('/auth/2fa/status');
+    if (!res?.data || typeof res.data !== 'object') {
+      throw new Error('Unable to verify two-factor authentication status.');
     }
+    return res.data;
   },
 
   async beginTwoFactorSetup() {
@@ -370,7 +379,12 @@ export const authService = {
         ...current,
         savedAddresses: Array.isArray(res.data)
           ? res.data
-          : res.data.savedAddresses || current.savedAddresses || [],
+          : res.data?.savedAddresses || [
+              ...(current.savedAddresses || []).map((a) =>
+                res.data?.isDefault ? { ...a, isDefault: false } : a
+              ),
+              ...(res.data?.id ? [res.data] : []),
+            ],
       };
       saveStoredUser(updatedUser);
       return updatedUser;

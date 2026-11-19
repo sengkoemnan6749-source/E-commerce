@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Tag, Plus, Trash2, Edit2, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
+import { Tag, Plus, Trash2, Edit2, RefreshCw } from 'lucide-react';
 import { adminService } from '../../services/adminService';
 import { useLanguage, useToast } from '../../store/StoreContext';
 import Modal from '../../components/common/Modal';
@@ -187,7 +187,8 @@ export default function AdminPromos() {
                   return (
                     <tr key={promo.code} className="hover:bg-slate-50/60 transition-colors">
                       <td className="py-3.5 px-4">
-                        <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg">
+                        <span className="inline-flex items-center gap-1.5 font-mono font-bold tracking-wider text-indigo-700 bg-indigo-600/[0.08] border border-dashed border-indigo-400/75 px-2.5 py-1 rounded">
+                          <Tag className="w-3 h-3 text-indigo-600 shrink-0" />
                           {promo.code}
                         </span>
                         {promo.description && (
@@ -212,13 +213,17 @@ export default function AdminPromos() {
                         <button
                           type="button"
                           onClick={() => handleToggleActive(promo)}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold cursor-pointer ${
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
                             isActive
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              : 'bg-slate-100 text-slate-500 border border-slate-200'
+                              ? 'bg-emerald-600/10 hover:bg-emerald-600/15 text-emerald-700'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                           }`}
                         >
-                          {isActive ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                              isActive ? 'bg-emerald-600' : 'bg-slate-400'
+                            }`}
+                          />
                           <span>{isActive ? (language === 'km' ? 'សកម្ម' : 'Active') : (language === 'km' ? 'បានបិទ' : 'Disabled')}</span>
                         </button>
                       </td>

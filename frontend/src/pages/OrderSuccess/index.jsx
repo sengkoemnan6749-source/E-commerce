@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Download, Truck, ShoppingBag, ArrowRight, Printer, Share2 } from 'lucide-react';
+import { Download, Truck, ShoppingBag, ArrowRight, Printer, Share2 } from 'lucide-react';
 import { orderService } from '../../services/orderService';
 import { productService } from '../../services/productService';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
 import Button from '../../components/common/Button';
 import Modal from '../../components/common/Modal';
+import VerifiedCheckmark from '../../components/common/VerifiedCheckmark';
 import Invoice from '../../components/order/Invoice';
 import { useLanguage } from '../../store/StoreContext';
 
@@ -58,47 +59,47 @@ export default function OrderSuccess() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
       {/* Success Card Header */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-lg text-center mb-8">
-        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-5 ring-8 ring-emerald-50/60">
-          <CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12" />
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-10 text-center mb-6">
+        <div className="mb-4 flex justify-center">
+          <VerifiedCheckmark size="md" />
         </div>
 
-        <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-          {language === 'km' ? 'ការទូទាត់ត្រូវបានបញ្ជាក់' : 'Payment Confirmed'}
-        </span>
+        <div className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 mb-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>{language === 'km' ? 'ការទូទាត់បានបញ្ជាក់' : 'Payment confirmed'}</span>
+        </div>
 
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-3 mb-2">
-          {language === 'km' ? 'សូមអរគុណសម្រាប់ការកុម្ម៉ង់របស់អ្នក!' : 'Thank You For Your Order!'}
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-2">
+          {language === 'km' ? 'សូមអរគុណសម្រាប់ការកុម្ម៉ង់' : 'Thank you for your order'}
         </h1>
 
-        <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mb-6">
+        <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
           {language === 'km'
-            ? 'ការទូទាត់របស់អ្នកត្រូវបានដំណើរការដោយជោគជ័យ។ ក្រុមការងារដឹកជញ្ជូននៅមជ្ឈមណ្ឌលទួលគោកកំពុងរៀបចំផលិតផលរបស់អ្នក។'
-            : 'Your payment has been successfully processed. We have dispatched our logistics team at the Toul Kork Flagship center to prepare your hardware.'}
+            ? 'ការទូទាត់របស់អ្នកបានជោគជ័យ។ យើងកំពុងរៀបចំវេចខ្ចប់ និងត្រៀមដឹកជញ្ជូនជូនអ្នក។'
+            : 'Your payment is confirmed and your items are now being prepared for dispatch.'}
         </p>
 
         {/* Order Identifier Box */}
-        <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-6 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 text-xs text-slate-600 mb-6 font-mono">
+        <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-5 bg-[#fafafa] px-5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-500 mb-6">
           <div>
             {language === 'km' ? 'លេខយោងកុម្ម៉ង់៖' : 'Order Reference:'}{' '}
-            <strong className="text-blue-600 text-sm font-black">{order.id}</strong>
+            <strong className="font-mono text-slate-900 font-semibold">{order.id}</strong>
           </div>
-          <div className="hidden sm:block text-slate-300">•</div>
+          <span className="hidden sm:block h-3.5 w-px bg-slate-200" />
           <div>
             {language === 'km' ? 'វិធីសាស្ត្រទូទាត់៖' : 'Payment Method:'}{' '}
-            <strong className="text-slate-900">{order.paymentMethod || 'KHQR'}</strong>
+            <strong className="font-medium text-slate-900">{order.paymentMethod || 'KHQR'}</strong>
           </div>
         </div>
 
         {/* Action Buttons Row */}
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
           <Button
-            variant="primary"
+            variant="secondary"
             size="md"
             onClick={() => navigate(`/orders/${order.id}`)}
-            className="shadow-md shadow-blue-500/20"
           >
-            <Truck className="w-4 h-4 mr-2" />
+            <Truck className="w-4 h-4" />
             <span>{language === 'km' ? 'តាមដានស្ថានភាពកុម្ម៉ង់' : 'Track Order Status'}</span>
           </Button>
 
@@ -107,13 +108,13 @@ export default function OrderSuccess() {
             size="md"
             onClick={() => setIsInvoiceOpen(true)}
           >
-            <Printer className="w-4 h-4 mr-2" />
+            <Printer className="w-4 h-4" />
             <span>{language === 'km' ? 'ទាញយកវិក្កយបត្រ' : 'Download Invoice'}</span>
           </Button>
 
           <Link to="/shop">
             <Button variant="ghost" size="md">
-              <ShoppingBag className="w-4 h-4 mr-2" />
+              <ShoppingBag className="w-4 h-4" />
               <span>{language === 'km' ? 'បន្តទិញទំនិញ' : 'Continue Shopping'}</span>
             </Button>
           </Link>
@@ -121,18 +122,18 @@ export default function OrderSuccess() {
       </div>
 
       {/* Order Details & Summary Card */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-sm space-y-6">
-        <h3 className="text-base font-extrabold text-slate-900 pb-3 border-b border-slate-100">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 space-y-6">
+        <h3 className="text-base font-bold text-slate-900 pb-3 border-b border-slate-100">
           {language === 'km' ? 'សង្ខេបការកុម្ម៉ង់ និងព័ត៌មានដឹកជញ្ជូន' : 'Order Summary & Delivery Details'}
         </h3>
 
         {/* Delivery Address & ETA Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+          <div className="p-4 rounded-xl bg-[#fafafa] border border-slate-200/80">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
               {language === 'km' ? 'គោលដៅដឹកជញ្ជូន' : 'Shipping Destination'}
             </span>
-            <p className="font-bold text-slate-900">{order.shippingAddress?.fullName}</p>
+            <p className="font-semibold text-slate-900">{order.shippingAddress?.fullName}</p>
             <p className="text-slate-600">{order.shippingAddress?.phone}</p>
             <p className="text-slate-600">{order.shippingAddress?.address}</p>
             <p className="text-slate-600">
@@ -141,21 +142,21 @@ export default function OrderSuccess() {
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+          <div className="p-4 rounded-xl bg-[#fafafa] border border-slate-200/80">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
               {language === 'km' ? 'ការដឹកជញ្ជូនប៉ាន់ស្មាន' : 'Estimated Delivery'}
             </span>
-            <p className="font-bold text-slate-900 text-sm">
+            <p className="font-semibold text-slate-900 text-sm">
               {order.estimatedDelivery || (language === 'km' ? 'ថ្ងៃនេះមុនម៉ោង ៥:៣០ ល្ងាច' : 'Today by 5:30 PM')}
             </p>
             <p className="text-slate-500 mt-1">
               {language === 'km' ? 'ដឹកជញ្ជូនដោយ' : 'Handled by'}{' '}
               <strong className="text-slate-800">{order.carrier || 'GrabExpress Phnom Penh'}</strong>
             </p>
-            <p className="text-emerald-600 font-semibold mt-2">
+            <p className="text-slate-600 font-medium mt-2">
               {language === 'km'
                 ? 'សារជូនដំណឹង SMS នឹងត្រូវបានផ្ញើពេលដឹកចេញ'
-                : 'SMS notification will be sent upon dispatch'}
+                : 'Notification will be sent upon dispatch'}
             </p>
           </div>
         </div>
@@ -215,11 +216,11 @@ export default function OrderSuccess() {
               <span>-{formatUSD(order.discountAmount)}</span>
             </div>
           )}
-          <div className="pt-2 border-t border-slate-200 flex justify-between items-baseline text-sm font-bold text-slate-900">
+          <div className="pt-2 border-t border-slate-200 flex justify-between items-baseline text-sm font-semibold text-slate-900">
             <span>{language === 'km' ? 'សរុបដែលបានទូទាត់៖' : 'Total Paid:'}</span>
             <div className="text-right">
-              <span className="text-xl font-black text-slate-950 block">{formatUSD(order.total)}</span>
-              <span className="text-xs text-slate-500 font-semibold">{formatKHR(order.total)}</span>
+              <span className="text-lg font-bold text-slate-900 tabular-nums block">{formatUSD(order.total)}</span>
+              <span className="text-xs text-slate-500 font-medium tabular-nums">{formatKHR(order.total)}</span>
             </div>
           </div>
         </div>

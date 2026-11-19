@@ -75,6 +75,16 @@ export default function ProductReviews({ productId, rating = 0, reviewsCount = 0
   }, [reviews]);
 
   const handleHelpful = async (id) => {
+    if (!user) {
+      addToast(
+        language === 'km'
+          ? 'សូមចូលគណនីជាមុនដើម្បីបោះឆ្នោតថាមតិយោបល់នេះមានប្រយោជន៍'
+          : 'Please sign in to mark reviews as helpful',
+        'info'
+      );
+      return;
+    }
+
     const votedKey = 'techtonic_helpful_reviews';
     let votedSet = new Set();
     try {
@@ -127,6 +137,15 @@ export default function ProductReviews({ productId, rating = 0, reviewsCount = 0
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
+    if (!user) {
+      addToast(
+        language === 'km'
+          ? 'សូមចូលគណនីជាមុនដើម្បីសរសេរមតិយោបល់'
+          : 'Please sign in to submit a product review',
+        'error'
+      );
+      return;
+    }
     if (!newReview.name.trim() || !newReview.comment.trim()) {
       addToast(
         language === 'km' ? 'សូមបំពេញព័ត៌មានចាំបាច់ទាំងអស់' : 'Please complete all required fields',
@@ -242,7 +261,22 @@ export default function ProductReviews({ productId, rating = 0, reviewsCount = 0
               ? 'ចែករំលែកបទពិសោធន៍របស់អ្នកជាមួយសហគមន៍ TechTonic'
               : 'Share your experience with the TechTonic community'}
           </p>
-          <Button variant="outline" size="sm" onClick={() => setIsModalOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (!user) {
+                addToast(
+                  language === 'km'
+                    ? 'សូមចូលគណនីជាមុនដើម្បីសរសេរមតិយោបល់'
+                    : 'Please sign in to write a review',
+                  'info'
+                );
+                return;
+              }
+              setIsModalOpen(true);
+            }}
+          >
             <MessageSquarePlus className="w-4 h-4 mr-2" />
             {language === 'km' ? 'សរសេរមតិយោបល់' : 'Write a Review'}
           </Button>

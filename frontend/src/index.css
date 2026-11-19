@@ -439,4 +439,86 @@ html.lang-kh button {
   will-change: left, opacity;
 }
 
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    background: #ffffff !important;
+  }
+}
+
+/* Green Payment Verified Checkmark Animations */
+@keyframes verify-pop {
+  0% {
+    transform: scale(0.55);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  82% {
+    transform: scale(0.97);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes verify-draw {
+  0% {
+    stroke-dashoffset: 32;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes verify-ripple {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  70%, 100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+.animate-verify-pop {
+  animation: verify-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-verify-draw {
+  stroke-dasharray: 32;
+  stroke-dashoffset: 0;
+  animation: verify-draw 0.45s 0.14s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-verify-ripple {
+  animation: verify-ripple 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-verify-pop,
+  .animate-verify-draw,
+  .animate-verify-ripple {
+    animation: none !important;
+  }
+}
+
 

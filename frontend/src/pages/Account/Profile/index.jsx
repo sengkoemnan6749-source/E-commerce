@@ -466,13 +466,12 @@ export default function AccountProfile() {
                 {language === 'km' ? 'ការផ្ទៀងផ្ទាត់ ២ ជំហាន (2FA)' : 'Two-Factor Authentication (2FA)'}
               </h2>
               {!twoFaLoading && (
-                <span
-                  className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                    twoFaEnabled
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      : 'bg-slate-100 text-slate-600'
-                  }`}
-                >
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-0.5 rounded-md bg-white text-slate-700 border border-slate-200">
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      twoFaEnabled ? 'bg-emerald-500' : 'bg-slate-400'
+                    }`}
+                  />
                   {twoFaEnabled
                     ? language === 'km'
                       ? 'បានបើក'

@@ -1,8 +1,8 @@
 import React from 'react';
-import { CreditCard, QrCode } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 import { useLanguage } from '../../store/StoreContext';
 
-export default function PaymentMethod({ selectedMethod, onSelectMethod }) {
+export default function PaymentMethod({ selectedMethod = 'khqr', onSelectMethod }) {
   const { language } = useLanguage();
   const methods = [
     {
@@ -13,12 +13,6 @@ export default function PaymentMethod({ selectedMethod, onSelectMethod }) {
           ? 'ស្កេន និងទូទាត់តាមរយៈកម្មវិធីធនាគារកម្ពុជាណាមួយ'
           : 'Scan and pay using any Cambodian mobile banking app',
       icon: QrCode
-    },
-    {
-      id: 'card',
-      title: language === 'km' ? 'កាតឥណទាន / ឥណពន្ធ' : 'Credit / Debit Card',
-      subtitle: 'Visa, Mastercard, JCB, UnionPay',
-      icon: CreditCard
     }
   ];
 

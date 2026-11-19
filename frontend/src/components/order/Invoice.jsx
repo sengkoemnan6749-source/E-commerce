@@ -1,19 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Printer,
-  ArrowLeft,
-  CheckCircle2,
-  MapPin,
-  Phone,
-  Mail,
-  Truck,
-  Calendar,
-  CreditCard,
-  FileCheck2,
-  Copy,
-  Check,
-  Package
-} from 'lucide-react';
+import { Printer, ArrowLeft, Phone, Mail, Globe, Send, Copy, Check } from 'lucide-react';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
 import { formatDate } from '../../utils/formatDate';
 import { formatOrderStatus } from '../../services/orderService';
@@ -33,31 +19,34 @@ export default function Invoice({ order, onBack }) {
 
   const handleCopyId = () => {
     if (order.id) {
-      navigator.clipboard.writeText(order.id);
+      navigator.clipboard?.writeText(order.id);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  // Resolve customer & address info safely
   const address = order.shippingAddress || order.customer || {};
-  const customerName = address.fullName || order.customerName || 'Sara Meng';
-  const customerPhone = address.phone || order.customerPhone || '+855 12 345 678';
-  const customerEmail = address.email || order.customerEmail || 'customer@techtonic.store';
-  const fullAddress = address.address
-    ? `${address.address}, ${address.city || ''} ${address.province || ''} ${address.postalCode || ''}`.trim()
-    : 'Street 310, Building 24, BKK1, Phnom Penh 120101, Cambodia';
+  const customerName = address.fullName || order.customerName || '-';
+  const customerPhone = address.phone || order.customerPhone || '-';
+  const customerEmail = address.email || order.customerEmail || '';
+  const fullAddress = [address.address, address.city, address.province, address.postalCode]
+    .filter(Boolean)
+    .join(', ') || '-';
 
-  // Calculations
+  const items = Array.isArray(order.items) ? order.items : [];
+  const blankRowCount = Math.max(0, 7 - items.length);
+
   const subtotal = order.subtotal || order.total || 0;
   const shippingFee = order.shippingFee !== undefined ? order.shippingFee : 0;
   const discount = order.discount || order.discountAmount || 0;
-  const grandTotal = order.total || (subtotal + shippingFee - discount);
+  const grandTotal = order.total ?? (subtotal + shippingFee - discount);
+  const trackingCode = order.tracking?.trackingCode || order.trackingNumber || '';
+  const courierName = order.tracking?.courier || order.carrier || order.deliveryPartner || 'Vireak Buntham Express';
 
   return (
     <div className="w-full max-w-4xl mx-auto">
       {/* Top Action Bar (Hidden when printing) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-5 print:hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 print:hidden">
         {onBack ? (
           <Button variant="ghost" size="sm" onClick={onBack} className="text-slate-600 hover:text-slate-900">
             <ArrowLeft className="w-4 h-4 mr-1.5" />
@@ -69,358 +58,347 @@ export default function Invoice({ order, onBack }) {
           <button
             onClick={handleCopyId}
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition cursor-pointer"
             title={language === 'km' ? 'ចម្លងលេខកូដកុម្ម៉ង់' : 'Copy Order ID'}
           >
             {copied ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-emerald-700 font-semibold">
-                  {language === 'km' ? 'បានចម្លង!' : 'Copied!'}
+                <span className="text-slate-900 font-semibold">
+                  {language === 'km' ? 'បានចម្លង' : 'Copied'}
                 </span>
               </>
             ) : (
               <>
                 <Copy className="w-3.5 h-3.5 text-slate-500" />
-                <span>{language === 'km' ? 'ចម្លងលេខកូដកុម្ម៉ង់' : 'Copy Order ID'}</span>
+                <span>{language === 'km' ? 'ចម្លងលេខកូដ' : 'Copy Order ID'}</span>
               </>
             )}
           </button>
 
-          <Button variant="primary" size="sm" onClick={handlePrint} className="shadow-sm">
-            <Printer className="w-4 h-4 mr-1.5" />
-            <span>{language === 'km' ? 'បោះពុម្ព / រក្សាទុកជា PDF' : 'Print / Save as PDF'}</span>
+          <Button variant="secondary" size="sm" onClick={handlePrint}>
+            <Printer className="w-4 h-4" />
+            <span>{language === 'km' ? 'បោះពុម្ព / រក្សាទុក PDF' : 'Print / Save PDF'}</span>
           </Button>
         </div>
       </div>
 
-      {/* Invoice Sheet */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 sm:p-8 md:p-10 print:border-none print:shadow-none print:p-0 text-slate-800">
-        
-        {/* Top Header: Company info & Invoice Number */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-slate-200">
-          {/* Company Branding */}
-          <div className="space-y-1.5 max-w-sm">
+      {/* Ruled Formal Paper Invoice Sheet */}
+      <div
+        className="bg-white border border-slate-300 shadow-sm p-6 sm:p-9 print:border-none print:shadow-none print:p-0 text-slate-900"
+        style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+      >
+        {/* Header: Brand Logo + Address Strip Left | Ruled Customer Details Right */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+          {/* Left: Website Logo & Shop Info Box */}
+          <div className="md:col-span-6 space-y-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg font-black shadow-md shadow-blue-500/20">
-                T
-              </div>
+              <img
+                src="/images/logo/techtonic-crest.png"
+                alt="TechTonic Crest"
+                className="w-11 h-11 object-contain drop-shadow-[0_1px_1px_rgba(15,23,42,0.22)] shrink-0"
+              />
               <div>
-                <span className="text-xl font-black text-slate-900 tracking-tight block leading-tight">
-                  TechTonic Store
-                </span>
-                <span className="text-[11px] font-semibold text-blue-600 uppercase tracking-wider block">
-                  {language === 'km' ? 'ហាងលក់បច្ចេកវិទ្យាផ្លូវការ' : 'Official Technology Retailer'}
+                <img
+                  src="/images/logo/techtonic-script-orange.png"
+                  alt="TechTonic"
+                  className="h-7 w-auto object-contain drop-shadow-[0_1px_1px_rgba(15,23,42,0.25)]"
+                />
+                <span className="block text-[10px] font-bold uppercase tracking-[0.26em] text-slate-700 mt-0.5">
+                  {language === 'km' ? 'ហាងលក់បច្ចេកវិទ្យាផ្លូវការ' : 'OFFICIAL HARDWARE STORE'}
                 </span>
               </div>
             </div>
 
-            <p className="text-xs text-slate-500 italic pt-1">
-              {language === 'km'
-                ? '"រចនាឡើងសម្រាប់របៀបរស់នៅបែបឌីជីថលសម័យថ្មី"'
-                : '"Engineered for the Modern Digital Lifestyle"'}
-            </p>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              {language === 'km'
-                ? '#271 មហាវិថីមុន្នីរ៉េត ទួលគោក រាជធានីភ្នំពេញ ព្រះរាជាណាចក្រកម្ពុជា'
-                : '#271 Monireth Blvd, Toul Kork, Phnom Penh, Kingdom of Cambodia'}
-            </p>
-            <div className="flex items-center gap-3 text-xs text-slate-500 pt-0.5">
-              <span>{language === 'km' ? 'ទូរស័ព្ទ៖' : 'Tel:'} +855 23 888 999</span>
-              <span>•</span>
-              <span className="font-mono font-medium text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">
-                VAT TIN: K009-902381204
-              </span>
+            <div className="bg-slate-100 border-l-4 border-[#0f172a] px-3.5 py-2.5 text-xs text-slate-800 space-y-0.5 leading-relaxed">
+              <div>
+                <span className="font-semibold">
+                  {language === 'km' ? 'អាសយដ្ឋាន៖ ' : 'Address: '}
+                </span>
+                {language === 'km'
+                  ? '#271 មហាវិថីមុន្នីរ៉េត ទួលគោក ភ្នំពេញ'
+                  : '#271 Monireth Blvd, Toul Kork, Phnom Penh'}
+              </div>
+              <div>
+                <span className="font-semibold">Email: </span>support@techtonic.store
+              </div>
+              <div>
+                <span className="font-semibold">Tel: </span>+855 23 888 999
+                <span className="mx-2 text-slate-400">·</span>
+                <span className="font-mono text-[11px]">VAT TIN: K009-902381204</span>
+              </div>
             </div>
           </div>
 
-          {/* Invoice Reference & Status */}
-          <div className="md:text-right space-y-2">
-            <div className="inline-block">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
-                {language === 'km' ? 'វិក្កយបត្រពន្ធផ្លូវការ' : 'Official Tax Invoice'}
+          {/* Right: Clean Ruled Customer Info Lines */}
+          <div className="md:col-span-6 space-y-2.5 pt-1 text-xs">
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold text-slate-700 shrink-0 w-20">
+                {language === 'km' ? 'អតិថិជន៖' : 'Name:'}
               </span>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none">
-                {language === 'km' ? 'វិក្កយបត្រ' : 'INVOICE'}
-              </h1>
+              <span className="flex-1 border-b border-slate-400 pb-0.5 font-semibold text-slate-900 truncate">
+                {customerName}
+              </span>
             </div>
 
-            <div>
-              <span className="font-mono text-base font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-2.5 py-1 rounded-lg inline-block whitespace-nowrap">
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold text-slate-700 shrink-0 w-20">
+                {language === 'km' ? 'ទូរស័ព្ទ៖' : 'Phone:'}
+              </span>
+              <span className="flex-1 border-b border-slate-400 pb-0.5 font-mono text-slate-900">
+                {customerPhone}
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold text-slate-700 shrink-0 w-20">
+                {language === 'km' ? 'កាលបរិច្ឆេទ៖' : 'Date:'}
+              </span>
+              <span className="flex-1 border-b border-slate-400 pb-0.5 text-slate-900">
+                {formatDate(order.createdAt)}
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold text-slate-700 shrink-0 w-20">
+                {language === 'km' ? 'លេខវិក្កយបត្រ៖' : 'Invoice No:'}
+              </span>
+              <span className="flex-1 border-b border-slate-400 pb-0.5 font-mono font-bold text-slate-900">
                 {order.id}
               </span>
             </div>
 
-            <div className="text-xs text-slate-500 space-y-0.5">
-              <p>
-                <span className="text-slate-400">
-                  {language === 'km' ? 'ថ្ងៃចេញវិក្កយបត្រ៖' : 'Date Issued:'}
-                </span>{' '}
-                <strong className="text-slate-700">{formatDate(order.createdAt)}</strong>
-              </p>
-              <p>
-                <span className="text-slate-400">
-                  {language === 'km' ? 'ការទូទាត់៖' : 'Payment:'}
-                </span>{' '}
-                <span className="text-slate-700 font-medium">{order.paymentMethod || 'Bakong KHQR'}</span>
-              </p>
-            </div>
-
-            <div className="pt-1">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 shadow-sm">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>
-                  {order.paymentStatus || 'PAID'} •{' '}
-                  {language === 'km' ? 'បានទូទាត់តាមប្រព័ន្ធបាគង NBC' : 'NBC Bakong Settled'}
-                </span>
+            <div className="flex items-baseline gap-2">
+              <span className="font-semibold text-slate-700 shrink-0 w-20">
+                {language === 'km' ? 'ទីតាំងដឹក៖' : 'Address:'}
               </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Customer & Order Metadata Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
-          {/* Recipient Details */}
-          <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-              <MapPin className="w-3.5 h-3.5 text-blue-600" />
-              <span>{language === 'km' ? 'ចេញវិក្កយបត្រ និងដឹកជញ្ជូនទៅ' : 'Billed & Shipped To'}</span>
-            </div>
-            
-            <p className="font-bold text-slate-900 text-sm">{customerName}</p>
-            
-            <div className="mt-2 space-y-1 text-xs text-slate-600">
-              <div className="flex items-center gap-2">
-                <Phone className="w-3 h-3 text-slate-400 shrink-0" />
-                <span className="font-medium text-slate-800">{customerPhone}</span>
-              </div>
-              {customerEmail && (
-                <div className="flex items-center gap-2">
-                  <Mail className="w-3 h-3 text-slate-400 shrink-0" />
-                  <span className="text-slate-600">{customerEmail}</span>
-                </div>
-              )}
-              <div className="pt-1 text-slate-600 leading-relaxed">
+              <span className="flex-1 border-b border-slate-400 pb-0.5 text-slate-800 leading-snug break-words">
                 {fullAddress}
-              </div>
-            </div>
-          </div>
-
-          {/* Fulfillment Details */}
-          <div className="bg-slate-50/80 rounded-xl p-4 border border-slate-200/70">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5">
-              <Truck className="w-3.5 h-3.5 text-blue-600" />
-              <span>
-                {language === 'km' ? 'ព័ត៌មានរៀបចំ និងការដឹកជញ្ជូន' : 'Fulfillment & Delivery Details'}
               </span>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">
-                  {language === 'km' ? 'ស្ថានភាពកុម្ម៉ង់៖' : 'Order Status:'}
-                </span>
-                <span className="px-2 py-0.5 rounded-md font-bold text-[11px] bg-blue-100 text-blue-800 uppercase tracking-wide">
-                  {translateOrderStatusLabel(formatOrderStatus(order.status || 'Confirmed'), language)}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">
-                  {language === 'km' ? 'ក្រុមហ៊ុនដឹកជញ្ជូន៖' : 'Carrier / Courier:'}
-                </span>
-                <span className="font-semibold text-slate-800">
-                  {order.tracking?.courier || order.carrier || 'TechTonic Express Dispatch'}
-                </span>
-              </div>
-
-              {order.tracking?.trackingCode && (
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500">
-                    {language === 'km' ? 'លេខកូដតាមដាន៖' : 'Tracking Number:'}
-                  </span>
-                  <span className="font-mono font-bold text-slate-800 bg-white px-1.5 py-0.5 rounded border border-slate-200">
-                    {order.tracking.trackingCode}
-                  </span>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between">
-                <span className="text-slate-500">
-                  {language === 'km' ? 'រូបិយប័ណ្ណទូទាត់៖' : 'Billing Currency:'}
-                </span>
-                <span className="font-semibold text-slate-800">USD ($) / KHR (៛)</span>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Items Table */}
-        <div className="my-6 border border-slate-200 rounded-xl overflow-hidden">
-          <table className="w-full text-left text-xs sm:text-sm border-collapse">
-            <thead>
-              <tr className="bg-slate-100/90 text-slate-700 font-bold uppercase text-[11px] tracking-wider border-b border-slate-200">
-                <th className="py-3 px-4 w-12 text-center text-slate-500">#</th>
-                <th className="py-3 px-4">{language === 'km' ? 'បរិយាយមុខទំនិញ' : 'Item Description'}</th>
-                <th className="py-3 px-4 w-24 text-center">{language === 'km' ? 'ចំនួន' : 'Qty'}</th>
-                <th className="py-3 px-6 w-36 text-right">{language === 'km' ? 'តម្លៃរាយ' : 'Unit Price'}</th>
-                <th className="py-3 px-6 w-36 text-right">{language === 'km' ? 'សរុប' : 'Total'}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
-              {(order.items || []).map((item, idx) => {
-                const itemVariant = item.variant || item.selectedVariant;
-                const lineTotal = item.price * (item.quantity || 1);
-                return (
-                  <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-3.5 px-4 text-center font-mono text-xs text-slate-400">
-                      {idx + 1}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900 text-sm">
-                        {item.name}
-                      </div>
-                      {itemVariant && (
-                        <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-slate-400" />
-                          <span>
-                            {language === 'km' ? 'ជម្រើស៖' : 'Variant:'} {itemVariant}
-                          </span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="inline-block font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-xs">
-                        {item.quantity || 1}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-6 text-right font-mono font-medium text-slate-700 whitespace-nowrap">
-                      {formatUSD(item.price)}
-                    </td>
-                    <td className="py-3.5 px-6 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
-                      {formatUSD(lineTotal)}
-                    </td>
+        {/* Full-Width Solid Accent Rule */}
+        <div className="mt-5 mb-4">
+          <div className="h-2.5 w-full bg-[#0f172a]" />
+        </div>
+
+        {/* Centered Underlined Document Title */}
+        <div className="text-center mb-4">
+          <h1 className="inline-block text-lg sm:text-xl font-bold uppercase tracking-[0.2em] text-slate-900 border-b-2 border-slate-900 pb-0.5">
+            {language === 'km' ? 'វិក្កយបត្រផ្លូវការ' : 'OFFICIAL INVOICE'}
+          </h1>
+        </div>
+
+        {/* Ledger Table + Totals Wrapper with Centered Website Logo Watermark */}
+        <div className="relative">
+          {/* Background Website Logo Watermark */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none select-none absolute inset-x-0 top-10 bottom-28 z-0 flex flex-col items-center justify-center overflow-hidden"
+          >
+            <img
+              src="/images/logo/techtonic-crest.png"
+              alt=""
+              className="w-56 sm:w-64 h-auto object-contain opacity-[0.11] -rotate-12 grayscale-[15%]"
+            />
+            <img
+              src="/images/logo/techtonic-script-orange.png"
+              alt=""
+              className="w-40 sm:w-48 h-auto object-contain opacity-[0.10] -rotate-12 -mt-2 grayscale-[15%]"
+            />
+          </div>
+
+          {/* Foreground Ruled Grid */}
+          <div className="relative z-10">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-slate-400 text-xs sm:text-sm bg-transparent">
+                <thead>
+                  <tr className="bg-[#0f172a] text-white uppercase tracking-wider text-[11px] font-bold">
+                    <th className="py-2.5 px-3 w-16 sm:w-20 text-center border-r border-slate-600">
+                      {language === 'km' ? 'ចំនួន' : 'QTY'}
+                    </th>
+                    <th className="py-2.5 px-4 text-left border-r border-slate-600">
+                      {language === 'km' ? 'បរិយាយមុខទំនិញ' : 'DESCRIPTION'}
+                    </th>
+                    <th className="py-2.5 px-4 w-28 sm:w-32 text-right border-r border-slate-600">
+                      {language === 'km' ? 'តម្លៃរាយ' : 'UNIT PRICE'}
+                    </th>
+                    <th className="py-2.5 px-4 w-28 sm:w-32 text-right">
+                      {language === 'km' ? 'សរុប' : 'TOTAL'}
+                    </th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody>
+                  {items.map((item, idx) => {
+                    const qty = Number(item?.quantity) || 1;
+                    const unitPrice = Number(item?.price) || 0;
+                    const lineTotal = unitPrice * qty;
+                    const itemVariant = item?.variant || item?.selectedVariant;
+                    return (
+                      <tr key={idx} className="bg-transparent">
+                        <td className="py-2.5 px-3 text-center font-mono font-semibold text-slate-900 border border-slate-400 align-top">
+                          {qty}
+                        </td>
+                        <td className="py-2.5 px-4 border border-slate-400 align-top">
+                          <div className="font-semibold text-slate-900 text-xs sm:text-sm">
+                            {item?.name || 'Item'}
+                          </div>
+                          {itemVariant && (
+                            <div className="text-[11px] text-slate-600 mt-0.5">
+                              {language === 'km' ? 'ជម្រើស៖' : 'Variant:'} {itemVariant}
+                            </div>
+                          )}
+                        </td>
+                        <td className="py-2.5 px-4 text-right font-mono text-slate-800 border border-slate-400 whitespace-nowrap align-top">
+                          {formatUSD(unitPrice)}
+                        </td>
+                        <td className="py-2.5 px-4 text-right font-mono font-semibold text-slate-900 border border-slate-400 whitespace-nowrap align-top">
+                          {formatUSD(lineTotal)}
+                        </td>
+                      </tr>
+                    );
+                  })}
 
-        {/* Bottom Section: Official Stamp & Totals */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 items-start">
-          
-          {/* Official Verification Seal & Compliance Note */}
-          <div className="border border-slate-200/80 bg-slate-50/50 rounded-xl p-4 text-xs space-y-2.5">
-            <div className="flex items-center gap-2 text-slate-800 font-bold text-xs">
-              <FileCheck2 className="w-4 h-4 text-emerald-600" />
-              <span>
-                {language === 'km'
-                  ? 'វិក្កយបត្រពន្ធអេឡិចត្រូនិចកម្ពុជាដែលបានបញ្ជាក់'
-                  : 'Verified Cambodian Electronic Tax Invoice'}
-              </span>
+                  {/* Ruled empty ledger lines so short orders keep full receipt structure */}
+                  {Array.from({ length: blankRowCount }).map((_, idx) => (
+                    <tr key={`blank-${idx}`} className="h-8 sm:h-9 bg-transparent">
+                      <td className="border border-slate-400" />
+                      <td className="border border-slate-400" />
+                      <td className="border border-slate-400" />
+                      <td className="border border-slate-400" />
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            
-            <p className="text-slate-500 text-[11px] leading-relaxed">
-              {language === 'km'
-                ? 'វិក្កយបត្រនេះត្រូវបានបង្កើតតាមប្រព័ន្ធអេឡិចត្រូនិចក្រោមការណែនាំរបស់អគ្គនាយកដ្ឋានពន្ធដារ (GDT)។ ផលិតផលទាំងអស់រួមបញ្ចូលការធានាពីក្រុមហ៊ុនផលិត និងពន្ធនាំចូលកម្ពុជា។'
-                : 'This invoice is generated electronically under General Department of Taxation (GDT) guidelines. All products include genuine manufacturer warranty and Cambodia import duty.'}
-            </p>
 
-            <div className="pt-2 border-t border-slate-200/70 flex items-center justify-between text-[11px] text-slate-500">
-              <span>
-                {language === 'km' ? 'ប្រព័ន្ធទូទាត់បាគងជាតិ៖' : 'National Bakong Switch:'}{' '}
-                <strong>{language === 'km' ? 'បានទូទាត់រួចរាល់' : 'Settled'}</strong>
-              </span>
-              <span className="font-mono text-emerald-700 font-semibold">REF: NBC-KHQR-OK</span>
-            </div>
-          </div>
-
-          {/* Totals Breakdown */}
-          <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-5 space-y-3">
-            <div className="flex justify-between items-center text-xs text-slate-600">
-              <span>{language === 'km' ? 'តម្លៃទំនិញសរុប៖' : 'Subtotal:'}</span>
-              <span className="font-mono font-semibold text-slate-900 text-sm">
-                {formatUSD(subtotal)}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center text-xs text-slate-600">
-              <span>{language === 'km' ? 'ថ្លៃដឹកជញ្ជូន៖' : 'Delivery / Shipping Fee:'}</span>
-              <span className="font-semibold text-slate-900">
-                {shippingFee === 0 ? (
-                  <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold text-xs">
-                    {language === 'km' ? 'ឥតគិតថ្លៃ' : 'FREE'}
+            {/* Remarks Left + Bordered Totals Table Right */}
+            <div className="flex flex-col sm:flex-row items-stretch justify-between">
+              {/* Left: Payment & Compliance Remarks */}
+              <div className="flex-1 pt-3.5 pr-4 text-xs text-slate-700 space-y-1">
+                <p className="font-bold text-slate-900">
+                  {language === 'km' ? 'ការទូទាត់ និងព័ត៌មានបន្ថែម៖' : 'Remarks / Payment Details:'}
+                </p>
+                <p>
+                  {language === 'km' ? 'វិធីសាស្ត្រទូទាត់៖ ' : 'Payment: '}
+                  <span className="font-semibold text-slate-900">
+                    {order.paymentMethod || 'Bakong KHQR'} ({order.paymentStatus || 'PAID'})
                   </span>
-                ) : (
-                  <span className="font-mono">{formatUSD(shippingFee)}</span>
-                )}
-              </span>
-            </div>
-
-            {discount > 0 && (
-              <div className="flex justify-between items-center text-xs text-emerald-700 font-medium">
-                <span>{language === 'km' ? 'បញ្ចុះតម្លៃប្រូម៉ូសិន៖' : 'Promo Discount Applied:'}</span>
-                <span className="font-mono font-bold">
-                  -{formatUSD(discount)}
-                </span>
+                </p>
+                <p>
+                  {language === 'km' ? 'ស្ថានភាព៖ ' : 'Status: '}
+                  <span className="font-semibold text-slate-900">
+                    {translateOrderStatusLabel(formatOrderStatus(order.status || 'Confirmed'), language)}
+                  </span>
+                  {customerEmail ? ` · ${customerEmail}` : ''}
+                </p>
+                <p>
+                  {language === 'km' ? 'ដឹកជញ្ជូន៖ ' : 'Courier: '}
+                  <span className="font-medium text-slate-900">{courierName}</span>
+                  {trackingCode ? (
+                    <span className="font-mono text-slate-700"> ({trackingCode})</span>
+                  ) : null}
+                </p>
+                <p className="text-[11px] text-slate-500 pt-1">
+                  {language === 'km'
+                    ? 'រួមបញ្ចូលពន្ធ VAT 10% និងការធានាផ្លូវការ · REF: NBC-KHQR-OK'
+                    : 'VAT 10% included · Official manufacturer warranty · REF: NBC-KHQR-OK'}
+                </p>
               </div>
-            )}
 
-            <div className="flex justify-between items-center text-[11px] text-slate-400">
-              <span>{language === 'km' ? 'អាករលើតម្លៃបន្ថែម (VAT 10%)៖' : 'Value Added Tax (VAT 10%):'}</span>
-              <span className="italic">
-                {language === 'km' ? 'រួមបញ្ចូលក្នុងតម្លៃ' : 'Included in price'}
-              </span>
+              {/* Right: Bordered Totals Box Matching Table Widths */}
+              <div className="w-full sm:w-64 shrink-0">
+                <table className="w-full border-collapse text-xs bg-transparent">
+                  <tbody>
+                    <tr>
+                      <td className="py-2 px-3 w-28 sm:w-32 text-right font-semibold text-slate-700 border-x border-b border-slate-400 sm:border-l">
+                        {language === 'km' ? 'តម្លៃរាយសរុប' : 'Subtotal'}
+                      </td>
+                      <td className="py-2 px-4 w-28 sm:w-32 text-right font-mono font-semibold text-slate-900 border-r border-b border-slate-400 whitespace-nowrap">
+                        {formatUSD(subtotal)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-3 text-right font-semibold text-slate-700 border-x border-b border-slate-400">
+                        {language === 'km' ? 'ថ្លៃដឹកជញ្ជូន' : 'Delivery'}
+                      </td>
+                      <td className="py-2 px-4 text-right font-mono font-semibold text-slate-900 border-r border-b border-slate-400 whitespace-nowrap">
+                        {shippingFee === 0 ? (language === 'km' ? 'ឥតគិតថ្លៃ' : 'FREE') : formatUSD(shippingFee)}
+                      </td>
+                    </tr>
+                    {discount > 0 && (
+                      <tr>
+                        <td className="py-2 px-3 text-right font-semibold text-slate-700 border-x border-b border-slate-400">
+                          {language === 'km' ? 'បញ្ចុះតម្លៃ' : 'Discount'}
+                        </td>
+                        <td className="py-2 px-4 text-right font-mono font-semibold text-slate-900 border-r border-b border-slate-400 whitespace-nowrap">
+                          -{formatUSD(discount)}
+                        </td>
+                      </tr>
+                    )}
+                    <tr>
+                      <td className="py-2.5 px-3 text-right font-bold text-slate-900 border-x border-b border-slate-400">
+                        {language === 'km' ? 'សរុប (USD)' : 'Total ($)'}
+                      </td>
+                      <td className="py-2.5 px-4 text-right font-mono text-sm font-bold text-slate-950 border-r border-b border-slate-400 whitespace-nowrap">
+                        {formatUSD(grandTotal)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-3 text-right font-semibold text-slate-700 border-x border-b border-slate-400">
+                        {language === 'km' ? 'សរុប (KHR)' : 'Total (៛)'}
+                      </td>
+                      <td className="py-2 px-4 text-right font-mono font-semibold text-slate-900 border-r border-b border-slate-400 whitespace-nowrap">
+                        {formatKHR(grandTotal)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            {/* Grand Total Divider */}
-            <div className="pt-3 border-t-2 border-slate-200 flex justify-between items-baseline">
+            {/* Dual Signature Lines */}
+            <div className="grid grid-cols-2 gap-10 sm:gap-16 pt-12 pb-6 px-2 sm:px-6 text-center text-xs">
               <div>
-                <span className="text-sm font-black text-slate-900 block uppercase tracking-wide">
-                  {language === 'km' ? 'សរុបរួម' : 'Grand Total'}
-                </span>
-                <span className="text-[11px] text-slate-500 font-medium">
-                  {language === 'km' ? 'សរុបត្រូវទូទាត់ (ដុល្លារ និង រៀល)' : 'Total Payable (USD & KHR)'}
-                </span>
+                <div className="border-t border-slate-700 pt-1.5 font-semibold text-slate-800">
+                  {language === 'km' ? 'ហត្ថលេខាអតិថិជន' : "Customer's Sign"}
+                </div>
               </div>
-
-              <div className="text-right">
-                <span className="text-2xl font-black text-slate-950 font-mono tracking-tight block">
-                  {formatUSD(grandTotal)}
-                </span>
-                <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200/60 inline-block mt-0.5">
-                  {formatKHR(grandTotal)}
-                </span>
+              <div>
+                <div className="border-t border-slate-700 pt-1.5 font-semibold text-slate-800">
+                  {language === 'km' ? 'តំណាងហាង TechTonic Store' : 'For: TechTonic Store'}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Footer Guarantee & Contact */}
-        <div className="mt-8 pt-6 border-t border-dashed border-slate-200 text-center text-xs text-slate-500 space-y-1">
-          <p className="font-medium text-slate-700">
-            {language === 'km'
-              ? 'សូមអរគុណសម្រាប់ការទិញទំនិញនៅ TechTonic Store កម្ពុជា!'
-              : 'Thank you for shopping with TechTonic Store Cambodia!'}
-          </p>
-          <p className="text-[11px] text-slate-400">
-            {language === 'km' ? (
-              <>
-                សម្រាប់ការប្តូរទំនិញ ការទាមទារធានា ឬជំនួយ សូមផ្ញើអ៊ីមែលមកកាន់{' '}
-                <span className="text-blue-600 font-medium">support@techtonic.store</span> ឬទូរស័ព្ទមកកាន់{' '}
-                <span className="text-slate-600 font-medium">+855 23 888 999</span> (ច័ន្ទ–អាទិត្យ ៨ព្រឹក–៨យប់)។
-              </>
-            ) : (
-              <>
-                For returns, warranty claims, or support, email{' '}
-                <span className="text-blue-600 font-medium">support@techtonic.store</span> or call hotline{' '}
-                <span className="text-slate-600 font-medium">+855 23 888 999</span> (Mon–Sun 8AM–8PM).
-              </>
-            )}
-          </p>
+        {/* Bottom Dark Store Contact Bar */}
+        <div className="bg-[#0f172a] text-white px-4 py-2.5 flex flex-wrap items-center justify-center sm:justify-between gap-x-5 gap-y-1.5 text-[11px] font-medium">
+          <span className="inline-flex items-center gap-1.5">
+            <Send className="w-3.5 h-3.5 text-slate-300" />
+            <span>@techtonic_order_2026_bot</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Phone className="w-3.5 h-3.5 text-slate-300" />
+            <span>+855 23 888 999</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Mail className="w-3.5 h-3.5 text-slate-300" />
+            <span>support@techtonic.store</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Globe className="w-3.5 h-3.5 text-slate-300" />
+            <span>techtonic.store</span>
+          </span>
         </div>
 
+        {/* Bottom Tagline */}
+        <div className="pt-2.5 text-center text-[11px] font-bold tracking-[0.2em] uppercase text-slate-800">
+          {language === 'km' ? 'សូមអរគុណសម្រាប់ការគាំទ្រហាងយើងខ្ញុំ' : 'THANKS FOR YOUR BUSINESS'}
+        </div>
       </div>
     </div>
   );

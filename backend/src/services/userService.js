@@ -68,24 +68,20 @@ export async function validateRegistrationEmail(rawEmail = '') {
 
   const canonical = canonicalizeGmail(clean);
   const firestore = ensureDb();
-  const usersSnap = await firestore.collection('users').select('email', 'canonicalEmail').get();
+  const [byCanonical, byExact] = await Promise.all([
+    firestore.collection('users').where('canonicalEmail', '==', canonical).limit(1).get(),
+    firestore.collection('users').where('email', '==', clean).limit(1).get(),
+  ]);
 
-  const existingCollision = usersSnap.docs.some((doc) => {
-    const d = doc.data() || {};
-    const existingEmail = String(d.email || '').trim().toLowerCase();
-    const existingCanonical = d.canonicalEmail || canonicalizeGmail(existingEmail);
-    return existingEmail === clean || (existingCanonical && existingCanonical === canonical);
-  });
-
-  if (existingCollision) {
+  if (!byCanonical.empty || !byExact.empty) {
     throw new AppError(
-      'An account with this Gmail address (or dot alias) already exists.',
-      409,
-      'ALIAS_OR_EMAIL_EXISTS'
+      'Unable to complete registration with this email address. Please sign in or try another Gmail.',
+      400,
+      'REGISTRATION_NOT_ALLOWED'
     );
   }
 
-  return { valid: true, email: clean, canonicalEmail: canonical };
+  return { valid: true };
 }
 
 /**
@@ -193,6 +189,15 @@ function sanitizeAvatarInput(rawAvatar) {
   throw new AppError('Unsupported profile image format', 400, 'INVALID_AVATAR');
 }
 
+const MAX_SAVED_ADDRESSES = 20;
+
+function cleanUserField(val, maxLen = 120) {
+  return String(val ?? '')
+    .replace(/[<>]/g, '')
+    .trim()
+    .slice(0, maxLen);
+}
+
 /**
  * Updates whitelisted profile fields for the authenticated user.
  */
@@ -207,12 +212,15 @@ export async function updateUserProfile(firebaseUser, payload = {}) {
 
   const nextName = payload.fullName ?? payload.name;
   if (typeof nextName === 'string' && nextName.trim()) {
-    updates.fullName = nextName.trim();
-    updates.name = nextName.trim();
+    const cleanName = cleanUserField(nextName, 80);
+    if (cleanName) {
+      updates.fullName = cleanName;
+      updates.name = cleanName;
+    }
   }
 
   if (typeof payload.phone === 'string') {
-    updates.phone = payload.phone.trim();
+    updates.phone = cleanUserField(payload.phone, 32);
   }
 
   if (Object.prototype.hasOwnProperty.call(payload, 'avatar')) {
@@ -246,10 +254,10 @@ export async function updateUserProfile(firebaseUser, payload = {}) {
  */
 export async function createAddress(uid, payload = {}) {
   const firestore = ensureDb();
-  const fullName = String(payload.fullName || '').trim();
-  const phone = String(payload.phone || '').trim();
-  const address = String(payload.address || '').trim();
-  const city = String(payload.city || '').trim();
+  const fullName = cleanUserField(payload.fullName, 80);
+  const phone = cleanUserField(payload.phone, 32);
+  const address = cleanUserField(payload.address, 200);
+  const city = cleanUserField(payload.city, 80);
 
   if (!fullName || !phone || !address || !city) {
     throw new AppError(
@@ -261,6 +269,13 @@ export async function createAddress(uid, payload = {}) {
 
   const addressesRef = firestore.collection('users').doc(uid).collection('addresses');
   const existingSnap = await addressesRef.get();
+  if (existingSnap.size >= MAX_SAVED_ADDRESSES) {
+    throw new AppError(
+      `Maximum of ${MAX_SAVED_ADDRESSES} saved addresses reached. Please remove an older address first.`,
+      400,
+      'ADDRESS_LIMIT_EXCEEDED'
+    );
+  }
   const shouldBeDefault = Boolean(payload.isDefault) || existingSnap.empty;
 
   const batch = firestore.batch();
@@ -276,14 +291,14 @@ export async function createAddress(uid, payload = {}) {
   const nowIso = new Date().toISOString();
   const record = {
     id: newRef.id,
-    title: String(payload.title || 'Delivery Address').trim(),
+    title: cleanUserField(payload.title || 'Delivery Address', 60) || 'Delivery Address',
     isDefault: shouldBeDefault,
     fullName,
     phone,
     address,
     city,
-    province: String(payload.province || 'Phnom Penh').trim(),
-    postalCode: String(payload.postalCode || '12000').trim(),
+    province: cleanUserField(payload.province || 'Phnom Penh', 80) || 'Phnom Penh',
+    postalCode: cleanUserField(payload.postalCode || '12000', 20) || '12000',
     createdAt: nowIso,
     updatedAt: nowIso,
   };
@@ -331,22 +346,23 @@ export async function updateAddress(uid, addressId, payload = {}) {
     });
   }
 
-  const allowedKeys = [
-    'title',
-    'isDefault',
-    'fullName',
-    'phone',
-    'address',
-    'city',
-    'province',
-    'postalCode',
-  ];
+  const fieldMaxLens = {
+    title: 60,
+    fullName: 80,
+    phone: 32,
+    address: 200,
+    city: 80,
+    province: 80,
+    postalCode: 20,
+  };
 
   const updates = { updatedAt: new Date().toISOString() };
-  for (const key of allowedKeys) {
-    if (payload[key] !== undefined) {
-      updates[key] =
-        typeof payload[key] === 'string' ? payload[key].trim() : Boolean(payload[key]);
+  if (payload.isDefault !== undefined) {
+    updates.isDefault = Boolean(payload.isDefault);
+  }
+  for (const [key, maxLen] of Object.entries(fieldMaxLens)) {
+    if (typeof payload[key] === 'string') {
+      updates[key] = cleanUserField(payload[key], maxLen);
     }
   }
 
@@ -397,6 +413,14 @@ export async function deleteAddress(uid, addressId) {
   return { deletedId: targetRef.id };
 }
 
+function sanitizeSyncImage(raw) {
+  if (typeof raw !== 'string') return '';
+  const clean = raw.trim().slice(0, 500);
+  if (/^\/images\/[A-Za-z0-9/_\-.]+$/.test(clean)) return clean;
+  if (/^https?:\/\/[^\s<>"'`]+$/i.test(clean)) return clean;
+  return '';
+}
+
 function sanitizeSyncItems(items, mode = 'cart') {
   if (!Array.isArray(items)) return [];
   return items
@@ -404,14 +428,14 @@ function sanitizeSyncItems(items, mode = 'cart') {
     .slice(0, 50)
     .map((item) => {
       const base = {
-        id: String(item.id).slice(0, 120),
-        name: String(item.name || '').slice(0, 180),
+        id: cleanUserField(item.id, 120),
+        name: cleanUserField(item.name, 180),
         price: Number(item.price) || 0,
-        image: typeof item.image === 'string' ? item.image.slice(0, 500) : '',
-        category: typeof item.category === 'string' ? item.category.slice(0, 80) : '',
+        image: sanitizeSyncImage(item.image),
+        category: cleanUserField(item.category, 80),
       };
       if (mode === 'cart') {
-        const variant = String(item.variant || item.selectedVariant || 'Standard').slice(0, 80);
+        const variant = cleanUserField(item.variant || item.selectedVariant || 'Standard', 80) || 'Standard';
         return {
           ...base,
           variant,

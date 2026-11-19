@@ -143,21 +143,30 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
         });
         L.marker(routeCoordinates[0], { icon: originIcon }).addTo(map);
 
-        // 4. Destination Marker: Customer Destination
-        const destName = shippingAddress?.fullName || 'Customer';
-        const safeCity = shippingAddress?.city || shippingAddress?.province || destInfo.label;
+        // 4. Destination Marker: Customer Destination (DOM nodes + textContent prevent Stored XSS)
+        const destName = String(shippingAddress?.fullName || 'Customer').trim();
+        const safeCity = String(shippingAddress?.city || shippingAddress?.province || destInfo.label || '').trim();
+        const destWrapper = document.createElement('div');
+        destWrapper.style.cssText =
+          'display:flex; align-items:center; gap:6px; transform:translate(-50%, -50%); cursor:pointer;';
+
+        const destPin = document.createElement('div');
+        destPin.style.cssText =
+          'width:34px; height:34px; border-radius:50%; background:#059669; border:2.5px solid #ffffff; box-shadow:0 3px 12px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; color:#ffffff;';
+        destPin.innerHTML =
+          '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>';
+
+        const destLabel = document.createElement('div');
+        destLabel.style.cssText =
+          'background:#ffffff; border:1px solid rgba(0,0,0,0.15); padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700; color:#0f172a; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.25);';
+        destLabel.textContent = `${destName} • ${safeCity}`;
+
+        destWrapper.appendChild(destPin);
+        destWrapper.appendChild(destLabel);
+
         const destIcon = L.divIcon({
           className: 'custom-dest-icon',
-          html: `
-            <div style="display:flex; align-items:center; gap:6px; transform:translate(-50%, -50%); cursor:pointer;">
-              <div style="width:34px; height:34px; border-radius:50%; background:#059669; border:2.5px solid #ffffff; box-shadow:0 3px 12px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; color:#ffffff;">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-              </div>
-              <div style="background:#ffffff; border:1px solid rgba(0,0,0,0.15); padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700; color:#0f172a; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.25);">
-                ${destName} • ${safeCity}
-              </div>
-            </div>
-          `,
+          html: destWrapper,
           iconSize: [34, 34],
         });
         L.marker(routeCoordinates[routeCoordinates.length - 1], { icon: destIcon }).addTo(map);
@@ -215,26 +224,30 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
-    if (tileLayerRef.current) {
-      mapInstanceRef.current.removeLayer(tileLayerRef.current);
-    }
+    try {
+      if (tileLayerRef.current) {
+        mapInstanceRef.current.removeLayer(tileLayerRef.current);
+      }
 
-    if (mapMode === 'satellite') {
-      // High-Resolution Google Earth Satellite Hybrid (Real Homes, Rooftops & Buildings)
-      tileLayerRef.current = L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-        subdomains: ['0', '1', '2', '3'],
-        maxZoom: 20,
-        maxNativeZoom: 20,
-        attribution: '&copy; Google Earth &bull; Maxar Imagery',
-      }).addTo(mapInstanceRef.current);
-    } else {
-      // Standard Clean Street Map
-      tileLayerRef.current = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-        subdomains: ['0', '1', '2', '3'],
-        maxZoom: 20,
-        maxNativeZoom: 20,
-        attribution: '&copy; Google Maps',
-      }).addTo(mapInstanceRef.current);
+      if (mapMode === 'satellite') {
+        // High-Resolution Google Earth Satellite Hybrid (Real Homes, Rooftops & Buildings)
+        tileLayerRef.current = L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+          subdomains: ['0', '1', '2', '3'],
+          maxZoom: 20,
+          maxNativeZoom: 20,
+          attribution: '&copy; Google Earth &bull; Maxar Imagery',
+        }).addTo(mapInstanceRef.current);
+      } else {
+        // Standard Clean Street Map
+        tileLayerRef.current = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+          subdomains: ['0', '1', '2', '3'],
+          maxZoom: 20,
+          maxNativeZoom: 20,
+          attribution: '&copy; Google Maps',
+        }).addTo(mapInstanceRef.current);
+      }
+    } catch (err) {
+      console.warn('[DeliveryMap] Tile layer update skipped:', err);
     }
   }, [mapMode]);
 
@@ -242,8 +255,12 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
   useEffect(() => {
     if (!mapInstanceRef.current || !courierMarkerRef.current) return;
 
-    courierMarkerRef.current.setLatLng(telemetry.coord);
-    mapInstanceRef.current.panTo(telemetry.coord, { animate: true, duration: 0.8 });
+    try {
+      courierMarkerRef.current.setLatLng(telemetry.coord);
+      mapInstanceRef.current.panTo(telemetry.coord, { animate: true, duration: 0.8 });
+    } catch (err) {
+      console.warn('[DeliveryMap] Marker pan skipped:', err);
+    }
   }, [orderStatus]);
 
   // Clean Navigation Controls

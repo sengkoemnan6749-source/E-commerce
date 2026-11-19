@@ -3,10 +3,7 @@ import { db } from '../config/firebase.js';
 
 export function getClientIp(req) {
   if (!req) return 'unknown';
-  const forwarded = req.headers?.['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.trim()) {
-    return forwarded.split(',')[0].trim();
-  }
+  // Trust Express req.ip (governed by app.set('trust proxy', ...)), never raw client x-forwarded-for headers
   return req.ip || req.socket?.remoteAddress || 'unknown';
 }
 

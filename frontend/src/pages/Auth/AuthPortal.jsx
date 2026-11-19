@@ -13,6 +13,7 @@ import {
 import { useAuth, useToast, useLanguage } from '../../store/StoreContext';
 import { ToastContainer } from '../../components/common/Toast';
 import { validateRegistrationGmail, evaluatePasswordStrength } from '../../utils/validation';
+import { sanitizeInternalRedirect } from '../../utils/urlSecurity';
 import { authService } from '../../services/authService';
 
 export default function AuthPortal({ defaultMode = 'signin' }) {
@@ -61,10 +62,11 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
   const [twoFaUseRecovery, setTwoFaUseRecovery] = useState(false);
   const [twoFaRecoveryCode, setTwoFaRecoveryCode] = useState('');
 
-  // Query redirect handling
+  // Query redirect handling (sanitized to strictly allow same-origin relative routes)
   const searchParams = new URLSearchParams(location.search);
-  const redirectQuery = searchParams.get('redirect');
-  const from = location.state?.from?.pathname || redirectQuery || null;
+  const redirectQuery = sanitizeInternalRedirect(searchParams.get('redirect'));
+  const stateFrom = sanitizeInternalRedirect(location.state?.from?.pathname);
+  const from = stateFrom || redirectQuery || null;
 
   // Anti-Brute-Force Sign-In Protection (5 failed attempts -> 30s lockout)
   const LOCKOUT_KEY = 'techtonic_auth_lockout';

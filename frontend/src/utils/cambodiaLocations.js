@@ -41,10 +41,11 @@ const CAMBODIA_COORDINATES = [
 ];
 
 export function resolveDestinationCoord(shippingAddress = {}) {
+  const addr = shippingAddress && typeof shippingAddress === 'object' ? shippingAddress : {};
   const haystack = [
-    shippingAddress.address,
-    shippingAddress.city,
-    shippingAddress.province,
+    addr.address,
+    addr.city,
+    addr.province,
   ]
     .filter(Boolean)
     .join(' ')
@@ -58,7 +59,7 @@ export function resolveDestinationCoord(shippingAddress = {}) {
 
   return {
     coord: [11.5475, 104.9228],
-    label: [shippingAddress.city, shippingAddress.province].filter(Boolean).join(', ') || 'Phnom Penh',
+    label: [addr.city, addr.province].filter(Boolean).join(', ') || 'Phnom Penh',
   };
 }
 

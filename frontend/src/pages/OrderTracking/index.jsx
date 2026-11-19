@@ -24,9 +24,10 @@ import { productService } from '../../services/productService';
 import OrderStepper from '../../components/order/OrderStepper';
 import DeliveryMap from './DeliveryMap';
 import { formatUSD } from '../../utils/formatPrice';
-import { formatDate } from '../../utils/formatDate';
+import { formatDate, parseValidDate } from '../../utils/formatDate';
 import { useToast, useAuth, useLanguage } from '../../store/StoreContext';
 import { translateOrderStatusLabel } from '../../utils/translations';
+import { toSafeExternalUrl } from '../../utils/urlSecurity';
 
 export default function OrderTracking() {
   const { id } = useParams();
@@ -54,7 +55,15 @@ export default function OrderTracking() {
     const load = async () => {
       if (id) {
         const cached = orderService.getOrderById(id);
-        if (cached && active) setOrder(cached);
+        if (cached && active) {
+          setOrder(cached);
+          if (!lastLookupRef.current?.phone && !lastLookupRef.current?.email) {
+            const cachedPhone = cached.customerPhone || cached.shippingAddress?.phone || '';
+            const cachedEmail = cached.customerEmail || cached.shippingAddress?.email || '';
+            if (cachedPhone) lastLookupRef.current = { phone: cachedPhone };
+            else if (cachedEmail) lastLookupRef.current = { email: cachedEmail };
+          }
+        }
         setLoadingOrder(!cached);
         try {
           const fetched = await orderService.fetchOrderById(id, lastLookupRef.current);
@@ -83,14 +92,17 @@ export default function OrderTracking() {
     return () => { active = false; };
   }, [id, isAuthenticated]);
 
-  // Real-time status sync (tab focus + 5s live polling while visible and not final)
+  // Real-time status sync (tab focus + live polling while visible and not final)
   useEffect(() => {
-    const activeId = id || order?.id;
+    const activeId = order?.id;
     if (!activeId && !isAuthenticated) return undefined;
+    if (id && !order?.id && !isAuthenticated) return undefined;
 
     let stopped = false;
+    let inFlight = false;
     const refreshLiveOrder = async () => {
-      if (stopped || document.visibilityState !== 'visible') return;
+      if (stopped || inFlight || document.visibilityState !== 'visible') return;
+      inFlight = true;
       try {
         if (activeId) {
           const fresh = await orderService.fetchOrderById(activeId, lastLookupRef.current);
@@ -105,6 +117,8 @@ export default function OrderTracking() {
         }
       } catch {
         // Silent background refresh
+      } finally {
+        inFlight = false;
       }
     };
 
@@ -139,7 +153,7 @@ export default function OrderTracking() {
       }
     }
 
-    const intervalId = window.setInterval(refreshLiveOrder, isFinal ? 12000 : 5000);
+    const intervalId = window.setInterval(refreshLiveOrder, isFinal ? 25000 : 12000);
 
     return () => {
       stopped = true;
@@ -226,7 +240,7 @@ export default function OrderTracking() {
     if (s.includes('deliver') && !s.includes('out')) {
       const deliveredAt = formatEventTime(deliveredEvt?.timestamp || order.updatedAt || order.createdAt);
       return {
-        badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        badgeColor: 'bg-white text-slate-800 border-slate-200',
         dotColor: 'bg-emerald-500',
         headline: language === 'km' ? 'កញ្ចប់ទំនិញត្រូវបានប្រគល់ជោគជ័យ' : 'Package Delivered',
         etaText: language === 'km' ? `បានប្រគល់នៅ ${deliveredAt}` : `Delivered on ${deliveredAt}`,
@@ -234,13 +248,13 @@ export default function OrderTracking() {
           language === 'km'
             ? `កញ្ចប់ទំនិញរបស់អ្នកត្រូវបានប្រគល់ដោយសុវត្ថិភាពជូនអតិថិជន ${order.customerName || ''}។`
             : `Your package was safely delivered to ${order.customerName || 'the recipient'}.`,
-        alertBg: 'bg-emerald-50/70 border-emerald-200/80 text-emerald-900',
+        alertBg: 'bg-[#fafafa] border-slate-200 text-slate-800',
         alertIconColor: 'text-emerald-600',
       };
     }
     if (s.includes('out')) {
       return {
-        badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
+        badgeColor: 'bg-white text-slate-800 border-slate-200',
         dotColor: 'bg-blue-600 animate-pulse',
         headline: language === 'km' ? 'កំពុងដឹកជញ្ជូន — មកដល់ថ្ងៃនេះ' : 'Out for Delivery — Arriving Today',
         etaText: order.tracking?.estimatedDelivery || order.estimatedDelivery || (language === 'km' ? 'ថ្ងៃនេះ' : 'Expected Today'),
@@ -248,13 +262,13 @@ export default function OrderTracking() {
           language === 'km'
             ? `អ្នកដឹកជញ្ជូន (${courierLabel}) កំពុងធ្វើដំណើរទៅ ${order.shippingAddress?.address || order.shippingAddress?.city || ''}។`
             : `${courierLabel} is in transit to ${order.shippingAddress?.address || order.shippingAddress?.city || 'your address'}.`,
-        alertBg: 'bg-blue-50/70 border-blue-200/80 text-blue-900',
+        alertBg: 'bg-[#fafafa] border-slate-200 text-slate-800',
         alertIconColor: 'text-blue-600',
       };
     }
     if (s.includes('ship')) {
       return {
-        badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        badgeColor: 'bg-white text-slate-800 border-slate-200',
         dotColor: 'bg-indigo-600',
         headline: language === 'km' ? 'កំពុងដឹកជញ្ជូន — ចេញពីមជ្ឈមណ្ឌលកណ្ដាល' : 'In Transit — Departed Central Depot',
         etaText: order.tracking?.estimatedDelivery || order.estimatedDelivery || (language === 'km' ? 'ក្នុងរយៈពេល ២៤ ម៉ោង' : 'Within 24 Hours'),
@@ -262,13 +276,13 @@ export default function OrderTracking() {
           language === 'km'
             ? 'កញ្ចប់ទំនិញបានចេញពីមជ្ឈមណ្ឌលដឹកជញ្ជូនទួលគោក ហើយកំពុងធ្វើដំណើរ។'
             : 'Package departed Toul Kork Central Logistics Hub and is en route.',
-        alertBg: 'bg-indigo-50/70 border-indigo-200/80 text-indigo-900',
+        alertBg: 'bg-[#fafafa] border-slate-200 text-slate-800',
         alertIconColor: 'text-indigo-600',
       };
     }
     if (s.includes('process')) {
       return {
-        badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
+        badgeColor: 'bg-white text-slate-800 border-slate-200',
         dotColor: 'bg-amber-500',
         headline: language === 'km' ? 'កំពុងរៀបចំ និងត្រួតពិនិត្យគុណភាព' : 'Processing & Quality Inspection',
         etaText: language === 'km' ? 'ប៉ាន់ស្មានដឹកចេញ៖ ថ្ងៃនេះ' : 'Estimated Dispatch: Today',
@@ -276,12 +290,12 @@ export default function OrderTracking() {
           language === 'km'
             ? 'ឧបករណ៍ត្រូវបានត្រួតពិនិត្យ បំពាក់បាកូដធានា និងវេចខ្ចប់រួចរាល់សម្រាប់ដឹកជញ្ជូន។'
             : 'Hardware verified, warranty barcode assigned, and package sealed for transit.',
-        alertBg: 'bg-amber-50/70 border-amber-200/80 text-amber-900',
+        alertBg: 'bg-[#fafafa] border-slate-200 text-slate-800',
         alertIconColor: 'text-amber-600',
       };
     }
     return {
-      badgeColor: 'bg-slate-100 text-slate-800 border-slate-200',
+      badgeColor: 'bg-white text-slate-800 border-slate-200',
       dotColor: 'bg-blue-600',
       headline: language === 'km' ? 'បានបញ្ជាក់ការកុម្ម៉ង់' : 'Order Confirmed',
       etaText: language === 'km' ? 'ប៉ាន់ស្មានដឹកចេញ៖ ថ្ងៃស្អែក' : 'Estimated Dispatch: Tomorrow',
@@ -289,16 +303,15 @@ export default function OrderTracking() {
         language === 'km'
           ? 'បានទទួលការទូទាត់តាម Bakong KHQR រួចរាល់។ ការកុម្ម៉ង់កំពុងរង់ចាំក្រុមរៀបចំទំនិញ។'
           : 'Payment received via Bakong KHQR. Order queued for fulfillment team.',
-      alertBg: 'bg-slate-50 border-slate-200 text-slate-800',
+      alertBg: 'bg-[#fafafa] border-slate-200 text-slate-800',
       alertIconColor: 'text-slate-600',
     };
   };
 
   const formatEventTime = (raw) => {
-    const dateLabel = formatDate(raw);
-    if (!raw) return dateLabel;
-    const parsed = raw?._seconds ? new Date(raw._seconds * 1000) : new Date(raw);
-    if (Number.isNaN(parsed.getTime())) return dateLabel;
+    const parsed = parseValidDate(raw);
+    if (!parsed) return '';
+    const dateLabel = formatDate(parsed);
     const timeLabel = parsed.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -704,31 +717,33 @@ export default function OrderTracking() {
                   </h3>
                 </div>
                 <span className="text-xs text-slate-500 font-semibold">
-                  {(order.items || []).length} {language === 'km' ? 'មុខទំនិញ' : 'items'}
+                  {(Array.isArray(order.items) ? order.items : []).length} {language === 'km' ? 'មុខទំនិញ' : 'items'}
                 </span>
               </div>
 
               <div className="divide-y divide-slate-100">
-                {(order.items || []).map((item, idx) => {
+                {(Array.isArray(order.items) ? order.items : []).map((item, idx) => {
                   const cleanImg = productService.getCleanProductImage(item, item.selectedVariant || item.variant);
+                  const qty = Number(item?.quantity) || 0;
+                  const price = Number(item?.price) || 0;
                   return (
                     <div key={idx} className="py-3 flex items-center justify-between gap-3 text-xs">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200/80 p-1 flex-shrink-0 flex items-center justify-center">
-                          <img src={cleanImg} alt={item.name} className="w-full h-full object-contain" />
+                          <img src={cleanImg} alt={item?.name || 'Product'} className="w-full h-full object-contain" />
                         </div>
                         <div className="min-w-0">
                           <span className="font-bold text-slate-900 block truncate">
-                            {item.name}
+                            {item?.name || 'Item'}
                           </span>
                           <span className="text-[11px] text-slate-400 block">
-                            {language === 'km' ? 'ចំនួន៖' : 'Qty:'} {item.quantity}{' '}
-                            {item.selectedVariant ? `• ${item.selectedVariant}` : ''}
+                            {language === 'km' ? 'ចំនួន៖' : 'Qty:'} {qty}{' '}
+                            {item?.selectedVariant ? `• ${item.selectedVariant}` : ''}
                           </span>
                         </div>
                       </div>
                       <span className="font-bold text-slate-900 font-mono text-right shrink-0">
-                        {formatUSD(item.price * item.quantity)}
+                        {formatUSD(price * qty)}
                       </span>
                     </div>
                   );
@@ -740,7 +755,12 @@ export default function OrderTracking() {
                 <div className="flex justify-between">
                   <span>{language === 'km' ? 'តម្លៃទំនិញសរុប៖' : 'Subtotal:'}</span>
                   <span className="font-mono text-slate-900 font-medium">
-                    {formatUSD((order.items || []).reduce((acc, i) => acc + (i.price * i.quantity), 0) || order.total)}
+                    {formatUSD(
+                      (Array.isArray(order.items) ? order.items : []).reduce(
+                        (acc, i) => acc + (Number(i?.price) || 0) * (Number(i?.quantity) || 0),
+                        0
+                      ) || order.total
+                    )}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -810,9 +830,14 @@ export default function OrderTracking() {
 
               <div className="flex flex-col gap-2">
                 <a
-                  href={order.carrierWebsite || (order.deliveryPartner?.includes('J&T') ? 'https://www.jtexpresskh.com/' : 'https://vireakbuntham.com/')}
+                  href={toSafeExternalUrl(
+                    order.carrierWebsite,
+                    order.deliveryPartner?.includes('J&T')
+                      ? 'https://www.jtexpresskh.com/'
+                      : 'https://vireakbuntham.com/'
+                  )}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-xs"
                 >
                   <span>

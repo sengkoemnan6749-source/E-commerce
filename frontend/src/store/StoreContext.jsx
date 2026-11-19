@@ -113,7 +113,18 @@ export function StoreProvider({ children }) {
               orderService.fetchMyOrders().catch(() => {});
             }
           }
-        } catch {
+        } catch (err) {
+          if (
+            err?.status === 401 ||
+            err?.status === 403 ||
+            err?.code === 'TWO_FACTOR_REQUIRED' ||
+            err?.code === 'TOKEN_REVOKED'
+          ) {
+            setRawUser(null);
+            if (err?.code === 'TWO_FACTOR_REQUIRED') {
+              setPending2fa({ email: fbUser.email || '' });
+            }
+          }
           // Non-fatal if backend is temporarily offline
         } finally {
           setAuthReady(true);
@@ -469,7 +480,7 @@ export function StoreProvider({ children }) {
 
   // Cart calculations
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingFee = subtotal >= 100 || subtotal === 0 ? 0 : 5;
+  const shippingFee = 0; // Free shipping enabled for direct testing & checkout
   const total = Math.max(0, subtotal + shippingFee - discount);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 

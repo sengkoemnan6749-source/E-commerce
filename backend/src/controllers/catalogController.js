@@ -73,7 +73,11 @@ export async function createProductReview(req, res, next) {
 
 export async function markReviewHelpful(req, res, next) {
   try {
-    const updated = await catalogService.markReviewHelpful(req.params.id, req.params.reviewId);
+    const updated = await catalogService.markReviewHelpful(
+      req.params.id,
+      req.params.reviewId,
+      req.user?.uid
+    );
     res.json({
       success: true,
       data: updated,

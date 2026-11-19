@@ -18,6 +18,7 @@ import {
 } from '../controllers/adminController.js';
 import { requireAdmin, verifyFirebaseToken } from '../middleware/authMiddleware.js';
 import { requireAdminVault } from '../middleware/adminVaultMiddleware.js';
+import { createRateLimiter } from '../middleware/securityMiddleware.js';
 import {
   beginVaultSetup,
   confirmVaultSetup,
@@ -39,14 +40,21 @@ import {
 
 const router = Router();
 
+const adminVaultAttemptLimiter = createRateLimiter({
+  name: 'admin-vault-attempt',
+  windowMs: 10 * 60 * 1000,
+  maxRequests: 10,
+  blockDurationMs: 15 * 60 * 1000,
+});
+
 // Layer 1: All /api/admin/* endpoints require a verified Firebase token AND admin role
 router.use(verifyFirebaseToken, requireAdmin);
 
 // Layers 2-5 Admin Vault lifecycle routes
 router.get('/vault/status', getVaultStatus);
 router.post('/vault/setup/begin', beginVaultSetup);
-router.post('/vault/setup/confirm', confirmVaultSetup);
-router.post('/vault/unlock', unlockVault);
+router.post('/vault/setup/confirm', adminVaultAttemptLimiter, confirmVaultSetup);
+router.post('/vault/unlock', adminVaultAttemptLimiter, unlockVault);
 router.post('/vault/lock', lockVault);
 
 // Layers 2-5: Require unlocked, IP/device-bound Admin Security Vault token for all admin operations

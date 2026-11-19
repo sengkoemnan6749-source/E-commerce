@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ShieldCheck, CheckCircle2, Lock, UserCheck } from 'lucide-react';
 import { useCart, useAuth, useToast, useLanguage } from '../../store/StoreContext';
 import ShippingForm from '../../components/checkout/ShippingForm';
 import PaymentMethod from '../../components/checkout/PaymentMethod';
-import CardPayment from '../../components/checkout/CardPayment';
 import KHQRPayment from '../../components/checkout/KHQRPayment';
 import OrderSummary from '../../components/checkout/OrderSummary';
 import Button from '../../components/common/Button';
@@ -12,10 +11,28 @@ import { orderService } from '../../services/orderService';
 import { paymentService } from '../../services/paymentService';
 import { validatePhone, validateEmail } from '../../utils/validation';
 
+function buildInitialShippingData(user) {
+  const defaultAddr =
+    user?.addresses?.find((a) => a.isDefault) ||
+    user?.addresses?.[0] ||
+    user?.savedAddresses?.[0] ||
+    null;
+
+  return {
+    fullName: user?.fullName || user?.name || defaultAddr?.fullName || '',
+    phone: user?.phone || defaultAddr?.phone || '',
+    address: defaultAddr?.address || '',
+    city: defaultAddr?.city || '',
+    province: defaultAddr?.province || 'Phnom Penh',
+    postalCode: defaultAddr?.postalCode || '',
+    saveAddress: false,
+  };
+}
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, subtotal, shippingFee, discountAmount, total, appliedCoupon, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, addAddress } = useAuth();
   const { addToast } = useToast();
   const { language } = useLanguage();
 
@@ -34,44 +51,41 @@ export default function Checkout() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const khqrSessionRef = useRef(null);
+  const finalizingRef = useRef(false);
+  const getUserKey = (u) => u?.id || u?.uid || u?.email || null;
+  const lastUserIdRef = useRef(getUserKey(user));
 
-  // Step 1: Shipping Form State (prefill if user is logged in)
-  const defaultAddr = user?.addresses?.find(a => a.isDefault) || user?.addresses?.[0] || user?.savedAddresses?.[0] || null;
-  const [shippingData, setShippingData] = useState({
-    fullName: user?.fullName || user?.name || 'Sara Meng',
-    phone: user?.phone || '012 888 999',
-    address: defaultAddr?.address || 'Street 310, Building 24, BKK1',
-    city: defaultAddr?.city || 'Phnom Penh',
-    province: defaultAddr?.province || 'Phnom Penh',
-    postalCode: defaultAddr?.postalCode || '120101',
-    saveAddress: true
-  });
+  // Step 1: Shipping Form State (prefill only from real saved user profile/address)
+  const [shippingData, setShippingData] = useState(() => buildInitialShippingData(user));
   const [shippingErrors, setShippingErrors] = useState({});
 
-  // Sync shipping data if user profile loads
+  // Sync shipping data when user profile loads or account switches
   useEffect(() => {
-    if (user) {
-      const addr = user.addresses?.find(a => a.isDefault) || user.addresses?.[0] || user.savedAddresses?.[0] || null;
-      setShippingData(prev => ({
+    if (!user) return;
+    const nextUserId = getUserKey(user);
+    const prevUserId = lastUserIdRef.current;
+    lastUserIdRef.current = nextUserId;
+
+    const defaults = buildInitialShippingData(user);
+    setShippingData((prev) => {
+      if (prevUserId && prevUserId !== nextUserId) {
+        return { ...defaults, deliveryPartner: prev.deliveryPartner || 'vireak_buntham' };
+      }
+      return {
         ...prev,
-        fullName: prev.fullName || user.fullName || user.name || '',
-        phone: prev.phone || user.phone || '',
-        address: prev.address || addr?.address || 'Street 310, Building 24, BKK1',
-        city: prev.city || addr?.city || 'Phnom Penh',
-        province: prev.province || addr?.province || 'Phnom Penh'
-      }));
-    }
+        fullName: prev.fullName || defaults.fullName,
+        phone: prev.phone || defaults.phone,
+        address: prev.address || defaults.address,
+        city: prev.city || defaults.city,
+        province: prev.province || defaults.province,
+        postalCode: prev.postalCode || defaults.postalCode,
+      };
+    });
   }, [user]);
 
-  // Step 2: Payment State
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('khqr'); // 'khqr' | 'card'
-  const [cardData, setCardData] = useState({
-    cardNumber: '4532 9845 2314 9012',
-    cardholderName: (user?.fullName || user?.name || 'Sara Meng').toUpperCase(),
-    expiryDate: '12/28',
-    cvv: '888'
-  });
-  const [cardErrors, setCardErrors] = useState({});
+  // Step 2: Payment Method (Bakong KHQR only)
+  const selectedPaymentMethod = 'khqr';
 
   // Auth Guard Screen if not authenticated
   if (!user) {
@@ -153,15 +167,28 @@ export default function Checkout() {
   };
 
   // Complete Order
-  const handleFinalizeOrder = async () => {
+  const handleFinalizeOrder = async (preVerifiedPayment = null) => {
+    if (finalizingRef.current) return;
+    finalizingRef.current = true;
     setIsProcessing(true);
 
     try {
       let paymentResult;
-      if (selectedPaymentMethod === 'card') {
-        paymentResult = await paymentService.processCardPayment(cardData, total);
+      if (Number(total || 0) <= 0) {
+        paymentResult = {
+          success: true,
+          status: 'PAID',
+          transactionId: `FREE-${Date.now()}`,
+          paymentMethod: 'Promo / Free Checkout ($0.00)',
+        };
+      } else if (preVerifiedPayment?.status === 'PAID') {
+        paymentResult = preVerifiedPayment;
       } else {
-        paymentResult = await paymentService.verifyKHQRPayment('mock_khqr_hash');
+        const sessionTarget = khqrSessionRef.current?.md5Hash || khqrSessionRef.current?.transactionId;
+        paymentResult = await paymentService.verifyKHQRPayment(sessionTarget, {
+          amount: total,
+          mode: 'manual',
+        });
       }
 
       const partnerId = shippingData.deliveryPartner || 'vireak_buntham';
@@ -190,7 +217,7 @@ export default function Checkout() {
       const newOrder = await orderService.createOrderAsync({
         userId: user?.id || null,
         customerName: shippingData.fullName || user?.fullName || user?.name || 'Customer',
-        customerPhone: shippingData.phone || user?.phone || '012 345 678',
+        customerPhone: shippingData.phone || user?.phone || '',
         customerEmail: user?.email || 'customer@techtonic.store',
         shippingAddress: shippingData,
         deliveryPartner: carrierInfo.partnerName,
@@ -202,12 +229,39 @@ export default function Checkout() {
         discountAmount: discountAmount,
         total: total,
         appliedCoupon: appliedCoupon?.code || null,
-        paymentMethod: selectedPaymentMethod === 'card' ? 'Credit / Debit Card' : 'KHQR Bakong',
+        paymentMethod:
+          Number(total || 0) <= 0
+            ? 'Promo / Free Checkout ($0.00)'
+            : paymentResult?.currency === 'KHR'
+            ? 'KHQR Bakong (KHR)'
+            : 'KHQR Bakong',
         paymentStatus: 'PAID',
+        payerAccountName: paymentResult?.payerAccountName || '',
         transactionId: paymentResult.transactionId,
         status: 'confirmed',
         estimatedDelivery: carrierInfo.estimatedDelivery
       });
+
+      if (shippingData.saveAddress && user && typeof addAddress === 'function') {
+        const existingList = user.addresses || user.savedAddresses || [];
+        const alreadySaved = existingList.some(
+          (a) =>
+            String(a.address || '').trim().toLowerCase() === shippingData.address.trim().toLowerCase() &&
+            String(a.city || '').trim().toLowerCase() === shippingData.city.trim().toLowerCase() &&
+            String(a.phone || '').trim() === shippingData.phone.trim()
+        );
+        if (!alreadySaved) {
+          addAddress({
+            fullName: shippingData.fullName,
+            phone: shippingData.phone,
+            address: shippingData.address,
+            city: shippingData.city,
+            province: shippingData.province,
+            postalCode: shippingData.postalCode,
+            isDefault: existingList.length === 0,
+          }).catch(() => {});
+        }
+      }
 
       // Clear shopping cart
       clearCart();
@@ -224,6 +278,7 @@ export default function Checkout() {
         'error'
       );
     } finally {
+      finalizingRef.current = false;
       setIsProcessing(false);
     }
   };
@@ -341,25 +396,18 @@ export default function Checkout() {
               </div>
 
               <div className="space-y-6">
-                {/* Payment Selection Tabs */}
-                <PaymentMethod
-                  selectedMethod={selectedPaymentMethod}
-                  onSelectMethod={setSelectedPaymentMethod}
-                />
+                <PaymentMethod selectedMethod="khqr" onSelectMethod={() => {}} />
 
-                {/* Sub-view: Card or KHQR */}
-                {selectedPaymentMethod === 'card' ? (
-                  <CardPayment
-                    cardData={cardData}
-                    onChange={setCardData}
-                    errors={cardErrors}
-                  />
-                ) : (
-                  <KHQRPayment
-                    totalAmount={total}
-                    onSimulateSuccess={handleFinalizeOrder}
-                  />
-                )}
+                <KHQRPayment
+                  totalAmount={total}
+                  cartItems={items}
+                  promoCode={appliedCoupon?.code || null}
+                  customerInfo={{ name: shippingData.fullName, phone: shippingData.phone }}
+                  onSessionChange={(s) => {
+                    khqrSessionRef.current = s;
+                  }}
+                  onPaymentSuccess={(paidReceipt) => handleFinalizeOrder(paidReceipt)}
+                />
               </div>
 
               {/* Bottom Nav Buttons */}
@@ -373,16 +421,18 @@ export default function Checkout() {
                   <span>{language === 'km' ? 'ត្រឡប់ទៅការដឹកជញ្ជូន' : 'Back to Shipping'}</span>
                 </button>
 
-                <Button
-                  variant="primary"
-                  size="lg"
-                  loading={isProcessing}
-                  onClick={handleFinalizeOrder}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Lock className="w-4 h-4 mr-2" />
-                  <span>{language === 'km' ? 'បញ្ជាក់ និងបញ្ចប់ការកុម្ម៉ង់' : 'Confirm & Complete Order'}</span>
-                </Button>
+                {Number(total || 0) <= 0 && (
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    loading={isProcessing}
+                    onClick={() => handleFinalizeOrder()}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Lock className="w-4 h-4 mr-2" />
+                    <span>{language === 'km' ? 'បញ្ជាក់ និងបញ្ចប់ការកុម្ម៉ង់' : 'Confirm & Complete Order'}</span>
+                  </Button>
+                )}
               </div>
             </div>
           )}

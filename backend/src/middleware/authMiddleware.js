@@ -3,7 +3,7 @@ import { AppError } from './errorHandler.js';
 import { recordAuditEvent } from '../services/auditService.js';
 
 function getAdminEmails() {
-  return (process.env.ADMIN_EMAILS || 'admin@techtonic.com,admin@techtonic.dev')
+  return String(process.env.ADMIN_EMAILS || '')
     .split(',')
     .map((e) => e.trim().toLowerCase())
     .filter(Boolean);
@@ -24,22 +24,29 @@ async function decodeAndBuildUser(token) {
 
   let decoded;
   try {
-    decoded = await auth.verifyIdToken(token);
+    // Check revocation state so disabled/revoked sessions are rejected immediately
+    decoded = await auth.verifyIdToken(token, true);
   } catch (error) {
-    const code = error.code === 'auth/id-token-expired' ? 'TOKEN_EXPIRED' : 'INVALID_TOKEN';
+    const code =
+      error.code === 'auth/id-token-revoked'
+        ? 'TOKEN_REVOKED'
+        : error.code === 'auth/id-token-expired'
+        ? 'TOKEN_EXPIRED'
+        : 'INVALID_TOKEN';
     throw new AppError('Invalid or expired authentication token', 401, code);
   }
 
   const email = (decoded.email || '').toLowerCase();
+  const emailVerified = Boolean(decoded.email_verified);
   const isClaimAdmin = decoded.admin === true || decoded.role === 'admin';
-  const isEnvAdmin = email && getAdminEmails().includes(email);
+  const isEnvAdmin = Boolean(email && emailVerified && getAdminEmails().includes(email));
 
   let role = isClaimAdmin || isEnvAdmin ? 'admin' : 'customer';
 
   if (role !== 'admin' && db) {
     try {
       const userDoc = await db.collection('users').doc(decoded.uid).get();
-      if (userDoc.exists && userDoc.data()?.role === 'admin') {
+      if (userDoc.exists && userDoc.data()?.role === 'admin' && emailVerified) {
         role = 'admin';
       }
     } catch {
@@ -52,7 +59,7 @@ async function decodeAndBuildUser(token) {
     email: decoded.email || null,
     name: decoded.name || null,
     picture: decoded.picture || null,
-    emailVerified: Boolean(decoded.email_verified),
+    emailVerified,
     role,
     claims: decoded,
   };

@@ -12,6 +12,10 @@ export function securityHeaders(_req, res, next) {
   res.setHeader('X-XSS-Protection', '0');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none';");
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
   next();
 }
 
@@ -44,8 +48,10 @@ export function detectSuspiciousRequest(req, _res, next) {
   return next();
 }
 
+const MAX_RATE_BUCKETS = 10_000;
+
 /**
- * In-memory sliding-window IP rate limiter with temporary block & security audit logging.
+ * Bounded in-memory sliding-window IP rate limiter using Express trust-proxy resolved req.ip.
  */
 export function createRateLimiter({
   name = 'api',
@@ -56,16 +62,30 @@ export function createRateLimiter({
   const bucketMap = new Map();
   stores.set(name, bucketMap);
 
-  return (req, res, next) => {
-    const forwarded = req.headers['x-forwarded-for'];
-    const ip =
-      (typeof forwarded === 'string' && forwarded.split(',')[0].trim()) ||
-      req.ip ||
-      req.socket?.remoteAddress ||
-      'unknown';
+  const sweepExpired = (now) => {
+    for (const [k, v] of bucketMap.entries()) {
+      const windowExpired = now - v.windowStart > windowMs;
+      const blockExpired = !v.blockedUntil || v.blockedUntil <= now;
+      if (windowExpired && blockExpired) {
+        bucketMap.delete(k);
+      }
+    }
+  };
 
+  return (req, res, next) => {
+    // Rely strictly on Express trust-proxy resolved req.ip (never parse raw client x-forwarded-for)
+    const ip = req.ip || req.socket?.remoteAddress || 'unknown';
     const key = `${name}:${ip}`;
     const now = Date.now();
+
+    if (bucketMap.size >= MAX_RATE_BUCKETS) {
+      sweepExpired(now);
+      if (bucketMap.size >= MAX_RATE_BUCKETS) {
+        const oldestKey = bucketMap.keys().next().value;
+        if (oldestKey) bucketMap.delete(oldestKey);
+      }
+    }
+
     let entry = bucketMap.get(key);
 
     if (entry && entry.blockedUntil && entry.blockedUntil > now) {

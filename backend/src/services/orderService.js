@@ -1,8 +1,15 @@
+import crypto from 'node:crypto';
 import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../config/firebase.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { calculateDiscountForPromo } from './promoService.js';
 import { sendOrderConfirmationEmail } from './emailService.js';
+import {
+  buildCartDigest,
+  reportPaymentSecurityIncident,
+  signOrderIntegrity,
+  verifyPaymentProof,
+} from './paymentSecurity.js';
 
 function ensureDb() {
   if (!db) {
@@ -15,9 +22,36 @@ function roundCurrency(value) {
   return Math.round((Number(value) || 0) * 100) / 100;
 }
 
+function cleanOrderField(value, maxLen = 120) {
+  return String(value || '')
+    .replace(/[<>]/g, '')
+    .trim()
+    .slice(0, maxLen);
+}
+
+/**
+ * Strips internal cryptographic signatures before returning orders to client callers.
+ */
+function toPublicOrder(order) {
+  if (!order || typeof order !== 'object') return order;
+  const { paymentVerification, ...rest } = order;
+  return {
+    ...rest,
+    ...(paymentVerification
+      ? {
+          paymentVerification: {
+            transactionId: paymentVerification.transactionId || order.transactionId || null,
+            verifiedBy: paymentVerification.verifiedBy || null,
+            paidAt: paymentVerification.paidAt || null,
+          },
+        }
+      : {}),
+  };
+}
+
 export function generateOrderId() {
   const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  const randomPart = Math.floor(1000 + Math.random() * 9000);
+  const randomPart = crypto.randomBytes(4).toString('hex').toUpperCase();
   return `ORD-${datePart}-${randomPart}`;
 }
 
@@ -34,13 +68,13 @@ export function mapStatusToStepIndex(status = '') {
 
 function resolveShippingAddress(payload) {
   const raw = payload.shippingAddress || payload.customer || {};
-  const fullName = String(raw.fullName || payload.customerName || '').trim();
-  const phone = String(raw.phone || payload.customerPhone || '').trim();
-  const email = String(raw.email || payload.customerEmail || '').trim();
-  const address = String(raw.address || '').trim();
-  const city = String(raw.city || '').trim();
-  const province = String(raw.province || 'Phnom Penh').trim();
-  const postalCode = String(raw.postalCode || '12000').trim();
+  const fullName = cleanOrderField(raw.fullName || payload.customerName, 80);
+  const phone = cleanOrderField(raw.phone || payload.customerPhone, 32);
+  const email = cleanOrderField(raw.email || payload.customerEmail, 120);
+  const address = cleanOrderField(raw.address, 220);
+  const city = cleanOrderField(raw.city, 80);
+  const province = cleanOrderField(raw.province || 'Phnom Penh', 80);
+  const postalCode = cleanOrderField(raw.postalCode || '12000', 20);
 
   if (!fullName || !phone || !address || !city) {
     throw new AppError(
@@ -54,24 +88,22 @@ function resolveShippingAddress(payload) {
 }
 
 /**
- * Places an order atomically in Firestore: verifies product prices & stock, applies promo, deducts stock, and creates the order.
+ * Normalizes and validates cart items array before pricing or order placement.
  */
-export async function createOrder(payload = {}, user = null) {
-  const firestore = ensureDb();
-  const rawItems = Array.isArray(payload.items) ? payload.items : [];
-
-  if (rawItems.length === 0) {
+export function normalizeOrderItems(rawItems) {
+  if (!Array.isArray(rawItems) || rawItems.length === 0) {
     throw new AppError('Order must contain at least one item', 400, 'VALIDATION_ERROR');
   }
 
-  const shippingAddress = resolveShippingAddress(payload);
-  const customerEmail = shippingAddress.email || user?.email || '';
-
-  const normalizedItems = rawItems.map((item) => {
+  return rawItems.map((item) => {
     const productId = String(item.id || item.productId || '').trim();
     const quantity = Number(item.quantity);
-    if (!productId || !Number.isInteger(quantity) || quantity < 1) {
-      throw new AppError('Each item must have a valid id and positive integer quantity', 400, 'VALIDATION_ERROR');
+    if (!productId || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+      throw new AppError(
+        'Each item must have a valid id and integer quantity (1–99)',
+        400,
+        'VALIDATION_ERROR'
+      );
     }
     return {
       productId,
@@ -80,148 +112,374 @@ export async function createOrder(payload = {}, user = null) {
       requestedImage: item.image || null,
     };
   });
+}
+
+/**
+ * Authoritatively computes product subtotal, promo discount, shipping, total, and canonical cart digest inside Firestore or an active transaction.
+ */
+export async function computeServerOrderQuote(firestore, rawItems, rawPromoCode = null, tx = null) {
+  const normalizedItems = normalizeOrderItems(rawItems);
+  const promoCode = String(rawPromoCode || '').trim().toUpperCase();
 
   const qtyByProductId = normalizedItems.reduce((acc, item) => {
     acc.set(item.productId, (acc.get(item.productId) || 0) + item.quantity);
     return acc;
   }, new Map());
 
+  const uniqueIds = Array.from(qtyByProductId.keys());
+  const productRefs = uniqueIds.map((id) => firestore.collection('products').doc(id));
+  const readDoc = (ref) => (tx ? tx.get(ref) : ref.get());
+
+  const [productSnaps, promoSnap] = await Promise.all([
+    Promise.all(productRefs.map(readDoc)),
+    promoCode ? readDoc(firestore.collection('promoCodes').doc(promoCode)) : Promise.resolve(null),
+  ]);
+
+  const productMap = new Map();
+  productSnaps.forEach((snap, idx) => {
+    const id = uniqueIds[idx];
+    if (!snap.exists) {
+      throw new AppError(`Product not found: ${id}`, 404, 'PRODUCT_NOT_FOUND');
+    }
+    const data = snap.data();
+    const needed = qtyByProductId.get(id);
+    const available = Number(data.stock ?? 0);
+    if (available < needed) {
+      throw new AppError(
+        `Insufficient stock for ${data.name} (available: ${available}, requested: ${needed})`,
+        400,
+        'INSUFFICIENT_STOCK'
+      );
+    }
+    productMap.set(id, { ref: snap.ref, data, available });
+  });
+
+  let subtotal = 0;
+  const orderItems = normalizedItems.map((item) => {
+    const { data } = productMap.get(item.productId);
+    const unitPrice = roundCurrency(data.price);
+    const lineTotal = roundCurrency(unitPrice * item.quantity);
+    subtotal += lineTotal;
+
+    return {
+      id: item.productId,
+      name: data.name,
+      variant: item.variant,
+      price: unitPrice,
+      quantity: item.quantity,
+      lineTotal,
+      image: item.requestedImage || data.image || '/images/products/prod-001-main.png',
+    };
+  });
+
+  subtotal = roundCurrency(subtotal);
+
+  let discountAmount = 0;
+  let appliedCoupon = null;
+  if (promoCode) {
+    if (!promoSnap || !promoSnap.exists || promoSnap.data()?.active === false) {
+      throw new AppError(`Invalid or inactive promo code: ${promoCode}`, 400, 'INVALID_PROMO');
+    }
+    const promo = promoSnap.data();
+    if (promo.expiresAt && new Date(promo.expiresAt).getTime() < Date.now()) {
+      throw new AppError(`Promo code ${promoCode} has expired`, 400, 'PROMO_EXPIRED');
+    }
+    const minSubtotal = Number(promo.minSubtotal) || 0;
+    if (subtotal < minSubtotal) {
+      throw new AppError(
+        `Minimum order subtotal of $${minSubtotal.toFixed(2)} required for ${promoCode}`,
+        400,
+        'PROMO_MIN_SUBTOTAL'
+      );
+    }
+    discountAmount = calculateDiscountForPromo(promo, subtotal);
+    appliedCoupon = promoCode;
+  }
+
+  const shippingFee = 0;
+  const total = roundCurrency(Math.max(0, subtotal + shippingFee - discountAmount));
+  const cartDigest = buildCartDigest(normalizedItems, appliedCoupon);
+
+  return {
+    normalizedItems,
+    qtyByProductId,
+    productMap,
+    orderItems,
+    subtotal,
+    shippingFee,
+    discountAmount,
+    appliedCoupon,
+    total,
+    cartDigest,
+  };
+}
+
+function makeSecurityError(message, statusCode, code, securityIncident) {
+  const err = new AppError(message, statusCode, code);
+  if (securityIncident) {
+    err._securityIncident = securityIncident;
+  }
+  return err;
+}
+
+/**
+ * Places an order atomically in Firestore: verifies prices & stock, requires server-verified payment (zero bypass/replay), deducts stock, and locks the payment receipt.
+ */
+export async function createOrder(payload = {}, user = null, req = null) {
+  const firestore = ensureDb();
+  if (!user?.uid) {
+    throw new AppError('Authentication token is required to place an order', 401, 'AUTH_REQUIRED');
+  }
+
+  const shippingAddress = resolveShippingAddress(payload);
+  const customerEmail = shippingAddress.email || user?.email || '';
   const promoCode = String(payload.promoCode || payload.appliedCoupon || '')
     .trim()
     .toUpperCase();
+  const submittedTxId = String(payload.transactionId || '').trim();
 
   const orderId = generateOrderId();
   const orderRef = firestore.collection('orders').doc(orderId);
 
-  const createdOrder = await firestore.runTransaction(async (tx) => {
-    const uniqueIds = Array.from(qtyByProductId.keys());
-    const productRefs = uniqueIds.map((id) => firestore.collection('products').doc(id));
-    const productSnaps = await Promise.all(productRefs.map((ref) => tx.get(ref)));
+  let createdOrder;
+  try {
+    createdOrder = await firestore.runTransaction(async (tx) => {
+      // 1. Perform ALL transaction reads up front (products, promo, and payment session)
+      const payRef = submittedTxId.startsWith('KHQR-')
+        ? firestore.collection('payments').doc(submittedTxId)
+        : null;
 
-    let promoSnap = null;
-    if (promoCode) {
-      promoSnap = await tx.get(firestore.collection('promoCodes').doc(promoCode));
-    }
+      const [quote, paySnap] = await Promise.all([
+        computeServerOrderQuote(firestore, payload.items, promoCode, tx),
+        payRef ? tx.get(payRef) : Promise.resolve(null),
+      ]);
 
-    const productMap = new Map();
-    productSnaps.forEach((snap, idx) => {
-      const id = uniqueIds[idx];
-      if (!snap.exists) {
-        throw new AppError(`Product not found: ${id}`, 404, 'PRODUCT_NOT_FOUND');
+      const {
+        qtyByProductId,
+        productMap,
+        orderItems,
+        subtotal,
+        shippingFee,
+        discountAmount,
+        appliedCoupon,
+        total,
+        cartDigest,
+      } = quote;
+
+      const nowIso = new Date().toISOString();
+      let verifiedBy = 'server_promo_zero';
+      let verifiedPaymentMethod = 'Promo / Free Checkout ($0.00)';
+      let verifiedTxId = `FREE-${orderId}`;
+      let verifiedPayerName = String(payload.payerAccountName || '').trim().slice(0, 80);
+      let verifiedTelegramUser = null;
+      let paidAt = nowIso;
+
+      // 2. Enforce strict Double-Protection Payment Gate when total > 0
+      if (total > 0) {
+        if (!submittedTxId || !submittedTxId.startsWith('KHQR-')) {
+          throw makeSecurityError(
+            'Verified Bakong KHQR payment is required before placing this order.',
+            402,
+            'PAYMENT_REQUIRED',
+            {
+              reason: 'PAYMENT_BYPASS_ATTEMPT',
+              transactionId: submittedTxId || null,
+              details: `Order ($${total.toFixed(2)}) attempted without valid KHQR transactionId (submitted="${submittedTxId || 'none'}")`,
+            }
+          );
+        }
+
+        if (!paySnap || !paySnap.exists) {
+          throw makeSecurityError(
+            'Payment transaction record not found.',
+            402,
+            'PAYMENT_NOT_FOUND',
+            {
+              reason: 'PAYMENT_BYPASS_ATTEMPT',
+              transactionId: submittedTxId,
+              details: `Non-existent transactionId=${submittedTxId} submitted for $${total.toFixed(2)} order`,
+            }
+          );
+        }
+
+        const pay = paySnap.data() || {};
+
+        if (pay.userId && pay.userId !== user.uid && user.role !== 'admin') {
+          throw makeSecurityError(
+            'Payment session belongs to another account.',
+            403,
+            'PAYMENT_OWNERSHIP_MISMATCH',
+            {
+              reason: 'PAYMENT_OWNERSHIP_MISMATCH',
+              transactionId: submittedTxId,
+              details: `User ${user.uid} attempted to claim payment owned by ${pay.userId}`,
+            }
+          );
+        }
+
+        if (pay.consumedOrderId || pay.consumedAt) {
+          throw makeSecurityError(
+            'This KHQR payment has already been used for another order.',
+            409,
+            'PAYMENT_ALREADY_USED',
+            {
+              reason: 'PAYMENT_REPLAY_ATTEMPT',
+              transactionId: submittedTxId,
+              details: `Replay attempt on ${submittedTxId} already consumed by ${pay.consumedOrderId}`,
+            }
+          );
+        }
+
+        const allowedVerifiers = ['bakong_api', 'telegram_admin'];
+        if (pay.status !== 'PAID' || !allowedVerifiers.includes(pay.verifiedBy)) {
+          throw makeSecurityError(
+            'KHQR payment has not been verified by Bakong or shop admin yet.',
+            402,
+            'PAYMENT_NOT_VERIFIED',
+            {
+              reason: 'UNVERIFIED_ORDER_BYPASS',
+              transactionId: submittedTxId,
+              details: `Unverified payment order blocked (status=${pay.status}, verifiedBy=${pay.verifiedBy || 'none'}, total=$${total.toFixed(2)})`,
+            }
+          );
+        }
+
+        if (!verifyPaymentProof(pay)) {
+          throw makeSecurityError(
+            'Payment cryptographic proof verification failed.',
+            403,
+            'PAYMENT_PROOF_INVALID',
+            {
+              reason: 'FORGED_PAYMENT_PROOF',
+              transactionId: submittedTxId,
+              details: `Invalid or forged HMAC verificationProof on payment ${submittedTxId}`,
+            }
+          );
+        }
+
+        if (!pay.cartDigest || pay.cartDigest !== cartDigest) {
+          throw makeSecurityError(
+            'Cart items or promo code changed after QR generation. Please generate a new KHQR.',
+            400,
+            'CART_TAMPER_DETECTED',
+            {
+              reason: 'CART_TAMPER_ATTEMPT',
+              transactionId: submittedTxId,
+              details: `Cart digest missing or mismatch on ${submittedTxId} for order total $${total.toFixed(2)}`,
+            }
+          );
+        }
+
+        const paidCurrency = String(pay.currency || 'USD').toUpperCase();
+        const paidAmount = Number(pay.amount || 0);
+        const amountSufficient =
+          paidCurrency === 'KHR'
+            ? paidAmount >= Math.max(1, Math.round(total * 4100))
+            : paidAmount + 0.005 >= total;
+        const expectedUsdSufficient =
+          pay.expectedTotalUsd == null || Number(pay.expectedTotalUsd) + 0.005 >= total;
+
+        if (!amountSufficient || !expectedUsdSufficient) {
+          throw makeSecurityError(
+            'Paid amount does not match the server-verified order total.',
+            400,
+            'PAYMENT_AMOUNT_MISMATCH',
+            {
+              reason: 'PAYMENT_AMOUNT_MISMATCH',
+              transactionId: submittedTxId,
+              details: `Underpayment blocked: paid=${paidAmount} ${paidCurrency} vs order total=$${total.toFixed(2)}`,
+            }
+          );
+        }
+
+        // Consume payment atomically so it can never be reused for a second order
+        tx.update(payRef, {
+          consumedOrderId: orderId,
+          consumedByUid: user.uid,
+          consumedAt: nowIso,
+          orderId,
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+
+        verifiedBy = pay.verifiedBy;
+        verifiedTxId = submittedTxId;
+        verifiedPaymentMethod = paidCurrency === 'KHR' ? 'KHQR Bakong (KHR)' : 'KHQR Bakong';
+        verifiedPayerName = String(pay.payerAccountName || verifiedPayerName || '').trim().slice(0, 80);
+        verifiedTelegramUser = pay.verifiedByTelegramUser || null;
+        paidAt = pay.paidAt || nowIso;
       }
-      const data = snap.data();
-      const needed = qtyByProductId.get(id);
-      const available = Number(data.stock ?? 0);
-      if (available < needed) {
-        throw new AppError(
-          `Insufficient stock for ${data.name} (available: ${available}, requested: ${needed})`,
-          400,
-          'INSUFFICIENT_STOCK'
-        );
+
+      // 3. Deduct stock atomically
+      for (const [productId, needed] of qtyByProductId.entries()) {
+        const { ref, available } = productMap.get(productId);
+        tx.update(ref, {
+          stock: available - needed,
+          updatedAt: FieldValue.serverTimestamp(),
+        });
       }
-      productMap.set(id, { ref: snap.ref, data, available });
-    });
 
-    let subtotal = 0;
-    const orderItems = normalizedItems.map((item) => {
-      const { data } = productMap.get(item.productId);
-      const unitPrice = roundCurrency(data.price);
-      const lineTotal = roundCurrency(unitPrice * item.quantity);
-      subtotal += lineTotal;
-
-      return {
-        id: item.productId,
-        name: data.name,
-        variant: item.variant,
-        price: unitPrice,
-        quantity: item.quantity,
-        lineTotal,
-        image: item.requestedImage || data.image || '/images/products/prod-001-main.png',
-      };
-    });
-
-    subtotal = roundCurrency(subtotal);
-
-    let discountAmount = 0;
-    let appliedCoupon = null;
-    if (promoCode) {
-      if (!promoSnap || !promoSnap.exists || promoSnap.data()?.active === false) {
-        throw new AppError(`Invalid or inactive promo code: ${promoCode}`, 400, 'INVALID_PROMO');
-      }
-      const promo = promoSnap.data();
-      const minSubtotal = Number(promo.minSubtotal) || 0;
-      if (subtotal < minSubtotal) {
-        throw new AppError(
-          `Minimum order subtotal of $${minSubtotal.toFixed(2)} required for ${promoCode}`,
-          400,
-          'PROMO_MIN_SUBTOTAL'
-        );
-      }
-      discountAmount = calculateDiscountForPromo(promo, subtotal);
-      appliedCoupon = promoCode;
-    }
-
-    const shippingFee = subtotal >= 100 || subtotal === 0 ? 0 : 5;
-    const total = roundCurrency(Math.max(0, subtotal + shippingFee - discountAmount));
-
-    // Deduct stock atomically
-    for (const [productId, needed] of qtyByProductId.entries()) {
-      const { ref, available } = productMap.get(productId);
-      tx.update(ref, {
-        stock: available - needed,
-        updatedAt: FieldValue.serverTimestamp(),
+      const integrityHash = signOrderIntegrity({
+        orderId,
+        userId: user.uid,
+        total,
+        transactionId: verifiedTxId,
+        verifiedBy,
+        promoCode: appliedCoupon,
       });
-    }
 
-    const nowIso = new Date().toISOString();
-    const isPaid = Boolean(payload.transactionId) || String(payload.paymentStatus || '').toLowerCase() === 'paid';
-    const orderDoc = {
-      id: orderId,
-      userId: user?.uid || null,
-      createdAt: nowIso,
-      status: 'Confirmed',
-      stepIndex: 1,
-      paymentMethod: String(payload.paymentMethod || 'Bakong KHQR (ABA Bank)').trim(),
-      paymentStatus: isPaid ? 'Paid' : 'Pending',
-      transactionId:
-        payload.transactionId || `TXN-${Math.floor(10000000 + Math.random() * 90000000)}`,
-      subtotal,
-      shippingFee,
-      discount: discountAmount,
-      discountAmount,
-      total,
-      appliedCoupon,
-      customer: {
-        ...shippingAddress,
-        email: customerEmail,
-      },
-      shippingAddress: {
-        ...shippingAddress,
-        email: customerEmail,
-      },
-      items: orderItems,
-      tracking: {
-        courier: String(payload.courier || 'GrabExpress Dispatch'),
-        courierWebsite: '',
-        trackingCode: `TT-${orderId.slice(-8)}`,
-        estimatedDelivery: 'Today by 5:30 PM',
-        driverName: 'Pending Driver Assignment',
-        driverPhone: 'Pending',
-        events: [
-          {
-            status: 'Confirmed',
-            location: 'TechTonic Online Store',
-            note: isPaid ? 'Payment verified & order confirmed' : 'Order confirmed (Cash on Delivery)',
-            timestamp: nowIso,
-          },
-        ],
-      },
-      updatedAt: FieldValue.serverTimestamp(),
-    };
+      const orderDoc = {
+        id: orderId,
+        userId: user.uid,
+        createdAt: nowIso,
+        status: 'Confirmed',
+        stepIndex: 1,
+        paymentMethod: verifiedPaymentMethod,
+        paymentStatus: 'Paid',
+        payerAccountName: verifiedPayerName || null,
+        transactionId: verifiedTxId,
+        paymentVerification: {
+          transactionId: verifiedTxId,
+          verifiedBy,
+          verifiedByTelegramUser: verifiedTelegramUser,
+          paidAt,
+          integrityHash,
+        },
+        subtotal,
+        shippingFee,
+        discount: discountAmount,
+        discountAmount,
+        total,
+        appliedCoupon,
+        customer: {
+          ...shippingAddress,
+          email: customerEmail,
+        },
+        shippingAddress: {
+          ...shippingAddress,
+          email: customerEmail,
+        },
+        items: orderItems,
+        tracking: {
+          courier: String(payload.courier || 'GrabExpress Dispatch'),
+          courierWebsite: '',
+          trackingCode: `TT-${orderId.slice(-8)}`,
+          estimatedDelivery: 'Today by 5:30 PM',
+          driverName: 'Pending Driver Assignment',
+          driverPhone: 'Pending',
+          events: [
+            {
+              status: 'Confirmed',
+              location: 'TechTonic Online Store',
+              note: `Payment verified (${verifiedBy}) & order confirmed`,
+              timestamp: nowIso,
+            },
+          ],
+        },
+        updatedAt: FieldValue.serverTimestamp(),
+      };
 
-    tx.set(orderRef, orderDoc);
+      tx.set(orderRef, orderDoc);
 
-    if (user?.uid) {
       const userRef = firestore.collection('users').doc(user.uid);
       tx.set(
         userRef,
@@ -232,21 +490,26 @@ export async function createOrder(payload = {}, user = null) {
         },
         { merge: true }
       );
-    }
 
-    return {
-      ...orderDoc,
-      updatedAt: nowIso,
-    };
-  });
+      return {
+        ...orderDoc,
+        updatedAt: nowIso,
+      };
+    });
+  } catch (err) {
+    if (err?._securityIncident) {
+      reportPaymentSecurityIncident(req || user, err._securityIncident).catch(() => {});
+    }
+    throw err;
+  }
 
   sendOrderConfirmationEmail(createdOrder).catch(() => {});
 
-  return createdOrder;
+  return toPublicOrder(createdOrder);
 }
 
 /**
- * Lists orders belonging to the authenticated user (matched by userId or email).
+ * Lists orders belonging to the authenticated user (matched by userId or verified email).
  */
 export async function listUserOrders(user) {
   const firestore = ensureDb();
@@ -254,17 +517,17 @@ export async function listUserOrders(user) {
   const orderMap = new Map();
 
   byIdQuery.docs.forEach((doc) => {
-    orderMap.set(doc.id, { id: doc.id, ...doc.data() });
+    orderMap.set(doc.id, toPublicOrder({ id: doc.id, ...doc.data() }));
   });
 
-  if (user.email) {
+  if (user.email && user.emailVerified) {
     const byEmailQuery = await firestore
       .collection('orders')
       .where('customer.email', '==', user.email)
       .get();
     byEmailQuery.docs.forEach((doc) => {
       if (!orderMap.has(doc.id)) {
-        orderMap.set(doc.id, { id: doc.id, ...doc.data() });
+        orderMap.set(doc.id, toPublicOrder({ id: doc.id, ...doc.data() }));
       }
     });
   }
@@ -291,11 +554,13 @@ export async function getOrderById(orderId, user = null, lookup = {}) {
   const isAdmin = user?.role === 'admin';
   const isOwnerByUid = Boolean(user?.uid && order.userId === user.uid);
   const isOwnerByEmail = Boolean(
-    user?.email && order.customer?.email?.toLowerCase() === user.email.toLowerCase()
+    user?.email &&
+      user?.emailVerified &&
+      order.customer?.email?.toLowerCase() === user.email.toLowerCase()
   );
 
   if (isAdmin || isOwnerByUid || isOwnerByEmail) {
-    return order;
+    return toPublicOrder(order);
   }
 
   const lookupEmail = String(lookup.email || '').trim().toLowerCase();
@@ -308,15 +573,12 @@ export async function getOrderById(orderId, user = null, lookup = {}) {
     (lookupPhone && orderPhone && lookupPhone === orderPhone);
 
   if (guestVerified) {
-    return order;
+    return toPublicOrder(order);
   }
 
   if (!user) {
-    throw new AppError(
-      'Sign in or provide matching email/phone to view this order',
-      401,
-      'AUTH_REQUIRED'
-    );
+    // Uniform 404 prevents unauthenticated callers from enumerating valid order IDs
+    throw new AppError(`Order not found: ${cleanId}`, 404, 'ORDER_NOT_FOUND');
   }
 
   throw new AppError('You do not have permission to view this order', 403, 'FORBIDDEN');

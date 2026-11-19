@@ -20,6 +20,36 @@ function slugify(value = '') {
     .replace(/^-+|-+$/g, '');
 }
 
+/**
+ * Validates URLs stored in catalog/order records so javascript:/data: payloads cannot be persisted.
+ */
+function sanitizeSafeUrl(rawUrl, { allowRelative = true, allowEmpty = false, fieldName = 'URL' } = {}) {
+  const value = String(rawUrl ?? '').trim();
+  if (!value) {
+    if (allowEmpty) return '';
+    throw new AppError(`${fieldName} cannot be empty`, 400, 'VALIDATION_ERROR');
+  }
+  if (allowRelative && value.startsWith('/') && !value.startsWith('//')) {
+    if (/[\r\n<>'"`]/.test(value)) {
+      throw new AppError(`Invalid ${fieldName} format`, 400, 'VALIDATION_ERROR');
+    }
+    return value;
+  }
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      throw new Error('Disallowed protocol');
+    }
+    return parsed.toString();
+  } catch {
+    throw new AppError(
+      `Invalid ${fieldName}. Only https://, http://${allowRelative ? ', or local /images/ paths' : ''} are allowed.`,
+      400,
+      'VALIDATION_ERROR'
+    );
+  }
+}
+
 const CANONICAL_STATUSES = new Map([
   ['pending', 'Pending'],
   ['confirmed', 'Confirmed'],
@@ -94,16 +124,26 @@ export async function getDashboardStats() {
   const paymentBreakdown = activeOrders.reduce(
     (acc, o) => {
       const method = String(o.paymentMethod || '').toLowerCase();
-      if (method.includes('khqr') || method.includes('bakong')) {
-        acc.khqrCount += 1;
-        acc.khqrRevenue = Math.round((acc.khqrRevenue + (Number(o.total) || 0)) * 100) / 100;
+      const amt = Number(o.total) || 0;
+      acc.khqrCount += 1;
+      acc.khqrRevenue = Math.round((acc.khqrRevenue + amt) * 100) / 100;
+      if (method.includes('(khr)') || method.includes('riel') || method.includes('៛')) {
+        acc.khqrKhrCount += 1;
+        acc.khqrKhrRevenue = Math.round((acc.khqrKhrRevenue + amt) * 100) / 100;
       } else {
-        acc.cardCount += 1;
-        acc.cardRevenue = Math.round((acc.cardRevenue + (Number(o.total) || 0)) * 100) / 100;
+        acc.khqrUsdCount += 1;
+        acc.khqrUsdRevenue = Math.round((acc.khqrUsdRevenue + amt) * 100) / 100;
       }
       return acc;
     },
-    { khqrCount: 0, khqrRevenue: 0, cardCount: 0, cardRevenue: 0 }
+    {
+      khqrCount: 0,
+      khqrRevenue: 0,
+      khqrUsdCount: 0,
+      khqrUsdRevenue: 0,
+      khqrKhrCount: 0,
+      khqrKhrRevenue: 0,
+    }
   );
 
   return {
@@ -153,8 +193,12 @@ export async function createProduct(payload = {}) {
   const catSnap = await firestore.collection('categories').doc(category).get();
   const categoryName = payload.categoryName || catSnap.data()?.name || category;
 
-  const primaryImage = payload.image || payload.images?.[0] || '/images/products/prod-001-main.png';
-  const images = Array.isArray(payload.images) && payload.images.length > 0 ? payload.images : [primaryImage];
+  const rawPrimaryImage = payload.image || payload.images?.[0] || '/images/products/prod-001-main.png';
+  const primaryImage = sanitizeSafeUrl(rawPrimaryImage, { allowRelative: true, fieldName: 'product image' });
+  const rawImages = Array.isArray(payload.images) && payload.images.length > 0 ? payload.images : [primaryImage];
+  const images = rawImages
+    .slice(0, 12)
+    .map((img) => sanitizeSafeUrl(img, { allowRelative: true, fieldName: 'product gallery image' }));
 
   const docData = {
     id: productId,
@@ -211,11 +255,14 @@ export async function updateProduct(productId, payload = {}) {
   const current = snap.data();
   const updates = { updatedAt: FieldValue.serverTimestamp() };
 
-  const stringFields = ['name', 'category', 'categoryId', 'categoryName', 'subcategory', 'subcategorySlug', 'badge', 'tagline', 'description', 'image', 'slug'];
+  const stringFields = ['name', 'category', 'categoryId', 'categoryName', 'subcategory', 'subcategorySlug', 'badge', 'tagline', 'description', 'slug'];
   for (const field of stringFields) {
     if (payload[field] !== undefined) {
       updates[field] = payload[field] === null ? null : String(payload[field]).trim();
     }
+  }
+  if (payload.image !== undefined && payload.image !== null) {
+    updates.image = sanitizeSafeUrl(payload.image, { allowRelative: true, fieldName: 'product image' });
   }
 
   if (payload.category !== undefined && payload.categoryId === undefined) {
@@ -241,9 +288,12 @@ export async function updateProduct(productId, payload = {}) {
   if (payload.isBestSeller !== undefined) updates.isBestSeller = Boolean(payload.isBestSeller);
   if (payload.isFeatured !== undefined) updates.isFeatured = Boolean(payload.isFeatured);
   if (Array.isArray(payload.images)) {
-    updates.images = payload.images;
-    updates.gallery = payload.images;
-    if (!updates.image && payload.images[0]) updates.image = payload.images[0];
+    const cleanImages = payload.images
+      .slice(0, 12)
+      .map((img) => sanitizeSafeUrl(img, { allowRelative: true, fieldName: 'product gallery image' }));
+    updates.images = cleanImages;
+    updates.gallery = cleanImages;
+    if (!updates.image && cleanImages[0]) updates.image = cleanImages[0];
   }
   if (Array.isArray(payload.variants)) updates.variants = payload.variants;
   if (payload.specs && typeof payload.specs === 'object') updates.specs = payload.specs;
@@ -309,7 +359,10 @@ export async function createCategory(payload = {}) {
     name,
     slug,
     description: String(payload.description || '').trim(),
-    image: payload.image || '/images/products/prod-001-main.png',
+    image: sanitizeSafeUrl(payload.image || '/images/products/prod-001-main.png', {
+      allowRelative: true,
+      fieldName: 'category image',
+    }),
     badge: payload.badge || null,
     itemCount: 0,
     subcategories: Array.isArray(payload.subcategories) ? payload.subcategories : [],
@@ -336,10 +389,13 @@ export async function updateCategory(categoryId, payload = {}) {
   }
 
   const updates = { updatedAt: FieldValue.serverTimestamp() };
-  for (const field of ['name', 'slug', 'description', 'image', 'badge']) {
+  for (const field of ['name', 'slug', 'description', 'badge']) {
     if (payload[field] !== undefined) {
       updates[field] = payload[field] === null ? null : String(payload[field]).trim();
     }
+  }
+  if (payload.image !== undefined && payload.image !== null) {
+    updates.image = sanitizeSafeUrl(payload.image, { allowRelative: true, fieldName: 'category image' });
   }
   if (Array.isArray(payload.subcategories)) updates.subcategories = payload.subcategories;
   if (payload.sortOrder !== undefined) updates.sortOrder = Number(payload.sortOrder);
@@ -491,10 +547,29 @@ export async function updateOrderStatus(orderId, payload = {}) {
   }
 
   const currentTracking = existingData.tracking || {};
-  const nextTracking =
-    payload.tracking && typeof payload.tracking === 'object'
-      ? { ...currentTracking, ...payload.tracking }
-      : { ...currentTracking };
+  const nextTracking = { ...currentTracking };
+  if (payload.tracking && typeof payload.tracking === 'object') {
+    const allowedTrackingStrings = [
+      'courier',
+      'trackingCode',
+      'estimatedDelivery',
+      'driverName',
+      'driverPhone',
+      'location',
+    ];
+    for (const key of allowedTrackingStrings) {
+      if (typeof payload.tracking[key] === 'string') {
+        nextTracking[key] = payload.tracking[key].replace(/[<>]/g, '').trim().slice(0, 120);
+      }
+    }
+    if (payload.tracking.courierWebsite !== undefined) {
+      nextTracking.courierWebsite = sanitizeSafeUrl(payload.tracking.courierWebsite, {
+        allowRelative: false,
+        allowEmpty: true,
+        fieldName: 'courierWebsite',
+      });
+    }
+  }
 
   if (nextCanonicalStatus) {
     const existingEvents = Array.isArray(nextTracking.events) ? [...nextTracking.events] : [];

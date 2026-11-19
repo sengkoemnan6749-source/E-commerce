@@ -75,16 +75,13 @@ export async function deleteAddress(req, res, next) {
   }
 }
 
+// Restrict client-reported audit events strictly to authenticated self-lifecycle actions
 const ALLOWED_CLIENT_AUTH_EVENTS = new Set([
   'LOGIN_SUCCESS',
-  'LOGIN_FAILED',
   'REGISTER_SUCCESS',
-  'REGISTER_FAILED',
   'LOGOUT',
-  'BRUTE_FORCE_LOCKOUT',
   'PASSWORD_CHANGED',
   'PASSWORD_SET',
-  'PASSWORD_RESET_REQUESTED',
 ]);
 
 export async function getTwoFactorStatus(req, res, next) {
@@ -166,22 +163,16 @@ export async function reportAuthAudit(req, res, next) {
       });
     }
 
-    const isThreat = rawEvent === 'BRUTE_FORCE_LOCKOUT';
-    const isWarn = rawEvent === 'LOGIN_FAILED' || rawEvent === 'REGISTER_FAILED';
-    const severity = isThreat ? 'critical' : isWarn ? 'warning' : 'info';
-
-    const actorEmail =
-      req.user?.email ||
-      (typeof req.body?.email === 'string' ? req.body.email.trim().slice(0, 120) : null);
+    const actorEmail = req.user?.email || null;
 
     await recordAuditEvent(req, {
       eventType: rawEvent,
-      severity,
+      severity: 'info',
       actorUid: req.user?.uid || null,
-      actorEmail: actorEmail || null,
+      actorEmail,
       actorRole: req.user?.role || 'customer',
-      status: isThreat ? 'BLOCKED' : isWarn ? 'FAILED' : 'SUCCESS',
-      details: typeof req.body?.details === 'string' ? req.body.details.trim().slice(0, 300) : '',
+      status: 'SUCCESS',
+      details: typeof req.body?.details === 'string' ? req.body.details.replace(/[<>]/g, '').trim().slice(0, 300) : '',
     });
 
     return res.status(201).json({ success: true });

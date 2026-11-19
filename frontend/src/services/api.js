@@ -122,10 +122,25 @@ async function request(path, options = {}) {
     ...(options.headers || {}),
   };
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = controller ? window.setTimeout(() => controller.abort(), 15000) : null;
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller?.signal,
+    });
+  } catch (err) {
+    if (err?.name === 'AbortError') {
+      const timeoutErr = new Error('Server request timed out. Please try again.');
+      timeoutErr.code = 'REQUEST_TIMEOUT';
+      throw timeoutErr;
+    }
+    throw err;
+  } finally {
+    if (timeoutId) window.clearTimeout(timeoutId);
+  }
 
   const text = await response.text();
   let json = null;

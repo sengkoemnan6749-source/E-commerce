@@ -174,7 +174,10 @@ export async function getProductById(idOrSlug) {
     .limit(50)
     .get();
 
-  const reviews = reviewsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  const reviews = reviewsSnapshot.docs.map((doc) => {
+    const { helpfulVoters: _omitVoters, ...rest } = doc.data() || {};
+    return { id: doc.id, ...rest };
+  });
 
   return {
     id: productDoc.id,
@@ -196,12 +199,21 @@ export async function listProductReviews(productId) {
  */
 export async function addProductReview(productId, payload = {}) {
   const firestore = ensureDb();
-  const author = String(payload.author || payload.name || '').trim();
-  const comment = String(payload.comment || '').trim();
-  const title = String(payload.title || '').trim() || 'Verified TechTonic Customer Review';
-  const location = String(payload.location || '').trim() || 'Phnom Penh, Cambodia';
+  const cleanText = (val, maxLen) =>
+    String(val || '')
+      .replace(/[<>]/g, '')
+      .trim()
+      .slice(0, maxLen);
+
+  const author = cleanText(payload.author || payload.name, 80);
+  const comment = cleanText(payload.comment, 1500);
+  const title = cleanText(payload.title, 120) || 'Verified TechTonic Customer Review';
+  const location = cleanText(payload.location, 80) || 'Phnom Penh, Cambodia';
   const rating = Number(payload.rating);
 
+  if (!payload.userId) {
+    throw new AppError('Authentication is required to post a review', 401, 'AUTH_REQUIRED');
+  }
   if (!author) {
     throw new AppError('Reviewer name is required', 400, 'VALIDATION_ERROR');
   }
@@ -236,7 +248,7 @@ export async function addProductReview(productId, payload = {}) {
       rating,
       date: nowIso.slice(0, 10),
       verified: Boolean(payload.userId),
-      userId: payload.userId || null,
+      userId: payload.userId,
       title,
       comment,
       helpful: 0,
@@ -257,13 +269,17 @@ export async function addProductReview(productId, payload = {}) {
 }
 
 /**
- * Increments a customer review's persisted helpful count.
+ * Atomically increments a customer review's persisted helpful count (one vote per authenticated user).
  */
-export async function markReviewHelpful(productId, reviewId) {
+export async function markReviewHelpful(productId, reviewId, userId = null) {
   const firestore = ensureDb();
   const cleanProductId = String(productId || '').trim();
   const cleanReviewId = String(reviewId || '').trim();
+  const cleanUid = String(userId || '').trim();
 
+  if (!cleanUid) {
+    throw new AppError('Sign in to vote on reviews', 401, 'AUTH_REQUIRED');
+  }
   if (!cleanProductId || !cleanReviewId) {
     throw new AppError('Product ID and review ID are required', 400, 'VALIDATION_ERROR');
   }
@@ -274,17 +290,31 @@ export async function markReviewHelpful(productId, reviewId) {
     .collection('reviews')
     .doc(cleanReviewId);
 
-  const snap = await reviewRef.get();
-  if (!snap.exists) {
-    throw new AppError(`Review not found: ${cleanReviewId}`, 404, 'REVIEW_NOT_FOUND');
-  }
+  return firestore.runTransaction(async (tx) => {
+    const snap = await tx.get(reviewRef);
+    if (!snap.exists) {
+      throw new AppError(`Review not found: ${cleanReviewId}`, 404, 'REVIEW_NOT_FOUND');
+    }
 
-  await reviewRef.update({
-    helpful: FieldValue.increment(1),
-    updatedAt: FieldValue.serverTimestamp(),
+    const data = snap.data() || {};
+    const voters = Array.isArray(data.helpfulVoters) ? data.helpfulVoters : [];
+    if (voters.includes(cleanUid)) {
+      throw new AppError('You already marked this review as helpful', 409, 'ALREADY_VOTED');
+    }
+
+    const nextHelpful = Number(data.helpful || 0) + 1;
+    tx.update(reviewRef, {
+      helpful: nextHelpful,
+      helpfulVoters: FieldValue.arrayUnion(cleanUid),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    const { helpfulVoters: _omitVoters, ...safeReview } = data;
+    return {
+      id: snap.id,
+      ...safeReview,
+      helpful: nextHelpful,
+    };
   });
-
-  const updated = await reviewRef.get();
-  return { id: updated.id, ...updated.data() };
 }
 

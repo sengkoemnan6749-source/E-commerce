@@ -33,7 +33,7 @@ export default function OrderStatus({ order }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 text-xs text-slate-600">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-blue-50 text-blue-600 flex-shrink-0">
+          <div className="p-2 rounded-lg bg-slate-100 border border-slate-200/70 text-slate-700 flex-shrink-0">
             <Truck className="w-4 h-4" />
           </div>
           <div>

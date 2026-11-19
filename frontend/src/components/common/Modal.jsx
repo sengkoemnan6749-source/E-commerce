@@ -36,20 +36,20 @@ export function Modal({
   const resolvedWidth = maxWidth || (SIZE_MAP[size] || 'max-w-lg');
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto print:static print:overflow-visible">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity print:hidden"
         onClick={onClose}
       />
 
-      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
+      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6 print:block print:min-h-0 print:p-0">
         <div
-          className={`relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-6 w-full ${resolvedWidth} border border-slate-200 flex flex-col max-h-[92vh]`}
+          className={`relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-6 w-full ${resolvedWidth} border border-slate-200 flex flex-col max-h-[92vh] print:static print:my-0 print:max-h-none print:max-w-none print:rounded-none print:border-none print:shadow-none print:overflow-visible`}
           onClick={e => e.stopPropagation()}
         >
           {/* Header (sticky) */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white/95 backdrop-blur-sm shrink-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white/95 backdrop-blur-sm shrink-0 print:hidden">
             <h3 className="text-lg font-bold text-slate-900">{title}</h3>
             <button
               onClick={onClose}
@@ -61,7 +61,7 @@ export function Modal({
           </div>
 
           {/* Body (scrollable) */}
-          <div className="p-6 sm:p-8 overflow-y-auto flex-1">{children}</div>
+          <div className="p-6 sm:p-8 overflow-y-auto flex-1 print:p-0 print:overflow-visible">{children}</div>
         </div>
       </div>
     </div>

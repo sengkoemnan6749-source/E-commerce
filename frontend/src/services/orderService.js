@@ -117,6 +117,7 @@ export const orderService = {
       promoCode: orderPayload.appliedCoupon || orderPayload.promoCode || null,
       paymentMethod: orderPayload.paymentMethod,
       paymentStatus: orderPayload.paymentStatus,
+      payerAccountName: orderPayload.payerAccountName || null,
       transactionId: orderPayload.transactionId,
       courier: orderPayload.deliveryPartner,
       shippingAddress: {

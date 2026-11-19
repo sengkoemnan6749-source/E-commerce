@@ -2,17 +2,22 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { checkFirestoreConnection } from './config/firebase.js';
-import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { AppError, errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import adminRoutes from './routes/adminRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import catalogRoutes from './routes/catalogRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
+import { startOrderBotListener } from './services/telegramService.js';
 
 import { securityHeaders, detectSuspiciousRequest, createRateLimiter } from './middleware/securityMiddleware.js';
 
 const app = express();
 app.disable('x-powered-by');
+const trustProxyHops = Number(
+  process.env.TRUST_PROXY_HOPS ?? (process.env.VERCEL === '1' ? 1 : 0)
+);
+app.set('trust proxy', Number.isFinite(trustProxyHops) && trustProxyHops >= 0 ? trustProxyHops : 0);
 app.use(securityHeaders);
 const PORT = Number(process.env.PORT) || 5000;
 
@@ -28,16 +33,16 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      return callback(new Error(`CORS origin not allowed: ${origin}`));
+      return callback(new AppError('Origin not allowed by CORS policy', 403, 'CORS_FORBIDDEN'));
     },
     credentials: true,
   })
 );
 app.use(express.json({ limit: '2mb' }));
 app.use(detectSuspiciousRequest);
-app.use('/api', createRateLimiter({ name: 'global-api', windowMs: 60000, maxRequests: 180, blockDurationMs: 300000 }));
+app.use('/api', createRateLimiter({ name: 'global-api', windowMs: 60000, maxRequests: 600, blockDurationMs: 60000 }));
 
-// Health Check Endpoint (verifies Express + live Firebase Firestore connectivity)
+// Health Check Endpoint (minimal public surface; avoids exposing internal project IDs, counts, or file paths)
 app.get('/api/health', async (_req, res, next) => {
   try {
     const firebase = await checkFirestoreConnection();
@@ -46,9 +51,7 @@ app.get('/api/health', async (_req, res, next) => {
     res.status(statusCode).json({
       status: firebase.connected ? 'online' : 'degraded',
       brand: 'TechTonic Store API',
-      version: '1.0.0',
       timestamp: new Date().toISOString(),
-      firebase,
     });
   } catch (error) {
     next(error);
@@ -66,8 +69,9 @@ app.use(errorHandler);
 
 export default app;
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
     console.log(`TechTonic API running on http://localhost:${PORT}`);
+    startOrderBotListener().catch(() => {});
   });
 }

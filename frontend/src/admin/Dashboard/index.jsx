@@ -196,29 +196,34 @@ export default function AdminDashboard() {
       }));
   }, [timeframeOrders, products]);
 
-  // Real Payment Methods breakdown from live orders
+  // Real Payment Methods breakdown from live orders (KHQR Bakong USD vs KHQR Bakong KHR)
   const paymentStats = useMemo(() => {
-    let khqrRev = 0;
-    let khqrCount = 0;
-    let cardRev = 0;
-    let cardCount = 0;
+    let usdRev = 0;
+    let usdCount = 0;
+    let khrRev = 0;
+    let khrCount = 0;
     timeframeOrders.forEach((o) => {
       const m = String(o.paymentMethod || '').toLowerCase();
       const amt = Number(o.total) || 0;
-      if (m.includes('khqr') || m.includes('bakong')) {
-        khqrCount += 1;
-        khqrRev += amt;
+      if (m.includes('khr') && (m.includes('(khr)') || m.includes('riel') || m.includes('៛'))) {
+        khrCount += 1;
+        khrRev += amt;
       } else {
-        cardCount += 1;
-        cardRev += amt;
+        usdCount += 1;
+        usdRev += amt;
       }
     });
-    const totalAmt = khqrRev + cardRev;
+    const totalAmt = usdRev + khrRev;
+    const totalCount = usdCount + khrCount;
     return {
-      khqrRev,
-      khqrPct: totalAmt > 0 ? ((khqrRev / totalAmt) * 100).toFixed(1) : '0.0',
-      cardRev,
-      cardPct: totalAmt > 0 ? ((cardRev / totalAmt) * 100).toFixed(1) : '0.0',
+      usdRev,
+      usdCount,
+      usdPct: totalCount > 0 ? ((usdCount / totalCount) * 100).toFixed(1) : '0.0',
+      khrRev,
+      khrCount,
+      khrPct: totalCount > 0 ? ((khrCount / totalCount) * 100).toFixed(1) : '0.0',
+      totalRev: totalAmt,
+      totalCount,
     };
   }, [timeframeOrders]);
 
@@ -650,11 +655,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Payment Gateway Breakdown */}
+          {/* Payment Gateway Breakdown (Official NBC Bakong KHQR USD & KHR) */}
           <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-bold text-slate-900">
-                {language === 'km' ? 'វិធីសាស្ត្រទូទាត់' : 'Payment Methods'}
+                {language === 'km' ? 'វិធីសាស្ត្រទូទាត់ (Bakong KHQR)' : 'Payment Methods (Bakong KHQR)'}
               </h2>
               <span className="text-[11px] text-emerald-600 font-medium">
                 {language === 'km' ? 'បានទូទាត់រួចរាល់' : 'Settled'}
@@ -664,37 +669,47 @@ export default function AdminDashboard() {
             <div className="space-y-3">
               <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-white text-slate-700 border border-slate-200/80">
+                  <div className="p-2 rounded-lg bg-white text-blue-600 border border-slate-200/80">
                     <QrCode className="w-4 h-4" />
                   </div>
                   <div>
                     <span className="text-xs font-semibold text-slate-900 block">
-                      {language === 'km' ? 'KHQR បាគង' : 'KHQR Bakong'}
+                      {language === 'km' ? 'KHQR បាគង (USD $)' : 'KHQR Bakong (USD $)'}
                     </span>
-                    <span className="text-[10px] text-slate-500">ABA, Wing, ACLEDA, Sathapana</span>
+                    <span className="text-[10px] text-slate-500">
+                      {language === 'km'
+                        ? `ABA, Wing, ACLEDA • ${paymentStats.usdCount} ប្រតិបត្តិការ`
+                        : `ABA, Wing, ACLEDA • ${paymentStats.usdCount} orders`}
+                    </span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs tabular-nums font-bold text-slate-900 block">{paymentStats.khqrPct}%</span>
-                  <span className="text-[10px] text-slate-500 tabular-nums">{formatUSD(paymentStats.khqrRev)}</span>
+                  <span className="text-xs tabular-nums font-bold text-slate-900 block">{paymentStats.usdPct}%</span>
+                  <span className="text-[10px] text-slate-500 tabular-nums">{formatUSD(paymentStats.usdRev)}</span>
                 </div>
               </div>
 
               <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-white text-slate-700 border border-slate-200/80">
-                    <CreditCard className="w-4 h-4" />
+                  <div className="p-2 rounded-lg bg-white text-emerald-600 border border-slate-200/80">
+                    <QrCode className="w-4 h-4" />
                   </div>
                   <div>
                     <span className="text-xs font-semibold text-slate-900 block">
-                      {language === 'km' ? 'កាតឥណទាន / ឥណពន្ធ' : 'Credit / Debit Card'}
+                      {language === 'km' ? 'KHQR បាគង (ប្រាក់រៀល ៛)' : 'KHQR Bakong (KHR ៛)'}
                     </span>
-                    <span className="text-[10px] text-slate-500">Visa, MasterCard, JCB</span>
+                    <span className="text-[10px] text-slate-500">
+                      {language === 'km'
+                        ? `គណនីរៀល (1$ = 4,100៛) • ${paymentStats.khrCount} ប្រតិបត្តិការ`
+                        : `Khmer Riel (4,100៛/$) • ${paymentStats.khrCount} orders`}
+                    </span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs tabular-nums font-bold text-slate-900 block">{paymentStats.cardPct}%</span>
-                  <span className="text-[10px] text-slate-500 tabular-nums">{formatUSD(paymentStats.cardRev)}</span>
+                  <span className="text-xs tabular-nums font-bold text-slate-900 block">{paymentStats.khrPct}%</span>
+                  <span className="text-[10px] text-emerald-700 font-semibold tabular-nums block">
+                    {formatKHR(paymentStats.khrRev)} ({formatUSD(paymentStats.khrRev)})
+                  </span>
                 </div>
               </div>
             </div>
@@ -818,7 +833,13 @@ export default function AdminDashboard() {
                     </td>
 
                     <td className="py-3 px-3 font-mono font-bold text-slate-900 whitespace-nowrap">
-                      {formatUSD(o.total)}
+                      <span className="block">{formatUSD(o.total)}</span>
+                      {String(o.paymentMethod || '').toLowerCase().includes('khr') &&
+                        String(o.paymentMethod || '').toLowerCase().includes('(khr)') && (
+                          <span className="text-[10px] font-semibold text-emerald-600 block">
+                            {formatKHR(o.total)}
+                          </span>
+                        )}
                     </td>
 
                     <td className="py-3 px-3">
@@ -994,7 +1015,12 @@ export default function AdminDashboard() {
                       o.createdAt || ''
                     ])
                   ];
-                  const csvContent = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+                  const escapeCsvCell = (v) => {
+                    const raw = String(v ?? '').replace(/\r?\n/g, ' ');
+                    const formulaSafe = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+                    return `"${formulaSafe.replace(/"/g, '""')}"`;
+                  };
+                  const csvContent = rows.map((r) => r.map(escapeCsvCell).join(',')).join('\n');
                   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');

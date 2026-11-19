@@ -3,6 +3,13 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../config/firebase.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { getClientIp, getUserAgent, recordAuditEvent } from './auditService.js';
+import {
+  decryptSecret,
+  encryptSecret,
+  findMatchingRecoveryIndex,
+  generateRecoveryCodes,
+  hashRecoveryCode,
+} from '../utils/cryptoSecrets.js';
 
 const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 const VAULT_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -10,8 +17,7 @@ const MAX_VAULT_FAILURES = 3;
 const VAULT_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
 
 let cachedSigningSecret = null;
-const failureBuckets = new Map();
-const revokedTokens = new Set();
+const revokedTokenCache = new Set();
 
 function ensureDb() {
   if (!db) {
@@ -89,16 +95,25 @@ export function generateTotpCode(secretBase32, counterOffset = 0, timestampMs = 
   return String(binary % 1_000_000).padStart(6, '0');
 }
 
-export function verifyTotpCode(secretBase32, candidateCode) {
+export function matchTotpStep(secretBase32, candidateCode, lastUsedStep = 0, timestampMs = Date.now()) {
   const clean = String(candidateCode || '').replace(/\s+/g, '');
-  if (!/^\d{6}$/.test(clean)) return false;
+  if (!/^\d{6}$/.test(clean)) return { valid: false, step: 0, replayed: false };
+  const baseStep = Math.floor(timestampMs / 1000 / 30);
   for (const offset of [-1, 0, 1]) {
-    const expected = generateTotpCode(secretBase32, offset);
+    const expected = generateTotpCode(secretBase32, offset, timestampMs);
     if (crypto.timingSafeEqual(Buffer.from(clean), Buffer.from(expected))) {
-      return true;
+      const matchedStep = baseStep + offset;
+      if (Number(lastUsedStep || 0) >= matchedStep) {
+        return { valid: false, step: matchedStep, replayed: true };
+      }
+      return { valid: true, step: matchedStep, replayed: false };
     }
   }
-  return false;
+  return { valid: false, step: 0, replayed: false };
+}
+
+export function verifyTotpCode(secretBase32, candidateCode, lastUsedStep = 0) {
+  return matchTotpStep(secretBase32, candidateCode, lastUsedStep).valid;
 }
 
 function hashPin(pin, saltHex) {
@@ -115,24 +130,29 @@ function isWeakAdminPin(pin) {
   return banned.has(s.toLowerCase());
 }
 
+/**
+ * Loads dedicated ADMIN_VAULT_SECRET from environment (never writes plaintext signing key to Firestore).
+ */
 export async function getSigningSecret() {
-  if (process.env.ADMIN_VAULT_SECRET && process.env.ADMIN_VAULT_SECRET.length >= 24) {
-    return process.env.ADMIN_VAULT_SECRET;
+  const envSecret = String(process.env.ADMIN_VAULT_SECRET || '').trim();
+  if (envSecret.length >= 24) {
+    return envSecret;
   }
-  if (cachedSigningSecret) return cachedSigningSecret;
-
-  const firestore = ensureDb();
-  const ref = firestore.collection('systemConfig').doc('adminVaultKey');
-  const snap = await ref.get();
-  if (snap.exists && snap.data()?.secret) {
-    cachedSigningSecret = snap.data().secret;
-    return cachedSigningSecret;
+  if (process.env.NODE_ENV === 'production') {
+    throw new AppError(
+      'ADMIN_VAULT_SECRET (at least 24 characters) must be configured in production.',
+      500,
+      'SERVER_MISCONFIGURED'
+    );
   }
-
-  const generated = crypto.randomBytes(32).toString('hex');
-  await ref.set({ secret: generated, createdAt: new Date().toISOString() });
-  cachedSigningSecret = generated;
-  return generated;
+  if (!cachedSigningSecret) {
+    const devSeed = String(process.env.PAYMENT_HMAC_SECRET || process.env.JWT_SECRET || '').trim();
+    cachedSigningSecret =
+      devSeed.length >= 16
+        ? sha256Hex(`dev-vault-secret:${devSeed}`)
+        : crypto.randomBytes(32).toString('hex');
+  }
+  return cachedSigningSecret;
 }
 
 async function signVaultToken(payload) {
@@ -140,6 +160,22 @@ async function signVaultToken(payload) {
   const encodedPayload = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
   const sig = crypto.createHmac('sha256', secret).update(encodedPayload).digest('base64url');
   return `${encodedPayload}.${sig}`;
+}
+
+async function isTokenRevoked(jti) {
+  if (!jti) return true;
+  if (revokedTokenCache.has(jti)) return true;
+  if (!db) return false;
+  try {
+    const snap = await db.collection('adminVaultRevocations').doc(String(jti)).get();
+    if (snap.exists) {
+      revokedTokenCache.add(jti);
+      return true;
+    }
+  } catch {
+    // Non-fatal fallback
+  }
+  return false;
 }
 
 export async function verifySignedVaultToken(token, req) {
@@ -172,7 +208,7 @@ export async function verifySignedVaultToken(token, req) {
     return { valid: false, code: 'VAULT_UID_MISMATCH', message: 'Admin vault session belongs to a different account.' };
   }
 
-  if (revokedTokens.has(payload.jti)) {
+  if (await isTokenRevoked(payload.jti)) {
     return { valid: false, code: 'VAULT_REVOKED', message: 'Admin vault session was locked. Please verify again.' };
   }
 
@@ -193,15 +229,10 @@ export async function verifySignedVaultToken(token, req) {
   return { valid: true, payload };
 }
 
-function getAttemptBucketKey(uid, req) {
-  return `${uid}:${getClientIp(req)}`;
-}
-
-function checkLockout(uid, req) {
-  const key = getAttemptBucketKey(uid, req);
-  const entry = failureBuckets.get(key);
-  if (entry && entry.lockedUntil > Date.now()) {
-    const secs = Math.ceil((entry.lockedUntil - Date.now()) / 1000);
+function assertNotLocked(data) {
+  const lockedUntil = Number(data?.lockedUntil || 0);
+  if (lockedUntil > Date.now()) {
+    const secs = Math.ceil((lockedUntil - Date.now()) / 1000);
     throw new AppError(
       `Admin vault temporarily locked after repeated failures. Retry in ${secs}s.`,
       429,
@@ -210,25 +241,40 @@ function checkLockout(uid, req) {
   }
 }
 
-async function recordFailure(uid, req, reasonCode) {
-  const key = getAttemptBucketKey(uid, req);
+async function recordFailurePersisted(ref, uid, req, reasonCode) {
+  const firestore = ensureDb();
   const now = Date.now();
-  let entry = failureBuckets.get(key);
-  if (!entry || now - entry.windowStart > VAULT_LOCKOUT_MS) {
-    entry = { count: 0, windowStart: now, lockedUntil: 0 };
-  }
-  entry.count += 1;
 
-  if (entry.count >= MAX_VAULT_FAILURES) {
-    entry.lockedUntil = now + VAULT_LOCKOUT_MS;
-    failureBuckets.set(key, entry);
+  const { count, locked } = await firestore.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const cur = snap.exists ? snap.data() || {} : {};
+    const prevWindowStart = Number(cur.lockWindowStart || 0);
+    const expiredWindow = !prevWindowStart || now - prevWindowStart > VAULT_LOCKOUT_MS;
+    const nextCount = expiredWindow ? 1 : Number(cur.failedAttempts || 0) + 1;
+    const nextLockedUntil = nextCount >= MAX_VAULT_FAILURES ? now + VAULT_LOCKOUT_MS : 0;
+
+    tx.set(
+      ref,
+      {
+        failedAttempts: nextCount,
+        lockWindowStart: expiredWindow ? now : prevWindowStart,
+        lockedUntil: nextLockedUntil,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    return { count: nextCount, locked: nextLockedUntil > now };
+  });
+
+  if (locked) {
     await recordAuditEvent(req, {
       eventType: 'ADMIN_VAULT_LOCKOUT',
       severity: 'critical',
       targetType: 'admin_vault',
       targetId: uid,
       status: 'BLOCKED',
-      details: `Locked admin vault for 15m after ${entry.count} failed attempts (${reasonCode})`,
+      details: `Locked admin vault for 15m after ${count} failed attempts (${reasonCode})`,
     });
     throw new AppError(
       'Too many invalid security attempts! Admin vault locked for 15 minutes.',
@@ -237,8 +283,7 @@ async function recordFailure(uid, req, reasonCode) {
     );
   }
 
-  failureBuckets.set(key, entry);
-  const remaining = MAX_VAULT_FAILURES - entry.count;
+  const remaining = Math.max(0, MAX_VAULT_FAILURES - count);
   await recordAuditEvent(req, {
     eventType: 'ADMIN_VAULT_FAILED',
     severity: 'warning',
@@ -248,10 +293,6 @@ async function recordFailure(uid, req, reasonCode) {
     details: `Invalid admin verification (${reasonCode}). ${remaining} attempt(s) remaining before 15m lockout.`,
   });
   return remaining;
-}
-
-function clearFailures(uid, req) {
-  failureBuckets.delete(getAttemptBucketKey(uid, req));
 }
 
 async function issueSessionForUser(user, req) {
@@ -291,12 +332,8 @@ export async function getVaultStatus(req) {
     }
   }
 
-  const key = getAttemptBucketKey(req.user.uid, req);
-  const lockEntry = failureBuckets.get(key);
-  const lockedSeconds =
-    lockEntry && lockEntry.lockedUntil > Date.now()
-      ? Math.ceil((lockEntry.lockedUntil - Date.now()) / 1000)
-      : 0;
+  const lockedUntil = Number(data?.lockedUntil || 0);
+  const lockedSeconds = lockedUntil > Date.now() ? Math.ceil((lockedUntil - Date.now()) / 1000) : 0;
 
   return {
     configured,
@@ -335,7 +372,7 @@ export async function beginVaultSetup(req, QRCode) {
       uid: req.user.uid,
       email: req.user.email || '',
       configured: false,
-      pendingSecret,
+      pendingSecret: encryptSecret(pendingSecret),
       pendingExpiresAt: Date.now() + 10 * 60 * 1000,
       updatedAt: FieldValue.serverTimestamp(),
     },
@@ -350,7 +387,7 @@ export async function beginVaultSetup(req, QRCode) {
 }
 
 /**
- * Locks in Layer 2 (Master Security PIN) + Layer 3 (TOTP 2FA) + Layer 5 Recovery Codes.
+ * Locks in Layer 2 (Master Security PIN) + Layer 3 (Encrypted TOTP 2FA) + Layer 5 scrypt Recovery Codes.
  */
 export async function confirmVaultSetup(req, { pin, totpCode } = {}) {
   const firestore = ensureDb();
@@ -375,16 +412,15 @@ export async function confirmVaultSetup(req, { pin, totpCode } = {}) {
     );
   }
 
-  if (!verifyTotpCode(data.pendingSecret, totpCode)) {
+  const plainPendingSecret = decryptSecret(data.pendingSecret);
+  const totpMatch = matchTotpStep(plainPendingSecret, totpCode, 0);
+  if (!totpMatch.valid) {
     throw new AppError('Invalid 6-digit Authenticator code. Please check your device time and try again.', 400, 'INVALID_TOTP');
   }
 
   const { salt, hash } = hashPin(cleanPin);
-  const recoveryCodes = Array.from({ length: 6 }, () => {
-    const raw = crypto.randomBytes(4).toString('hex').toUpperCase();
-    return `TTV-${raw.slice(0, 4)}-${raw.slice(4, 8)}`;
-  });
-  const recoveryHashes = recoveryCodes.map((c) => sha256Hex(c));
+  const recoveryCodes = generateRecoveryCodes('TTV', 6);
+  const recoveryHashes = recoveryCodes.map((c) => hashRecoveryCode(c));
 
   const nowIso = new Date().toISOString();
   await ref.set({
@@ -393,8 +429,12 @@ export async function confirmVaultSetup(req, { pin, totpCode } = {}) {
     configured: true,
     pinSalt: salt,
     pinHash: hash,
-    totpSecret: data.pendingSecret,
+    totpSecret: encryptSecret(plainPendingSecret),
+    lastUsedTotpStep: totpMatch.step,
     recoveryHashes,
+    failedAttempts: 0,
+    lockWindowStart: 0,
+    lockedUntil: 0,
     configuredAt: nowIso,
     lastUnlockedAt: nowIso,
     lastUnlockedIp: getClientIp(req),
@@ -419,11 +459,9 @@ export async function confirmVaultSetup(req, { pin, totpCode } = {}) {
 }
 
 /**
- * Verifies Layer 2 (Master PIN) + Layer 3 (TOTP 2FA OR single-use Recovery Code) and issues Layer 4 Vault Token.
+ * Verifies Layer 2 (Master PIN) + Layer 3 (TOTP 2FA OR single-use atomic Recovery Code) and issues Layer 4 Vault Token.
  */
 export async function unlockVault(req, { pin, totpCode, recoveryCode } = {}) {
-  checkLockout(req.user.uid, req);
-
   const firestore = ensureDb();
   const ref = firestore.collection('adminSecurity').doc(req.user.uid);
   const snap = await ref.get();
@@ -432,51 +470,99 @@ export async function unlockVault(req, { pin, totpCode, recoveryCode } = {}) {
   }
 
   const data = snap.data();
-  const { hash: providedPinHash } = hashPin(String(pin || '').trim(), data.pinSalt);
+  assertNotLocked(data);
 
+  const { hash: providedPinHash } = hashPin(String(pin || '').trim(), data.pinSalt);
   if (!timingSafeEqualHex(providedPinHash, data.pinHash)) {
-    const remaining = await recordFailure(req.user.uid, req, 'INVALID_MASTER_PIN');
+    const remaining = await recordFailurePersisted(ref, req.user.uid, req, 'INVALID_MASTER_PIN');
     throw new AppError(`Invalid Master PIN (${remaining} attempt(s) left before lockout).`, 401, 'INVALID_MASTER_PIN');
   }
 
-  let usedRecoveryHash = null;
+  let usedRecovery = false;
   if (recoveryCode && String(recoveryCode).trim()) {
     const cleanRec = String(recoveryCode).trim().toUpperCase();
-    const recHash = sha256Hex(cleanRec);
-    const list = Array.isArray(data.recoveryHashes) ? data.recoveryHashes : [];
-    if (!list.includes(recHash)) {
-      const remaining = await recordFailure(req.user.uid, req, 'INVALID_RECOVERY_CODE');
+    const consumed = await firestore.runTransaction(async (tx) => {
+      const freshSnap = await tx.get(ref);
+      const freshData = freshSnap.data() || {};
+      assertNotLocked(freshData);
+      const list = Array.isArray(freshData.recoveryHashes) ? freshData.recoveryHashes : [];
+      const matchIdx = findMatchingRecoveryIndex(cleanRec, list);
+      if (matchIdx === -1) return false;
+
+      const remainingHashes = list.filter((_, idx) => idx !== matchIdx);
+      tx.set(
+        ref,
+        {
+          recoveryHashes: remainingHashes,
+          failedAttempts: 0,
+          lockWindowStart: 0,
+          lockedUntil: 0,
+          lastUnlockedAt: new Date().toISOString(),
+          lastUnlockedIp: getClientIp(req),
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+      return true;
+    });
+
+    if (!consumed) {
+      const remaining = await recordFailurePersisted(ref, req.user.uid, req, 'INVALID_RECOVERY_CODE');
       throw new AppError(`Invalid backup recovery code (${remaining} attempt(s) left).`, 401, 'INVALID_RECOVERY_CODE');
     }
-    usedRecoveryHash = recHash;
+    usedRecovery = true;
   } else {
-    if (!verifyTotpCode(data.totpSecret, totpCode)) {
-      const remaining = await recordFailure(req.user.uid, req, 'INVALID_TOTP_CODE');
-      throw new AppError(`Invalid 6-digit Authenticator code (${remaining} attempt(s) left before lockout).`, 401, 'INVALID_TOTP');
+    const plainTotpSecret = decryptSecret(data.totpSecret);
+    const totpCheck = await firestore.runTransaction(async (tx) => {
+      const freshSnap = await tx.get(ref);
+      const freshData = freshSnap.data() || {};
+      assertNotLocked(freshData);
+      const matched = matchTotpStep(
+        plainTotpSecret,
+        totpCode,
+        Number(freshData.lastUsedTotpStep || 0)
+      );
+      if (!matched.valid) {
+        return matched;
+      }
+      const updates = {
+        failedAttempts: 0,
+        lockWindowStart: 0,
+        lockedUntil: 0,
+        lastUsedTotpStep: matched.step,
+        lastUnlockedAt: new Date().toISOString(),
+        lastUnlockedIp: getClientIp(req),
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+      if (freshData.totpSecret && !String(freshData.totpSecret).startsWith('enc:v1:')) {
+        updates.totpSecret = encryptSecret(plainTotpSecret);
+      }
+      tx.set(ref, updates, { merge: true });
+      return matched;
+    });
+
+    if (!totpCheck.valid) {
+      const reason = totpCheck.replayed ? 'REPLAYED_TOTP_CODE' : 'INVALID_TOTP_CODE';
+      const remaining = await recordFailurePersisted(ref, req.user.uid, req, reason);
+      throw new AppError(
+        totpCheck.replayed
+          ? `This 6-digit code was already used. Wait for the next code (${remaining} attempt(s) left).`
+          : `Invalid 6-digit Authenticator code (${remaining} attempt(s) left before lockout).`,
+        401,
+        'INVALID_TOTP'
+      );
     }
   }
-
-  clearFailures(req.user.uid, req);
-
-  const updates = {
-    lastUnlockedAt: new Date().toISOString(),
-    lastUnlockedIp: getClientIp(req),
-    updatedAt: FieldValue.serverTimestamp(),
-  };
-  if (usedRecoveryHash) {
-    updates.recoveryHashes = (data.recoveryHashes || []).filter((h) => h !== usedRecoveryHash);
-  }
-  await ref.set(updates, { merge: true });
 
   const session = await issueSessionForUser(req.user, req);
 
   await recordAuditEvent(req, {
     eventType: 'ADMIN_VAULT_UNLOCKED',
-    severity: usedRecoveryHash ? 'warning' : 'info',
+    severity: usedRecovery ? 'warning' : 'info',
     targetType: 'admin_vault',
     targetId: req.user.uid,
     status: 'SUCCESS',
-    details: usedRecoveryHash
+    details: usedRecovery
       ? 'Admin vault unlocked using one-time backup recovery code'
       : 'Admin vault unlocked via 5-Layer PIN + TOTP 2FA verification',
   });
@@ -485,14 +571,26 @@ export async function unlockVault(req, { pin, totpCode, recoveryCode } = {}) {
 }
 
 /**
- * Revokes current Admin Vault token immediately.
+ * Revokes current Admin Vault token immediately and persists revocation across restarts/instances.
  */
 export async function lockVault(req) {
   const token = req.headers['x-admin-vault'];
   if (token) {
     const check = await verifySignedVaultToken(token, req);
     if (check.valid && check.payload?.jti) {
-      revokedTokens.add(check.payload.jti);
+      const jti = String(check.payload.jti);
+      revokedTokenCache.add(jti);
+      if (db) {
+        await db
+          .collection('adminVaultRevocations')
+          .doc(jti)
+          .set({
+            uid: req.user?.uid || null,
+            revokedAt: new Date().toISOString(),
+            expiresAt: check.payload.exp || Date.now() + VAULT_TTL_MS,
+          })
+          .catch(() => {});
+      }
     }
   }
   await recordAuditEvent(req, {
