@@ -70,6 +70,54 @@ const CHANNEL_CONFIG = {
   },
 };
 
+const ORDER_BOT_COMMANDS = [
+  { command: 'start', description: 'បើកម៉ឺនុយគ្រប់គ្រងការកម្ម៉ង់' },
+  { command: 'today', description: 'មើលចំនួនការកម្ម៉ង់ និងចំណូលថ្ងៃនេះ' },
+  { command: 'orders', description: 'មើលការកម្ម៉ង់ថ្មីៗ' },
+  { command: 'pending', description: 'មើលការកម្ម៉ង់រង់ចាំដឹកជញ្ជូន' },
+  { command: 'verify', description: 'ពិនិត្យការទូទាត់ KHQR រង់ចាំផ្ទៀងផ្ទាត់' },
+  { command: 'status', description: 'ពិនិត្យស្ថានភាពប្រព័ន្ធ' },
+];
+
+function resolveOrderWebhookUrl(req = null) {
+  const explicit = String(process.env.TELEGRAM_WEBHOOK_URL || '').trim();
+  if (explicit) return explicit;
+  const host = String(
+    process.env.BACKEND_PUBLIC_URL ||
+      process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+      process.env.VERCEL_URL ||
+      req?.get?.('x-forwarded-host') ||
+      req?.get?.('host') ||
+      ''
+  ).trim();
+  if (!host) return null;
+  const cleanHost = host.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+  if (!cleanHost || /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(cleanHost)) {
+    return null;
+  }
+  return `https://${cleanHost}/api/payments/khqr/telegram-webhook`;
+}
+
+async function syncOrderBotWebhookAndCommands(botToken, req = null) {
+  if (!botToken) return null;
+  await telegramApiWithToken(botToken, 'setMyCommands', {
+    commands: ORDER_BOT_COMMANDS,
+  }).catch(() => {});
+
+  const secret = String(process.env.TELEGRAM_WEBHOOK_SECRET || '').trim();
+  const webhookUrl = process.env.VERCEL === '1' ? resolveOrderWebhookUrl(req) : null;
+  if (webhookUrl && secret) {
+    await telegramApiWithToken(botToken, 'setWebhook', {
+      url: webhookUrl,
+      secret_token: secret,
+      allowed_updates: ['message', 'callback_query'],
+    }).catch((err) => {
+      console.warn('[Telegram Webhook Sync]', err?.message || 'setWebhook failed');
+    });
+  }
+  return webhookUrl;
+}
+
 const ORDER_BOT_KEYBOARD = {
   keyboard: [
     [
@@ -331,9 +379,25 @@ export async function connectTelegramAdmin(req, channel = 'support') {
   const me = await telegramApiWithToken(stored.botToken, 'getMe').catch(() => null);
   const botUsername = me?.username || stored.botUsername || meta.defaultBotUsername;
 
-  if (channel === 'orders' && orderBotListenerRunning && stored.chatId) {
-    await sendOrderBotWelcomeDashboard(stored, stored.chatUsername || 'Admin');
+  let webhookActive = false;
+  if (channel === 'orders') {
+    await syncOrderBotWebhookAndCommands(stored.botToken, req);
+    const webhookInfo = await telegramApiWithToken(stored.botToken, 'getWebhookInfo').catch(() => null);
+    webhookActive = Boolean(webhookInfo?.url);
+  }
+
+  if (channel === 'orders' && (orderBotListenerRunning || webhookActive) && stored.chatId) {
+    await sendOrderBotWelcomeDashboard({ ...stored, botUsername }, stored.chatUsername || 'Admin');
     return getTelegramStatus(channel);
+  }
+
+  if (channel === 'orders' && (orderBotListenerRunning || webhookActive)) {
+    const { code } = await issuePairingCode(meta.docPath, req?.user?.email || null);
+    throw new AppError(
+      `Verification required: Open @${botUsername} in Telegram and send "/start ${code}" (valid 10 min), then click Connect again.`,
+      400,
+      'TELEGRAM_PAIRING_REQUIRED'
+    );
   }
 
   const updates = await telegramApiWithToken(stored.botToken, 'getUpdates');
@@ -989,7 +1053,6 @@ async function handleOrderBotMessage(msg, stored) {
   const pairingCode = extractPairingCodeFromText(text);
   if (
     pairingCode &&
-    !stored.chatId &&
     db &&
     stored.pendingPairingHash &&
     Date.now() < Number(stored.pendingPairingExpiresAt || 0) &&
@@ -1160,10 +1223,11 @@ async function processOrderBotUpdate(upd, stored) {
 let lastOrderCallbackOffset = 0;
 let activeOrderPollPromise = null;
 let listenerController = null;
+let webhookConflictUntil = 0;
 
 export async function pollOrderPaymentCallbacks() {
-  if (orderBotListenerRunning) {
-    // Background long-poller handles updates continuously without 409 conflict
+  if (orderBotListenerRunning || Date.now() < webhookConflictUntil) {
+    // Background long-poller or active webhook handles updates without 409 conflict
     return [];
   }
   if (activeOrderPollPromise) {
@@ -1193,7 +1257,12 @@ export async function pollOrderPaymentCallbacks() {
       }
       return results;
     } catch (err) {
-      console.warn('[Telegram Poll]', err?.message || 'Poll skipped');
+      const msg = String(err?.message || '');
+      if (msg.toLowerCase().includes('webhook')) {
+        webhookConflictUntil = Date.now() + 60 * 1000;
+      } else {
+        console.warn('[Telegram Poll]', msg || 'Poll skipped');
+      }
       return [];
     } finally {
       activeOrderPollPromise = null;
@@ -1204,8 +1273,13 @@ export async function pollOrderPaymentCallbacks() {
 }
 
 export async function processTelegramPaymentWebhook(update) {
+  if (!update) return null;
+  const ordersConfig = await getStoredTelegramConfig('orders');
+  if (ordersConfig.botToken) {
+    return processOrderBotUpdate(update, ordersConfig);
+  }
   const stored = await resolveOrderChannelConfig();
-  if (!stored || !update) return null;
+  if (!stored) return null;
   return processOrderBotUpdate(update, stored);
 }
 
@@ -1220,6 +1294,12 @@ export async function startOrderBotListener() {
   const stored = await getStoredTelegramConfig('orders');
   if (!stored.botToken) return;
 
+  const webhookInfo = await telegramApiWithToken(stored.botToken, 'getWebhookInfo').catch(() => null);
+  if (webhookInfo?.url) {
+    console.info(`[Telegram Order Bot] Webhook active (${webhookInfo.url}); skipping local getUpdates loop.`);
+    return;
+  }
+
   orderBotListenerRunning = true;
   listenerController = new AbortController();
 
@@ -1233,14 +1313,7 @@ export async function startOrderBotListener() {
 
   // Register bottom-left Telegram Menu commands
   telegramApiWithToken(stored.botToken, 'setMyCommands', {
-    commands: [
-      { command: 'start', description: 'បើកម៉ឺនុយគ្រប់គ្រងការកម្ម៉ង់' },
-      { command: 'today', description: 'មើលចំនួនការកម្ម៉ង់ និងចំណូលថ្ងៃនេះ' },
-      { command: 'orders', description: 'មើលការកម្ម៉ង់ថ្មីៗ' },
-      { command: 'pending', description: 'មើលការកម្ម៉ង់រង់ចាំដឹកជញ្ជូន' },
-      { command: 'verify', description: 'ពិនិត្យការទូទាត់ KHQR រង់ចាំផ្ទៀងផ្ទាត់' },
-      { command: 'status', description: 'ពិនិត្យស្ថានភាពប្រព័ន្ធ' },
-    ],
+    commands: ORDER_BOT_COMMANDS,
   }).catch(() => {});
 
   const loop = async () => {
