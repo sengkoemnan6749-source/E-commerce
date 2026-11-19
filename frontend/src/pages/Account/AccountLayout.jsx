@@ -84,11 +84,11 @@ export default function AccountLayout() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       {/* Top Customer Member Banner */}
-      <div className="relative bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-md border border-slate-800 mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="relative bg-slate-900 text-white rounded-3xl p-5 sm:p-8 shadow-md border border-slate-800 mb-6 sm:mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
           
           {/* User Profile Info */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4 sm:gap-5 min-w-0">
             <div className="relative shrink-0">
               <input
                 ref={avatarInputRef}
@@ -129,16 +129,16 @@ export default function AccountLayout() {
               </button>
             </div>
 
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-1">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-2xl font-black text-white tracking-tight mb-1 truncate">
                 {userName}
               </h1>
 
-              <p className="text-xs text-slate-400 font-medium">
+              <p className="text-xs text-slate-400 font-medium truncate">
                 {user?.email || ''}
               </p>
 
-              <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
+              <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-slate-400">
                 <span>
                   {language === 'km' ? 'សមាជិកតាំងពី៖' : 'Member Since:'}{' '}
                   <strong className="text-slate-200 font-medium">{user?.memberSince || (language === 'km' ? 'សមាជិកផ្ទៀងផ្ទាត់រួច' : 'Verified Member')}</strong>
@@ -148,7 +148,7 @@ export default function AccountLayout() {
           </div>
 
           {/* Quick Header Actions */}
-          <div className="flex items-center gap-3 self-start md:self-center shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 self-start md:self-center shrink-0">
             <Link
               to="/shop"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 shadow-sm transition-all"
@@ -171,13 +171,13 @@ export default function AccountLayout() {
         </div>
       </div>
 
-      {/* 2-Column Layout: Navigation Sidebar & Sub-page Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      {/* 2-Column Layout: Navigation Sidebar (Horizontal tabs below lg) & Sub-page Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
         
-        {/* Left Navigation Sidebar (3 Cols) */}
-        <aside className="lg:col-span-3 space-y-5">
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-3 shadow-sm">
-            <nav className="flex flex-col gap-1">
+        {/* Left Navigation Sidebar (3 Cols on desktop, Horizontal Tab Strip on mobile & tablet) */}
+        <aside className="lg:col-span-3 space-y-5 min-w-0">
+          <div className="bg-white rounded-2xl lg:rounded-3xl border border-slate-200/90 p-2 lg:p-3 shadow-sm">
+            <nav className="flex lg:flex-col gap-1.5 lg:gap-1 overflow-x-auto no-scrollbar pb-0.5 lg:pb-0">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -186,7 +186,7 @@ export default function AccountLayout() {
                     to={item.to}
                     end={item.end}
                     className={({ isActive }) =>
-                      `flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all ${
+                      `flex items-center justify-between gap-2.5 px-3.5 lg:px-4 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap shrink-0 lg:shrink ${
                         isActive
                           ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
                           : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -195,13 +195,13 @@ export default function AccountLayout() {
                   >
                     {({ isActive }) => (
                       <>
-                        <div className="flex items-center gap-3">
-                          <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                        <div className="flex items-center gap-2 lg:gap-3">
+                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                           <span>{item.label}</span>
                         </div>
                         {item.badge !== undefined && (
                           <span
-                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 ${
                               isActive
                                 ? 'bg-white/20 text-white'
                                 : 'bg-slate-100 text-slate-600'
@@ -218,8 +218,8 @@ export default function AccountLayout() {
             </nav>
           </div>
 
-          {/* Customer Support Card */}
-          <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200/90 shadow-2xs">
+          {/* Customer Support Card (Sidebar on lg+ desktop; compact strip below main on < lg) */}
+          <div className="hidden lg:block p-5 rounded-3xl bg-slate-50 border border-slate-200/90 shadow-2xs">
             <div className="flex items-center gap-2.5 mb-2">
               <Headphones className="w-5 h-5 text-blue-600" />
               <div>
@@ -247,10 +247,34 @@ export default function AccountLayout() {
         </aside>
 
         {/* Right Child Sub-page (9 Cols) */}
-        <main className="lg:col-span-9 bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 lg:p-10 shadow-sm">
+        <main className="lg:col-span-9 min-w-0 bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-8 lg:p-10 shadow-sm">
           <Outlet />
         </main>
 
+      </div>
+
+      {/* Mobile & Tablet Support Card */}
+      <div className="lg:hidden mt-6 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Headphones className="w-5 h-5 text-blue-600 shrink-0" />
+          <div>
+            <h4 className="text-xs font-bold text-slate-900">
+              {language === 'km' ? 'ត្រូវការជំនួយមែនទេ?' : 'Need Assistance?'}
+            </h4>
+            <p className="text-[11px] text-slate-500">
+              {language === 'km'
+                ? 'ទាក់ទងក្រុមការងារភ្នំពេញសម្រាប់ដឹកជញ្ជូន ឬធានា។'
+                : 'Contact Phnom Penh team for tracking, warranty, or advice.'}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new CustomEvent('techtonic:open-support'))}
+          className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-slate-100 border border-slate-200 transition-colors shadow-2xs cursor-pointer shrink-0"
+        >
+          {language === 'km' ? 'ទាក់ទងផ្នែកជំនួយ' : 'Contact Support'}
+        </button>
       </div>
     </div>
   );

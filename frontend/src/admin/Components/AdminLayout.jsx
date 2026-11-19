@@ -28,6 +28,7 @@ import AdminVaultGate from './AdminVaultGate';
 function AdminLayoutShell() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const notifRef = useRef(null);
   const navigate = useNavigate();
@@ -159,6 +160,7 @@ function AdminLayoutShell() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
+    setMobileSearchOpen(false);
     navigate(`${adminBase}/products?q=${encodeURIComponent(searchQuery.trim())}`);
   };
 
@@ -206,8 +208,8 @@ function AdminLayoutShell() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex font-sans selection:bg-blue-600 selection:text-white">
-      {/* Desktop Dark Theme Left Sidebar Panel (per Design System Spec) */}
-      <aside className="hidden md:flex flex-col w-64 shrink-0 bg-[#0f172a] text-slate-300 border-r border-slate-800/90 sticky top-0 h-screen z-30">
+      {/* Desktop Dark Theme Left Sidebar Panel (>= 1024px so tablets get full workspace) */}
+      <aside className="hidden lg:flex flex-col w-64 shrink-0 bg-[#0f172a] text-slate-300 border-r border-slate-800/90 sticky top-0 h-screen z-30">
         {/* Sidebar Brand Header */}
         <div className="h-14 px-4 flex items-center justify-between border-b border-slate-800/80 shrink-0">
           <Link to={adminBase} className="flex items-center gap-2 group min-w-0">
@@ -266,9 +268,9 @@ function AdminLayoutShell() {
         </div>
       </aside>
 
-      {/* Mobile Slide-Out Left Panel Drawer */}
+      {/* Mobile & Tablet Slide-Out Left Panel Drawer */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
+        <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
             className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs"
             onClick={() => setMobileSidebarOpen(false)}
@@ -328,59 +330,69 @@ function AdminLayoutShell() {
       )}
 
       {/* Right Column: Top Clean Utility Header + Main Canvas */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 h-14 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-          {/* Left: Mobile Menu Toggle + Page Context Search */}
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="md:hidden">
-              <HamburgerButton
-                isOpen={mobileSidebarOpen}
-                onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-                color="bg-slate-700"
-                activeColor="bg-blue-600"
-                hoverBg="hover:bg-slate-100"
-                ariaLabel={language === 'km' ? 'បើក/បិទម៉ឺនុយរុករក' : 'Toggle Navigation'}
-              />
+      <div className="flex-1 min-w-0 flex flex-col overflow-x-clip">
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80">
+          <div className="h-14 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
+            {/* Left: Mobile & Tablet Menu Toggle + Page Context Search */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="lg:hidden shrink-0">
+                <HamburgerButton
+                  isOpen={mobileSidebarOpen}
+                  onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                  color="bg-slate-700"
+                  activeColor="bg-blue-600"
+                  hoverBg="hover:bg-slate-100"
+                  ariaLabel={language === 'km' ? 'បើក/បិទម៉ឺនុយរុករក' : 'Toggle Navigation'}
+                />
+              </div>
+
+              <Link to={adminBase} className="lg:hidden flex items-center gap-1.5 shrink-0">
+                <span className="text-sm font-bold text-slate-900">TechTonic</span>
+              </Link>
+
+              {/* Clean Search Input (Tablet SM+ & Desktop) */}
+              <form onSubmit={handleSearchSubmit} className="hidden sm:block relative w-full max-w-xs md:max-w-sm">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder={language === 'km' ? 'ស្វែងរកផលិតផល ការបញ្ជាទិញ ឬអតិថិជន...' : 'Search products, orders, or customers...'}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-9 pl-10 pr-3.5 rounded-xl bg-slate-100/80 border border-slate-200/80 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                />
+              </form>
             </div>
 
-            <Link to={adminBase} className="md:hidden flex items-center gap-2 shrink-0">
-              <span className="text-sm font-bold text-slate-900">TechTonic</span>
-            </Link>
-
-            {/* Clean Search Input */}
-            <form onSubmit={handleSearchSubmit} className="hidden sm:block relative w-full max-w-sm">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                placeholder={language === 'km' ? 'ស្វែងរកផលិតផល ការបញ្ជាទិញ ឬអតិថិជន...' : 'Search products, orders, or customers...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pl-10 pr-3.5 rounded-xl bg-slate-100/80 border border-slate-200/80 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-              />
-            </form>
-          </div>
-
-          {/* Right: Language Switcher, Alerts, Profile */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-            <LanguageSwitcher variant="light" />
-
-            {/* Notifications Dropdown */}
-            <div className="relative" ref={notifRef}>
+            {/* Right: Mobile Search, Language Switcher, Alerts, Profile */}
+            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
               <button
                 type="button"
-                onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="relative h-9 w-9 rounded-xl text-slate-600 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-200/70 border border-slate-200/80 flex items-center justify-center transition-colors cursor-pointer"
-                aria-label={language === 'km' ? 'ការជូនដំណឹង' : 'Notifications'}
-                title={language === 'km' ? 'ការជូនដំណឹង' : 'Notifications'}
+                onClick={() => setMobileSearchOpen((prev) => !prev)}
+                className="sm:hidden h-9 w-9 rounded-xl text-slate-600 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-200/70 border border-slate-200/80 flex items-center justify-center transition-colors cursor-pointer"
+                aria-label={language === 'km' ? 'ស្វែងរក' : 'Search'}
               >
-                <Bell className="w-4 h-4" />
-                {(lowStockCount > 0 || pendingOrdersCount > 0 || openSupportCount > 0) && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-600 ring-2 ring-white" />
-                )}
+                <Search className="w-4 h-4" />
               </button>
 
-              {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white border border-slate-200 shadow-xl p-4 z-50">
+              <LanguageSwitcher variant="light" />
+
+              {/* Notifications Dropdown */}
+              <div className="relative" ref={notifRef}>
+                <button
+                  type="button"
+                  onClick={() => setNotificationsOpen(!notificationsOpen)}
+                  className="relative h-9 w-9 rounded-xl text-slate-600 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-200/70 border border-slate-200/80 flex items-center justify-center transition-colors cursor-pointer"
+                  aria-label={language === 'km' ? 'ការជូនដំណឹង' : 'Notifications'}
+                  title={language === 'km' ? 'ការជូនដំណឹង' : 'Notifications'}
+                >
+                  <Bell className="w-4 h-4" />
+                  {(lowStockCount > 0 || pendingOrdersCount > 0 || openSupportCount > 0) && (
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-600 ring-2 ring-white" />
+                  )}
+                </button>
+
+                {notificationsOpen && (
+                  <div className="fixed inset-x-3 top-16 sm:top-auto sm:inset-auto sm:absolute sm:right-0 sm:mt-2 sm:w-80 max-h-[75vh] overflow-y-auto rounded-2xl bg-white border border-slate-200 shadow-xl p-4 z-50">
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
                     <span className="text-xs font-bold text-slate-900">
                       {language === 'km' ? 'ការជូនដំណឹង' : 'Notifications'}
@@ -489,23 +501,40 @@ function AdminLayoutShell() {
               <Lock className="w-4 h-4" />
             </button>
 
-            {/* Admin Profile */}
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-              <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                {adminInitials}
-              </div>
-              <div className="hidden lg:flex flex-col text-left leading-tight">
-                <span className="text-xs font-bold text-slate-900">{adminName}</span>
-                <span className="text-[10px] text-emerald-600 font-semibold">
-                  {language === 'km' ? 'អ្នកគ្រប់គ្រង' : 'Store Admin'}
-                </span>
+              {/* Admin Profile */}
+              <div className="flex items-center gap-2 pl-1.5 sm:pl-2 border-l border-slate-200">
+                <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                  {adminInitials}
+                </div>
+                <div className="hidden lg:flex flex-col text-left leading-tight">
+                  <span className="text-xs font-bold text-slate-900">{adminName}</span>
+                  <span className="text-[10px] text-emerald-600 font-semibold">
+                    {language === 'km' ? 'អ្នកគ្រប់គ្រង' : 'Store Admin'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
+
+          {mobileSearchOpen && (
+            <form onSubmit={handleSearchSubmit} className="sm:hidden px-3 pb-3 border-t border-slate-100 pt-2.5">
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder={language === 'km' ? 'ស្វែងរកផលិតផល...' : 'Search products...'}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-9 pl-10 pr-3.5 rounded-xl bg-slate-100/80 border border-slate-200/80 text-xs text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                />
+              </div>
+            </form>
+          )}
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 min-w-0">
           <Outlet />
         </main>
       </div>

@@ -268,17 +268,18 @@ export default function AdminDashboard() {
   const minVal = Math.min(...chartPoints.map((p) => (chartMetric === 'revenue' ? p.revenue : p.orders))) * 0.8;
 
   const svgWidth = 800;
-  const svgHeight = 240;
-  const paddingX = 40;
-  const paddingY = 30;
+  const svgHeight = 200;
+  const paddingX = 0;
+  const paddingY = 20;
 
   const pointsCoordinates = useMemo(() => {
+    const denom = Math.max(1, chartPoints.length - 1);
     return chartPoints.map((pt, idx) => {
-      const x = paddingX + (idx / (chartPoints.length - 1)) * (svgWidth - paddingX * 2);
+      const x = paddingX + (idx / denom) * (svgWidth - paddingX * 2);
       const val = chartMetric === 'revenue' ? pt.revenue : pt.orders;
       const normalized = (val - minVal) / Math.max(1, maxVal - minVal);
       const y = svgHeight - paddingY - normalized * (svgHeight - paddingY * 2);
-      return { x, y, data: pt };
+      return { x, y, xPct: (idx / denom) * 100, yPct: (y / svgHeight) * 100, data: pt };
     });
   }, [chartPoints, chartMetric, maxVal, minVal]);
 
@@ -488,7 +489,7 @@ export default function AdminDashboard() {
       {/* 3. REVENUE & ORDERS ACTIVITY CHART + INSIGHTS */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Interactive Timeline Curve (8 cols) */}
-        <div className="lg:col-span-8 p-6 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-8 p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <h2 className="text-base font-bold text-slate-900">
@@ -528,108 +529,117 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* SVG Spline Chart */}
-          <div className="relative w-full h-56 pt-2 select-none">
-            <svg
-              viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-              className="w-full h-full overflow-visible"
-              preserveAspectRatio="none"
-            >
-              <defs>
-                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2563eb" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-
-              {/* Grid Lines */}
-              {[0.2, 0.5, 0.8].map((ratio) => {
-                const y = svgHeight - paddingY - ratio * (svgHeight - paddingY * 2);
-                return (
-                  <line
-                    key={ratio}
-                    x1={paddingX}
-                    y1={y}
-                    x2={svgWidth - paddingX}
-                    y2={y}
-                    stroke="#f1f5f9"
-                    strokeDasharray="4 4"
-                    strokeWidth="1"
-                  />
-                );
-              })}
-
-              {/* Shaded Area */}
-              {areaD && <path d={areaD} fill="url(#chartGradient)" />}
-
-              {/* Smooth Stroke Line */}
-              {pathD && (
-                <path
-                  d={pathD}
-                  fill="none"
-                  stroke="#2563eb"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              )}
-
-              {/* Interactive Data Points */}
-              {pointsCoordinates.map((pt, idx) => (
-                <g key={idx}>
-                  <circle
-                    cx={pt.x}
-                    cy={pt.y}
-                    r={hoveredPoint === idx ? 6 : 4}
-                    fill={hoveredPoint === idx ? '#1d4ed8' : '#2563eb'}
-                    stroke="#ffffff"
-                    strokeWidth="2"
-                    className="transition-all cursor-pointer"
-                    onMouseEnter={() => setHoveredPoint(idx)}
-                    onMouseLeave={() => setHoveredPoint(null)}
-                  />
-                  {/* X-axis Label */}
-                  <text
-                    x={pt.x}
-                    y={svgHeight - 8}
-                    textAnchor="middle"
-                    className="text-[10px] font-semibold fill-slate-400"
-                  >
-                    {language === 'km' && pt.data.labelKm ? pt.data.labelKm : pt.data.label}
-                  </text>
-                </g>
-              ))}
-            </svg>
-
-            {/* Hover Tooltip Box */}
-            {hoveredPoint !== null && (
-              <div
-                className="absolute pointer-events-none p-2.5 rounded-xl bg-slate-900 text-white text-xs shadow-xl z-20 -translate-x-1/2 -translate-y-full mb-2"
-                style={{
-                  left: `${(pointsCoordinates[hoveredPoint].x / svgWidth) * 100}%`,
-                  top: `${(pointsCoordinates[hoveredPoint].y / svgHeight) * 100}%`
-                }}
+          {/* Responsive SVG Spline Chart + Undistorted HTML Dots & Axis Labels */}
+          <div className="pt-2 select-none px-2 sm:px-3">
+            <div className="relative w-full h-44 sm:h-52">
+              <svg
+                viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+                className="w-full h-full overflow-visible"
+                preserveAspectRatio="none"
               >
-                <div className="text-[10px] text-slate-400 font-semibold">
-                  {language === 'km' && pointsCoordinates[hoveredPoint].data.labelKm
-                    ? pointsCoordinates[hoveredPoint].data.labelKm
-                    : pointsCoordinates[hoveredPoint].data.label}
+                <defs>
+                  <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity="0.25" />
+                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+
+                {/* Grid Lines */}
+                {[0.2, 0.5, 0.8].map((ratio) => {
+                  const y = svgHeight - paddingY - ratio * (svgHeight - paddingY * 2);
+                  return (
+                    <line
+                      key={ratio}
+                      x1={paddingX}
+                      y1={y}
+                      x2={svgWidth - paddingX}
+                      y2={y}
+                      stroke="#f1f5f9"
+                      strokeDasharray="4 4"
+                      strokeWidth="1"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  );
+                })}
+
+                {/* Shaded Area */}
+                {areaD && <path d={areaD} fill="url(#chartGradient)" />}
+
+                {/* Smooth Stroke Line */}
+                {pathD && (
+                  <path
+                    d={pathD}
+                    fill="none"
+                    stroke="#2563eb"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )}
+              </svg>
+
+              {/* Interactive Crisp HTML Data Points (Touch & Desktop Friendly, Never Stretched) */}
+              {pointsCoordinates.map((pt, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onMouseEnter={() => setHoveredPoint(idx)}
+                  onMouseLeave={() => setHoveredPoint(null)}
+                  onClick={() => setHoveredPoint((prev) => (prev === idx ? null : idx))}
+                  aria-label={`${pt.data.label}: ${chartMetric === 'revenue' ? formatUSD(pt.data.revenue) : pt.data.orders}`}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center z-10 cursor-pointer focus:outline-none"
+                  style={{ left: `${pt.xPct}%`, top: `${pt.yPct}%` }}
+                >
+                  <span
+                    className={`rounded-full border-2 border-white shadow-xs transition-all ${
+                      hoveredPoint === idx
+                        ? 'w-3.5 h-3.5 bg-[#1d4ed8] ring-4 ring-blue-500/20'
+                        : 'w-2.5 h-2.5 bg-[#2563eb]'
+                    }`}
+                  />
+                </button>
+              ))}
+
+              {/* Hover / Tap Tooltip Box (clamped cleanly inside container) */}
+              {hoveredPoint !== null && pointsCoordinates[hoveredPoint] && (
+                <div
+                  className="absolute pointer-events-none p-2.5 rounded-xl bg-slate-900 text-white text-xs shadow-xl z-20 -translate-x-1/2 -translate-y-full -mt-3 whitespace-nowrap"
+                  style={{
+                    left: `clamp(52px, ${pointsCoordinates[hoveredPoint].xPct}%, calc(100% - 52px))`,
+                    top: `${pointsCoordinates[hoveredPoint].yPct}%`,
+                  }}
+                >
+                  <div className="text-[10px] text-slate-400 font-semibold">
+                    {language === 'km' && pointsCoordinates[hoveredPoint].data.labelKm
+                      ? pointsCoordinates[hoveredPoint].data.labelKm
+                      : pointsCoordinates[hoveredPoint].data.label}
+                  </div>
+                  <div className="font-mono font-bold text-sm text-blue-400">
+                    {chartMetric === 'revenue'
+                      ? formatUSD(pointsCoordinates[hoveredPoint].data.revenue)
+                      : `${pointsCoordinates[hoveredPoint].data.orders} ${language === 'km' ? 'ការបញ្ជាទិញ' : 'orders'}`}
+                  </div>
                 </div>
-                <div className="font-mono font-bold text-sm text-blue-400">
-                  {chartMetric === 'revenue'
-                    ? formatUSD(pointsCoordinates[hoveredPoint].data.revenue)
-                    : `${pointsCoordinates[hoveredPoint].data.orders} ${language === 'km' ? 'ការបញ្ជាទិញ' : 'orders'}`}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
+
+            {/* Undistorted HTML X-Axis Date Labels */}
+            <div className="flex items-center justify-between pt-2 text-[9px] sm:text-[10px] font-semibold text-slate-400 gap-1">
+              {pointsCoordinates.map((pt, idx) => (
+                <span key={idx} className="truncate text-center">
+                  {language === 'km' && pt.data.labelKm ? pt.data.labelKm : pt.data.label}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Right: Category Distribution & Payment Channels (4 cols) */}
         <div className="lg:col-span-4 space-y-6">
           {/* Category Share Card */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
-            <div className="flex items-center justify-between mb-4">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
               <h2 className="text-sm font-bold text-slate-900">
                 {language === 'km' ? 'ចំណូលតាមប្រភេទផលិតផល' : 'Revenue by Category'}
               </h2>
@@ -656,8 +666,8 @@ export default function AdminDashboard() {
           </div>
 
           {/* Payment Gateway Breakdown (Official NBC Bakong KHQR USD & KHR) */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
-            <div className="flex items-center justify-between mb-4">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
               <h2 className="text-sm font-bold text-slate-900">
                 {language === 'km' ? 'វិធីសាស្ត្រទូទាត់ (Bakong KHQR)' : 'Payment Methods (Bakong KHQR)'}
               </h2>
@@ -667,45 +677,45 @@ export default function AdminDashboard() {
             </div>
 
             <div className="space-y-3">
-              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-white text-blue-600 border border-slate-200/80">
+              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/70 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="p-2 rounded-lg bg-white text-blue-600 border border-slate-200/80 shrink-0">
                     <QrCode className="w-4 h-4" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <span className="text-xs font-semibold text-slate-900 block">
                       {language === 'km' ? 'KHQR បាគង (USD $)' : 'KHQR Bakong (USD $)'}
                     </span>
-                    <span className="text-[10px] text-slate-500">
+                    <span className="text-[10px] text-slate-500 block">
                       {language === 'km'
                         ? `ABA, Wing, ACLEDA • ${paymentStats.usdCount} ប្រតិបត្តិការ`
                         : `ABA, Wing, ACLEDA • ${paymentStats.usdCount} orders`}
                     </span>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink-0 ml-auto">
                   <span className="text-xs tabular-nums font-bold text-slate-900 block">{paymentStats.usdPct}%</span>
                   <span className="text-[10px] text-slate-500 tabular-nums">{formatUSD(paymentStats.usdRev)}</span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/70 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-white text-emerald-600 border border-slate-200/80">
+              <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-200/70 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="p-2 rounded-lg bg-white text-emerald-600 border border-slate-200/80 shrink-0">
                     <QrCode className="w-4 h-4" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <span className="text-xs font-semibold text-slate-900 block">
                       {language === 'km' ? 'KHQR បាគង (ប្រាក់រៀល ៛)' : 'KHQR Bakong (KHR ៛)'}
                     </span>
-                    <span className="text-[10px] text-slate-500">
+                    <span className="text-[10px] text-slate-500 block">
                       {language === 'km'
                         ? `គណនីរៀល (1$ = 4,100៛) • ${paymentStats.khrCount} ប្រតិបត្តិការ`
                         : `Khmer Riel (4,100៛/$) • ${paymentStats.khrCount} orders`}
                     </span>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right shrink-0 ml-auto">
                   <span className="text-xs tabular-nums font-bold text-slate-900 block">{paymentStats.khrPct}%</span>
                   <span className="text-[10px] text-emerald-700 font-semibold tabular-nums block">
                     {formatKHR(paymentStats.khrRev)} ({formatUSD(paymentStats.khrRev)})
@@ -718,8 +728,8 @@ export default function AdminDashboard() {
       </div>
 
       {/* 4. BEST-SELLING PRODUCTS */}
-      <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+      <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100 mb-4">
           <div>
             <h2 className="text-base font-bold text-slate-900">
               {language === 'km' ? 'ផលិតផលលក់ដាច់បំផុត' : 'Best-Selling Products'}
@@ -784,8 +794,8 @@ export default function AdminDashboard() {
       {/* 5. BOTTOM ROW: RECENT ORDERS & LOW STOCK RESTOCK */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Orders with Inline Status Switcher (7 cols) */}
-        <div className="lg:col-span-7 p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+        <div className="lg:col-span-7 p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100 mb-4">
             <div>
               <h2 className="text-base font-bold text-slate-900">
                 {language === 'km' ? 'ការបញ្ជាទិញថ្មីៗ' : 'Recent Orders'}
@@ -874,9 +884,9 @@ export default function AdminDashboard() {
         </div>
 
         {/* Low Stock Replenishment Action Panel (5 cols) */}
-        <div className="lg:col-span-5 p-6 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-5 p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100 mb-4">
               <div>
                 <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-amber-500" />
@@ -939,7 +949,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <div className="pt-4 mt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
             <span>
               {language === 'km' ? 'គ្រប់គ្រងបញ្ជីស្តុកពេញលេញក្នុងទំព័រផលិតផល' : 'Manage full stock list in Products'}
             </span>

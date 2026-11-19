@@ -163,7 +163,7 @@ export default function AccountAddresses() {
         title={language === 'km' ? 'បន្ថែមអាសយដ្ឋានដឹកជញ្ជូនថ្មី' : 'Add New Delivery Address'}
       >
         <form onSubmit={handleAdd} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setNewAddress({ ...newAddress, label: 'Home' })}
@@ -212,7 +212,7 @@ export default function AccountAddresses() {
             required
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label={language === 'km' ? 'ក្រុង / ខណ្ឌ *' : 'City / Khan *'}
               value={newAddress.city}

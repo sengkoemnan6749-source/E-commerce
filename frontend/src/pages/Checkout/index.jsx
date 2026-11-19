@@ -298,7 +298,7 @@ export default function Checkout() {
           </div>
 
           {/* Clean Step Navigation */}
-          <div className="flex items-center gap-1.5 text-xs font-semibold">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
@@ -330,7 +330,7 @@ export default function Checkout() {
         {/* Main 2-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Interactive Step Form */}
-          <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
+          <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/90 p-4 sm:p-8 shadow-xs">
           {currentStep === 1 ? (
             /* STEP 1: SHIPPING */
             <div>
@@ -346,15 +346,15 @@ export default function Checkout() {
               </div>
 
               {/* Account Context Bar */}
-              <div className="mb-6 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between text-xs text-slate-600">
-                <div className="flex items-center gap-2">
+              <div className="mb-6 px-3.5 sm:px-4 py-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
                   <span className="text-slate-400">{language === 'km' ? 'គណនី៖' : 'Account:'}</span>
                   <span className="font-semibold text-slate-900">{user?.fullName || user?.name}</span>
-                  <span className="text-slate-400">({user?.email})</span>
+                  <span className="text-slate-400 break-all">({user?.email})</span>
                 </div>
                 <Link
                   to="/login?redirect=/checkout"
-                  className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                  className="font-medium text-blue-600 hover:text-blue-700 hover:underline shrink-0"
                 >
                   {language === 'km' ? 'ប្តូរគណនី' : 'Switch account'}
                 </Link>
@@ -366,7 +366,7 @@ export default function Checkout() {
                 errors={shippingErrors}
               />
 
-              <div className="pt-8 mt-6 border-t border-slate-100 flex items-center justify-between">
+              <div className="pt-8 mt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
                 <Link
                   to="/cart"
                   className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800"
@@ -411,7 +411,7 @@ export default function Checkout() {
               </div>
 
               {/* Bottom Nav Buttons */}
-              <div className="pt-8 mt-8 border-t border-slate-100 flex items-center justify-between">
+              <div className="pt-8 mt-8 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={() => setCurrentStep(1)}
@@ -439,7 +439,7 @@ export default function Checkout() {
         </div>
 
         {/* Right Sticky Order Summary */}
-        <div className="lg:col-span-5 sticky top-28">
+        <div className="lg:col-span-5 lg:sticky lg:top-28">
           <OrderSummary
             items={items}
             subtotal={subtotal}

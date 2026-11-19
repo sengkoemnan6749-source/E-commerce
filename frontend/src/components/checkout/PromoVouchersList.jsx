@@ -51,12 +51,12 @@ export default function PromoVouchersList({ subtotal = 0, onSelectPromo, applyin
                   : 'bg-slate-50 border-slate-200 hover:bg-slate-100/80 hover:border-slate-300 text-slate-800'
               }`}
             >
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="font-mono text-xs font-bold text-slate-900 tracking-wide">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
+                <span className="font-mono text-xs font-bold text-slate-900 tracking-wide shrink-0">
                   {promo.code}
                 </span>
                 <span className="text-slate-300">·</span>
-                <span className="text-xs font-bold text-red-600 truncate">
+                <span className="text-xs font-bold text-red-600">
                   {discountLabel}
                   {minSub > 0 && (
                     <span className="font-normal text-slate-500">

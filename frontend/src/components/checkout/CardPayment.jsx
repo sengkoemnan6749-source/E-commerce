@@ -28,7 +28,7 @@ export default function CardPayment({ cardData, onChange, errors = {} }) {
   return (
     <div className="p-5 sm:p-6 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-4">
       {/* Mini Visual Preview */}
-      <div className="relative h-40 w-full max-w-sm mx-auto rounded-2xl p-5 text-white bg-gradient-to-tr from-slate-900 via-slate-800 to-blue-900 shadow-xl overflow-hidden flex flex-col justify-between">
+      <div className="relative h-36 sm:h-40 w-full max-w-sm mx-auto rounded-2xl p-4 sm:p-5 text-white bg-gradient-to-tr from-slate-900 via-slate-800 to-blue-900 shadow-xl overflow-hidden flex flex-col justify-between">
         <div className="flex items-center justify-between">
           <span className="text-xs font-mono font-bold tracking-widest text-slate-300">
             {language === 'km' ? 'TECHTONIC សុវត្ថិភាព' : 'TECHTONIC SECURE'}
@@ -80,7 +80,7 @@ export default function CardPayment({ cardData, onChange, errors = {} }) {
           required
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label={language === 'km' ? 'ថ្ងៃផុតកំណត់ *' : 'Expiry date *'}
             placeholder={language === 'km' ? 'ខែ/ឆ្នាំ (MM/YY)' : 'MM/YY'}

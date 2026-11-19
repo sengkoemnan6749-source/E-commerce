@@ -276,18 +276,18 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
   return (
     <div className="bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs">
       {/* Clean Header Bar */}
-      <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between gap-3 bg-white">
-        <div>
+      <div className="p-3.5 sm:p-4 sm:px-6 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2.5 bg-white">
+        <div className="min-w-0">
           <h3 className="text-sm font-bold text-slate-900">
             {language === 'km' ? 'ផ្លូវដឹកជញ្ជូន' : 'Delivery Route'}
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5 truncate">
             {telemetry.statusText}
           </p>
         </div>
 
         {/* Clean Map Switcher: Satellite vs Map */}
-        <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 text-xs">
+        <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 text-xs shrink-0">
           <button
             type="button"
             onClick={() => setMapMode('satellite')}
@@ -314,7 +314,7 @@ export default function DeliveryMap({ orderStatus = 'out_for_delivery', shipping
       </div>
 
       {/* Real Interactive Map Canvas */}
-      <div className="relative w-full h-[380px] sm:h-[440px] bg-slate-900 overflow-hidden select-none">
+      <div className="relative w-full h-[300px] sm:h-[380px] lg:h-[440px] bg-slate-900 overflow-hidden select-none">
         {/* Leaflet Anchor */}
         <div ref={mapContainerRef} className="w-full h-full z-0" />
 

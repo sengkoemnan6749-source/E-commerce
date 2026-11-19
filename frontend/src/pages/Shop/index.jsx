@@ -479,24 +479,24 @@ export default function Shop() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 border-t sm:border-t-0 sm:border-l border-slate-100 pt-2 sm:pt-0 sm:pl-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t sm:border-t-0 sm:border-l border-slate-100 pt-2 sm:pt-0 sm:pl-3">
           {/* Mobile Filter Toggle */}
           <button
             type="button"
             onClick={() => setMobileFilterOpen(true)}
-            className="lg:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200"
+            className="lg:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0"
           >
             <Filter className="w-3.5 h-3.5" />
             <span>{t('shop_filters', 'Filters')} ({hasActiveFilters ? (language === 'km' ? 'សកម្ម' : 'Active') : t('shop_all_prefix', 'All')})</span>
           </button>
 
           {/* Sort Dropdown */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto sm:ml-0">
             <span className="text-xs text-slate-400 font-medium hidden sm:inline">{t('shop_sort_label', 'Sort:')}</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer"
+              className="text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer max-w-full"
             >
               <option value="featured">{t('shop_sort_featured', 'Featured First')}</option>
               <option value="price-low">{t('shop_sort_price_low', 'Price: Low to High')}</option>
@@ -716,7 +716,7 @@ export default function Shop() {
             </div>
           )}
 
-          <div className="flex items-center justify-between text-xs text-slate-500 font-medium px-1">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 font-medium px-1">
             <span>
               {t('shop_showing', 'Showing')} <strong className="text-slate-900 font-bold">{filteredProducts.length}</strong> {t('shop_devices', 'devices')}
             </span>

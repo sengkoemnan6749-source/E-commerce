@@ -339,22 +339,22 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
       <ToastContainer />
 
       {/* 1. TOP MINIMAL BRAND HEADER */}
-      <header className="w-full border-b border-slate-800/80 bg-[#060b18]/95 backdrop-blur-xl sticky top-0 z-30 px-4 sm:px-8 lg:px-12 py-3 flex items-center justify-between">
+      <header className="w-full border-b border-slate-800/80 bg-[#060b18]/95 backdrop-blur-xl sticky top-0 z-30 px-3 sm:px-8 lg:px-12 py-3 flex items-center justify-between gap-2">
         <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 group">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+          <div className="w-7 h-7 sm:w-10 sm:h-10 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
             <img
               src="/images/logo/techtonic-crest.png"
               alt="TechTonic Logo"
               className="w-full h-full object-contain"
             />
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <img
               src="/images/logo/techtonic-script-orange.png"
               alt="TechTonic"
-              className="h-6 sm:h-8 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+              className="h-5 sm:h-8 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
             />
-            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#cafc05] text-slate-950 shadow-sm">
+            <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-md bg-[#cafc05] text-slate-950 shadow-sm shrink-0">
               STORE
             </span>
           </div>
@@ -430,11 +430,11 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
           </div>
 
           {/* RIGHT COLUMN: Clean Authentication Form */}
-          <div className="flex-1 p-6 sm:p-10 xl:p-12 flex flex-col justify-between bg-white">
+          <div className="flex-1 p-5 sm:p-10 xl:p-12 flex flex-col justify-between bg-white">
             <div>
               {/* Segmented Tab Switcher */}
               {!pending2fa && (
-                <div className="p-1 rounded-xl bg-slate-100 flex items-center mb-6 max-w-sm">
+                <div className="p-1 rounded-xl bg-slate-100 flex items-center mb-6 w-full max-w-sm">
                   <button
                     type="button"
                     onClick={() => handleSwitchTab('signin')}

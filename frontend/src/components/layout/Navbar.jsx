@@ -268,31 +268,31 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
         <div className="flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Brand Logo with STORE Pill */}
-          <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 group">
-            <div className="w-8 h-8 sm:w-11 sm:h-11 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+          <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 group min-w-0">
+            <div className="w-7 h-7 sm:w-10 sm:h-10 lg:w-11 lg:h-11 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
               <img
                 src="/images/logo/techtonic-crest.png"
                 alt="TechTonic Logo"
                 className="w-full h-full object-contain"
               />
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <img
                 src="/images/logo/techtonic-script-orange.png"
                 alt="TechTonic"
-                className="h-6 sm:h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+                className="h-5 sm:h-8 lg:h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
               />
-              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-[#cafc05] text-slate-950 shadow-sm">
+              <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-md bg-[#cafc05] text-slate-950 shadow-sm shrink-0">
                 STORE
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links with Gliding Hover Animation */}
+          {/* Desktop Navigation Links with Gliding Hover Animation (1024px+ to prevent tablet squeeze) */}
           <nav
             ref={navContainerRef}
             onMouseLeave={handleNavMouseLeave}
-            className="hidden md:flex items-center gap-1 shrink-0 relative"
+            className="hidden lg:flex items-center gap-1 shrink-0 relative"
           >
             {/* Smooth Gliding Hover & Active Pill */}
             <div
@@ -490,6 +490,20 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
           {/* Right Action Icons */}
           <div className="flex items-center gap-1 sm:gap-1.5 lg:gap-2.5 shrink-0">
             
+            {/* Mobile & Tablet Search Trigger (opens slide-over drawer with live search) */}
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenMobileMenu) onOpenMobileMenu(true);
+                else if (onToggleMobileMenu) onToggleMobileMenu();
+              }}
+              className="lg:hidden flex items-center justify-center p-2 text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition shrink-0 cursor-pointer"
+              aria-label={t('nav_search_placeholder', 'Search products')}
+              title={t('nav_search_placeholder', 'Search products')}
+            >
+              <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+
             {/* Language Switcher */}
             <LanguageSwitcher />
 
@@ -655,8 +669,8 @@ export function Navbar({ onOpenMobileMenu, onToggleMobileMenu, isMobileMenuOpen 
               )}
             </button>
 
-            {/* Mobile Menu Hamburger with Morphing Animation */}
-            <div className="md:hidden flex items-center">
+            {/* Mobile & Tablet Menu Hamburger with Morphing Animation */}
+            <div className="lg:hidden flex items-center">
               <HamburgerButton
                 isOpen={isMobileMenuOpen}
                 onClick={onToggleMobileMenu || onOpenMobileMenu}

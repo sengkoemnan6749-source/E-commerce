@@ -14,7 +14,7 @@ export default function ProductSpecs({ specs = {}, inBox = [], warranty = '' }) 
         
         {/* Left Column: Tech Specs (8 Cols) */}
         <div className="lg:col-span-8 flex flex-col gap-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
             <div>
               <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
                 {language === 'km' ? 'លក្ខណៈបច្ចេកទេសផលិតផល' : 'Hardware Specifications'}
@@ -68,7 +68,7 @@ export default function ProductSpecs({ specs = {}, inBox = [], warranty = '' }) 
               </div>
             ) : (
               /* CLEAN CONTRAST TABLE VIEW */
-              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
                 <table className="w-full text-left text-sm border-collapse">
                   <tbody>
                     {specEntries.map(([key, value], idx) => (

@@ -184,9 +184,9 @@ export default function ProductInfo({
 
       {/* Quantity & Action Buttons */}
       <div className="flex flex-col gap-3.5 mb-8">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-3">
           {/* Quantity Controls */}
-          <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-sm shrink-0">
             <button
               type="button"
               onClick={() => handleQuantityChange(-1)}
@@ -195,7 +195,7 @@ export default function ProductInfo({
             >
               <Minus className="w-4 h-4" />
             </button>
-            <span className="w-12 text-center text-sm font-bold text-slate-900">
+            <span className="w-10 sm:w-12 text-center text-sm font-bold text-slate-900">
               {quantity}
             </span>
             <button
@@ -212,7 +212,7 @@ export default function ProductInfo({
           <Button
             variant="primary"
             size="lg"
-            className="flex-1"
+            className="flex-1 min-w-[160px]"
             disabled={product.stock === 0 || adding}
             onClick={handleAddToCart}
           >

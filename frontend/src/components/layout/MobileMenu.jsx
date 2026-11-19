@@ -23,14 +23,25 @@ import { formatUSD } from '../../utils/formatPrice';
 import { translateCategory } from '../../utils/translations';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 
-export function MobileMenu({ isOpen, onClose }) {
+export function MobileMenu({ isOpen, onClose, autoFocusSearch = false }) {
   const { user, isAuthenticated, logout } = useAuth();
   const { cartCount } = useCart();
   const { wishlist } = useWishlist();
   const { t, language } = useLanguage();
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const searchInputRef = React.useRef(null);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (isOpen && autoFocusSearch) {
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [isOpen, autoFocusSearch]);
 
   // Instant live search as user types
   React.useEffect(() => {
@@ -71,7 +82,7 @@ export function MobileMenu({ isOpen, onClose }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden md:hidden animate-fadeIn">
+    <div className="fixed inset-0 z-50 overflow-hidden lg:hidden animate-fadeIn">
       {/* Dimmed Frosted Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300"
@@ -126,6 +137,7 @@ export function MobileMenu({ isOpen, onClose }) {
                 <Search className="w-4 h-4" />
               </button>
               <input
+                ref={searchInputRef}
                 type="text"
                 placeholder={t('nav_search_placeholder', 'Search products...')}
                 value={search}

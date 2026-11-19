@@ -394,17 +394,17 @@ export default function AdminOrders() {
         >
           <div className="space-y-6 text-xs">
             {/* Customer & Address Header */}
-            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="min-w-0">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
                   {language === 'km' ? 'អតិថិជន និងព័ត៌មានទំនាក់ទំនង' : 'Customer & Contact'}
                 </span>
                 <p className="font-bold text-slate-900 text-sm">{selectedOrder.customerName}</p>
                 <p className="text-slate-600">{selectedOrder.customerPhone}</p>
-                <p className="text-slate-500">{selectedOrder.customerEmail || 'customer@techtonic.store'}</p>
+                <p className="text-slate-500 break-all">{selectedOrder.customerEmail || 'customer@techtonic.store'}</p>
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
                   {language === 'km' ? 'ទីតាំងដឹកជញ្ជូន និងក្រុមហ៊ុនដឹកជញ្ជូន' : 'Delivery Destination & Courier'}
                 </span>
@@ -412,7 +412,7 @@ export default function AdminOrders() {
                 <p className="text-slate-600 text-xs">
                   {selectedOrder.shippingAddress?.city || 'Phnom Penh'}, {selectedOrder.shippingAddress?.province || 'Phnom Penh'}
                 </p>
-                <div className="mt-2.5 p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                <div className="mt-2.5 p-2 rounded-xl bg-white border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div>
                     <span className="font-bold text-slate-900 block">
                       {selectedOrder.deliveryPartner || selectedOrder.tracking?.courier || 'Vireak Buntham (VET)'}
@@ -446,21 +446,21 @@ export default function AdminOrders() {
               </span>
               <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
                 {(selectedOrder.items || []).map((item, idx) => (
-                  <div key={idx} className="p-3 flex items-center justify-between bg-white">
-                    <div className="flex items-center gap-3">
+                  <div key={idx} className="p-3 flex items-center justify-between gap-3 bg-white">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <img
                         src={item.image}
                         alt={item.name}
-                        className="w-10 h-10 rounded-lg object-cover bg-slate-50 border border-slate-200"
+                        className="w-10 h-10 rounded-lg object-cover bg-slate-50 border border-slate-200 shrink-0"
                       />
-                      <div>
-                        <span className="font-bold text-slate-900 block">{item.name}</span>
-                        <span className="text-slate-400">
+                      <div className="min-w-0">
+                        <span className="font-bold text-slate-900 block truncate">{item.name}</span>
+                        <span className="text-slate-400 block truncate">
                           {language === 'km' ? 'ចំនួន៖' : 'Qty:'} {item.quantity} {item.selectedVariant ? `• ${item.selectedVariant}` : ''}
                         </span>
                       </div>
                     </div>
-                    <div className="text-right font-mono font-bold text-slate-900">
+                    <div className="text-right font-mono font-bold text-slate-900 shrink-0">
                       {formatUSD(item.price * item.quantity)}
                     </div>
                   </div>
@@ -544,7 +544,7 @@ export default function AdminOrders() {
           size="md"
         >
           <div className="space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 flex items-center justify-between gap-3">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-bold text-slate-900">
                   {orderTgStatus?.connected
@@ -578,7 +578,7 @@ export default function AdminOrders() {
               <label className="block text-xs font-semibold text-slate-700">
                 {language === 'km' ? 'BotFather HTTP API Token' : 'BotFather HTTP API Token'}
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="password"
                   value={botTokenInput}

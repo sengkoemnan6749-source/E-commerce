@@ -552,9 +552,9 @@ export default function OrderTracking() {
           </div>
 
           {/* Quick Order Lookup Search */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <form onSubmit={handleSearchSubmit} className="flex flex-wrap items-center gap-2">
-              <div className="relative">
+          <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 w-full md:w-auto">
+              <div className="relative w-full sm:w-64">
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
@@ -565,7 +565,7 @@ export default function OrderTracking() {
                   }
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-mono w-56 sm:w-64 shadow-xs"
+                  className="pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent font-mono w-full shadow-xs"
                 />
               </div>
               {!isAuthenticated && (
@@ -574,7 +574,7 @@ export default function OrderTracking() {
                   placeholder={language === 'km' ? 'អ៊ីមែល/ទូរសព្ទ' : 'Email or phone'}
                   value={lookupContact}
                   onChange={(e) => setLookupContact(e.target.value)}
-                  className="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 w-40 shadow-xs"
+                  className="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 w-full sm:w-44 shadow-xs"
                 />
               )}
             </form>
@@ -582,7 +582,7 @@ export default function OrderTracking() {
         </div>
 
         {/* Hero Order Header & Shipment Stepper Card */}
-        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6 sm:p-8 mb-8">
+        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-4 sm:p-8 mb-8">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-slate-100">
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -814,7 +814,7 @@ export default function OrderTracking() {
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 mb-4">
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                   <span className="text-xs font-extrabold text-slate-900">
                     {order.deliveryPartner || 'Vireak Buntham Express (VET)'}
                   </span>
@@ -866,7 +866,7 @@ export default function OrderTracking() {
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
                 <span>{language === 'km' ? 'ជំនួយ៖ Telegram @techtonic_kh' : 'Support: Telegram @techtonic_kh'}</span>
                 <span className="font-mono text-slate-700 font-semibold">+855 23 999 888</span>
               </div>

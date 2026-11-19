@@ -64,7 +64,7 @@ export function Footer() {
       {/* 1. TRUST VALUE PROPOSITIONS BAR */}
       <div className="border-b border-slate-800/70 bg-slate-900/30">
         <div className="max-w-7xl xl:max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <div className="flex items-center gap-3">
               <Truck className="w-6 h-6 text-blue-400 shrink-0" />
               <div>
@@ -101,26 +101,26 @@ export function Footer() {
       </div>
 
       {/* 2. NEWSLETTER CARD CONTAINER */}
-      <div className="max-w-7xl xl:max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
-        <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-blue-950/30 border border-slate-800 p-8 sm:p-10 shadow-2xl relative overflow-hidden">
+      <div className="max-w-7xl xl:max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 pb-8">
+        <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-blue-950/30 border border-slate-800 p-5 sm:p-8 lg:p-10 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 relative z-10">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 sm:gap-8 relative z-10">
             <div className="max-w-xl">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-400 mb-2">
                 <Mail className="w-4 h-4 text-blue-400" />
                 <span>{t('footer_newsletter_badge', 'Newsletter')}</span>
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              <h3 className="text-xl sm:text-3xl font-black text-white tracking-tight">
                 {t('footer_newsletter_title', 'Subscribe to TechTonic Dispatch')}
               </h3>
-              <p className="text-sm text-slate-300 mt-2 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
                 {t('footer_newsletter_desc', 'Be the first to receive notifications on new audio gear, mechanical keyboard switches, and exclusive member discounts in Cambodia.')}
               </p>
             </div>
 
             <div className="w-full lg:w-auto">
-              <form onSubmit={handleNewsletterSubmit} className="w-full sm:w-[440px]">
+              <form onSubmit={handleNewsletterSubmit} className="w-full lg:w-[440px] max-w-xl">
                 <div className="flex flex-col sm:flex-row gap-2.5">
                   <div className="relative flex-1">
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -158,11 +158,11 @@ export function Footer() {
       </div>
 
       {/* 3. MAIN NAVIGATION MATRIX */}
-      <div className="max-w-7xl xl:max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+      <div className="max-w-7xl xl:max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-10">
           
           {/* Col 1: Brand Info & Payment Rails (4 cols) */}
-          <div className="md:col-span-6 lg:col-span-4 space-y-5">
+          <div className="sm:col-span-2 lg:col-span-4 space-y-5">
             <Link to="/" className="inline-flex items-center gap-3 group">
               <div className="w-11 h-11 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                 <img
@@ -199,8 +199,8 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Col 2: Categories (2.5 cols) */}
-          <div className="md:col-span-3 lg:col-span-2">
+          {/* Col 2: Categories (2 cols) */}
+          <div className="sm:col-span-1 lg:col-span-2">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">
               {t('footer_col_categories', 'Categories')}
             </h4>
@@ -238,8 +238,8 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Col 3: Customer Care (2.5 cols) */}
-          <div className="md:col-span-3 lg:col-span-2">
+          {/* Col 3: Customer Care (2 cols) */}
+          <div className="sm:col-span-1 lg:col-span-2">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">
               {t('footer_col_care', 'Customer Support')}
             </h4>
@@ -272,7 +272,7 @@ export function Footer() {
           </div>
 
           {/* Col 4: Store Location & Flagship (4 cols) */}
-          <div className="md:col-span-6 lg:col-span-4">
+          <div className="sm:col-span-2 lg:col-span-4">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">
               {t('footer_col_flagship', 'Store Location & Contact')}
             </h4>
@@ -354,25 +354,25 @@ export function Footer() {
         </div>
 
         {/* 4. BOTTOM LEGAL & SECURITY BAR */}
-        <div className="border-t border-slate-800/80 pt-6 mt-12 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <div className="border-t border-slate-800/80 pt-6 mt-10 sm:mt-12 flex flex-col lg:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center">
           <p>{t('footer_copyright', '© 2026 TechTonic Store. All rights reserved.')}</p>
           
-          <div className="flex items-center gap-5 text-[11px] text-slate-400">
+          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11px] text-slate-400">
             <span className="flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-blue-400" />
+              <Lock className="w-3.5 h-3.5 text-blue-400 shrink-0" />
               <span>{t('footer_ssl', '256-Bit SSL Secure')}</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
               <span>{t('perk_bakong', 'NBC Bakong Certified')}</span>
             </span>
             <span className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-blue-400" />
+              <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
               <span>{t('footer_phnom_penh_flagship', 'Phnom Penh Flagship')}</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px] text-slate-400">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-slate-400">
             <Link to="/privacy" className="hover:text-white transition">{t('footer_privacy', 'Privacy Policy')}</Link>
             <Link to="/terms" className="hover:text-white transition">{t('footer_terms', 'Terms of Service')}</Link>
             <Link to="/warranty" className="hover:text-white transition">{t('footer_warranty', 'Warranty Policy')}</Link>

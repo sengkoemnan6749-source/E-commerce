@@ -120,7 +120,7 @@ export default function SupportWidget() {
         <div
           role="dialog"
           aria-label="Customer Support"
-          className="mb-3 w-[340px] sm:w-[376px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl border border-slate-200/90 shadow-2xl shadow-slate-900/15 overflow-hidden animate-fadeIn"
+          className="mb-3 w-[340px] sm:w-[376px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-5.5rem)] overflow-y-auto bg-white rounded-2xl border border-slate-200/90 shadow-2xl shadow-slate-900/15 animate-fadeIn"
         >
           {/* Header */}
           <div className="px-4 py-3.5 bg-slate-900 text-white flex items-center justify-between gap-3">
@@ -224,7 +224,7 @@ export default function SupportWidget() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[11px] font-bold text-slate-600 mb-1">
                       {language === 'km' ? 'ឈ្មោះ *' : 'Name *'}

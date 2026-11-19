@@ -358,7 +358,7 @@ export default function AdminProducts() {
               required
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
                   {language === 'km' ? 'ប្រភេទ *' : 'Category *'}
@@ -385,7 +385,7 @@ export default function AdminProducts() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label={language === 'km' ? 'តម្លៃលក់ ($) *' : 'Selling Price ($) *'}
                 type="number"

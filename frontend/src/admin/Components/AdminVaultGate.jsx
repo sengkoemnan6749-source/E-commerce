@@ -222,9 +222,9 @@ export default function AdminVaultGate({ children }) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between">
       {/* Brand Header */}
-      <header className="w-full border-b border-slate-800/80 bg-[#060b18]/95 backdrop-blur-xl px-4 sm:px-8 py-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 shrink-0 group">
-          <div className="w-8 h-8 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+      <header className="w-full border-b border-slate-800/80 bg-[#060b18]/95 backdrop-blur-xl px-3 sm:px-8 py-3 flex items-center justify-between gap-2">
+        <Link to="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0 group min-w-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
             <img
               src="/images/logo/techtonic-crest.png"
               alt="TechTonic Logo"
@@ -234,19 +234,19 @@ export default function AdminVaultGate({ children }) {
           <img
             src="/images/logo/techtonic-script-orange.png"
             alt="TechTonic"
-            className="h-7 w-auto object-contain shrink-0 group-hover:scale-105 transition-transform duration-200"
+            className="h-5 sm:h-7 w-auto object-contain shrink-0 group-hover:scale-105 transition-transform duration-200"
           />
-          <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-[#cafc05] text-slate-950 shadow-sm shrink-0">
+          <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-[#cafc05] text-slate-950 shadow-sm shrink-0">
             ADMIN
           </span>
         </Link>
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex items-center gap-2 sm:gap-3 text-xs shrink-0">
           <LanguageSwitcher variant="dark" />
           <span className="hidden sm:inline text-slate-300 font-medium">{user?.email}</span>
           <button
             type="button"
             onClick={logout}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white font-semibold cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white font-semibold cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>{language === 'km' ? 'ចាកចេញ' : 'Sign out'}</span>
@@ -255,8 +255,8 @@ export default function AdminVaultGate({ children }) {
       </header>
 
       {/* Main Card */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className={`w-full ${!status.configured || recoveryCodes ? 'max-w-lg' : 'max-w-md'} bg-white rounded-2xl border border-slate-200/90 shadow-lg shadow-slate-200/50 p-6 sm:p-8 space-y-5`}>
+      <main className="flex-1 flex items-center justify-center p-3.5 sm:p-6">
+        <div className={`w-full ${!status.configured || recoveryCodes ? 'max-w-lg' : 'max-w-md'} bg-white rounded-2xl border border-slate-200/90 shadow-lg shadow-slate-200/50 p-5 sm:p-8 space-y-5`}>
           {error && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />

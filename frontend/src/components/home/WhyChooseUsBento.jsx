@@ -68,18 +68,18 @@ export default function WhyChooseUsBento() {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full my-4">
       {/* Outer Container with the exact deep midnight navy color (#091022) */}
-      <div className="relative rounded-3xl overflow-hidden bg-[#091022] p-8 sm:p-12 lg:p-14 text-white shadow-2xl border border-[#172545]">
+      <div className="relative rounded-3xl overflow-hidden bg-[#091022] p-5 sm:p-10 lg:p-14 text-white shadow-2xl border border-[#172545]">
         
         {/* Subtle Ambient Radial Highlight */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-56 bg-sky-500/10 blur-3xl pointer-events-none" />
 
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-14 relative z-10">
           <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-400 mb-3">
             <Award className="w-4 h-4 text-sky-400" />
             <span>{t('why_tag', 'Engineered For Excellence')}</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
             {t('why_title_1', 'Why Technology Leaders')} <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500">
               {t('why_title_2', 'Choose TechTonic')}

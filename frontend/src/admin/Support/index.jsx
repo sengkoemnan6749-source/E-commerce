@@ -279,7 +279,7 @@ export default function AdminSupport() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <a
               href={`https://t.me/${tgStatus.botUsername || 'techtonic_support_bot'}`}
               target="_blank"
@@ -453,7 +453,7 @@ export default function AdminSupport() {
                           value={noteDraft}
                           onChange={(e) => setNoteDraft(e.target.value)}
                           placeholder={language === 'km' ? 'កំណត់ចំណាំផ្ទៃក្នុង...' : 'Internal staff note...'}
-                          className="flex-1 min-w-[200px] h-8 px-2.5 rounded-lg bg-white border border-slate-200 focus:border-slate-900 text-xs outline-hidden"
+                          className="w-full sm:flex-1 sm:min-w-[200px] h-8 px-2.5 rounded-lg bg-white border border-slate-200 focus:border-slate-900 text-xs outline-hidden"
                         />
                         <button
                           type="button"
@@ -505,10 +505,10 @@ export default function AdminSupport() {
                     )}
                   </div>
 
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
+                  <div className="flex flex-wrap sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
                     <span className="text-[11px] text-slate-400 tabular-nums">{formatTime(item.createdAt)}</span>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {item.status !== 'in_progress' && item.status !== 'resolved' && (
                         <button
                           type="button"

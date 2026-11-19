@@ -151,7 +151,7 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* Product Content Details */}
-      <div className="flex flex-col flex-1 p-5 pt-3">
+      <div className="flex flex-col flex-1 p-4 sm:p-5 pt-3">
         
         {/* Category & Rating */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -220,10 +220,10 @@ export default function ProductCard({ product }) {
         )}
 
         {/* Pricing & Add to Cart Action Row */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 mt-auto">
-          <div className="flex flex-col">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-black text-slate-950 tracking-tight">
+        <div className="pt-3 border-t border-slate-100 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 mt-auto">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-baseline gap-1.5 flex-wrap">
+              <span className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
                 {formatUSD(product.price)}
               </span>
               {product.originalPrice && (
@@ -233,7 +233,7 @@ export default function ProductCard({ product }) {
               )}
             </div>
             <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
               {product.stock > 0 ? t('label_in_stock') : t('label_out_of_stock')}
             </span>
           </div>
@@ -242,7 +242,7 @@ export default function ProductCard({ product }) {
             type="button"
             disabled={product.stock === 0}
             onClick={handleAddToCart}
-            className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 shadow-sm active:scale-95 ${
+            className={`flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 shadow-sm active:scale-95 shrink-0 ${
               product.stock === 0
                 ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                 : added

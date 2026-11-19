@@ -80,8 +80,8 @@ export default function OrderSuccess() {
         </p>
 
         {/* Order Identifier Box */}
-        <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-5 bg-[#fafafa] px-5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-500 mb-6">
-          <div>
+        <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-5 bg-[#fafafa] px-4 sm:px-5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-500 mb-6 max-w-full">
+          <div className="break-all">
             {language === 'km' ? 'លេខយោងកុម្ម៉ង់៖' : 'Order Reference:'}{' '}
             <strong className="font-mono text-slate-900 font-semibold">{order.id}</strong>
           </div>

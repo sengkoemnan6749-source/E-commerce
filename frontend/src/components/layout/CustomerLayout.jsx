@@ -10,12 +10,19 @@ import SupportWidget from '../common/SupportWidget';
 export default function CustomerLayout() {
   const { pathname } = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [focusMobileSearch, setFocusMobileSearch] = useState(false);
 
   // Scroll to top on route change
   useEffect(() => {
     window.scrollTo(0, 0);
     setIsMobileMenuOpen(false);
+    setFocusMobileSearch(false);
   }, [pathname]);
+
+  const handleOpenMobileMenu = (focusSearch = false) => {
+    setFocusMobileSearch(Boolean(focusSearch === true));
+    setIsMobileMenuOpen(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
@@ -25,14 +32,21 @@ export default function CustomerLayout() {
       {/* Pinned Glass Navbar */}
       <Navbar
         isMobileMenuOpen={isMobileMenuOpen}
-        onToggleMobileMenu={() => setIsMobileMenuOpen((prev) => !prev)}
-        onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+        onToggleMobileMenu={() => {
+          setFocusMobileSearch(false);
+          setIsMobileMenuOpen((prev) => !prev);
+        }}
+        onOpenMobileMenu={handleOpenMobileMenu}
       />
 
-      {/* Mobile Slide-over Menu */}
+      {/* Mobile & Tablet Slide-over Menu */}
       <MobileMenu
         isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
+        autoFocusSearch={focusMobileSearch}
+        onClose={() => {
+          setIsMobileMenuOpen(false);
+          setFocusMobileSearch(false);
+        }}
       />
 
       {/* Slide-over Cart Drawer */}

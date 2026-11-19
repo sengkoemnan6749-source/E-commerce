@@ -152,7 +152,7 @@ export default function LegalPolicy({ type = 'privacy' }) {
           <span>{language === 'km' ? 'ត្រឡប់ទៅទំព័រដើម' : 'Back to Storefront'}</span>
         </Link>
 
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-10 space-y-8">
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-5 sm:p-10 space-y-6 sm:space-y-8">
           <div className="flex items-start gap-4 pb-6 border-b border-slate-100">
             <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
               <Icon className="w-6 h-6" />
@@ -181,7 +181,7 @@ export default function LegalPolicy({ type = 'privacy' }) {
           </div>
 
           <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <Link to="/privacy" className={`hover:text-blue-600 font-semibold ${type === 'privacy' ? 'text-blue-600' : ''}`}>
                 {language === 'km' ? 'ភាពឯកជន' : 'Privacy Policy'}
               </Link>

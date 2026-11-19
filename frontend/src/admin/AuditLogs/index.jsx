@@ -217,7 +217,7 @@ export default function AdminAuditLogs() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={handleExportCsv}
@@ -276,7 +276,7 @@ export default function AdminAuditLogs() {
 
       {/* Filters */}
       <div className="bg-white rounded-xl border border-slate-200 p-3 flex flex-col md:flex-row gap-2.5">
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
@@ -294,7 +294,7 @@ export default function AdminAuditLogs() {
         <select
           value={severity}
           onChange={(e) => setSeverity(e.target.value)}
-          className="h-9 px-3 rounded-lg border border-slate-200 bg-white focus:border-slate-900 text-xs font-medium text-slate-700 outline-hidden cursor-pointer"
+          className="h-9 px-3 rounded-lg border border-slate-200 bg-white focus:border-slate-900 text-xs font-medium text-slate-700 outline-hidden cursor-pointer w-full md:w-44 shrink-0"
         >
           <option value="all">{language === 'km' ? 'កម្រិតទាំងអស់' : 'All Severities'}</option>
           <option value="critical">{language === 'km' ? 'គ្រោះថ្នាក់ខ្ពស់ (Critical)' : 'Critical Only'}</option>
@@ -305,7 +305,7 @@ export default function AdminAuditLogs() {
         <select
           value={eventType}
           onChange={(e) => setEventType(e.target.value)}
-          className="h-9 px-3 rounded-lg border border-slate-200 bg-white focus:border-slate-900 text-xs font-medium text-slate-700 outline-hidden cursor-pointer"
+          className="h-9 px-3 rounded-lg border border-slate-200 bg-white focus:border-slate-900 text-xs font-medium text-slate-700 outline-hidden cursor-pointer w-full md:w-52 shrink-0"
         >
           {EVENT_TYPES.map((ev) => (
             <option key={ev} value={ev}>

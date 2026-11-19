@@ -85,7 +85,7 @@ export default function Invoice({ order, onBack }) {
 
       {/* Ruled Formal Paper Invoice Sheet */}
       <div
-        className="bg-white border border-slate-300 shadow-sm p-6 sm:p-9 print:border-none print:shadow-none print:p-0 text-slate-900"
+        className="bg-white border border-slate-300 shadow-sm p-4 sm:p-9 print:border-none print:shadow-none print:p-0 text-slate-900"
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
         {/* Header: Brand Logo + Address Strip Left | Ruled Customer Details Right */}
@@ -275,9 +275,9 @@ export default function Invoice({ order, onBack }) {
             </div>
 
             {/* Remarks Left + Bordered Totals Table Right */}
-            <div className="flex flex-col sm:flex-row items-stretch justify-between">
+            <div className="flex flex-col sm:flex-row items-stretch justify-between gap-4 sm:gap-0">
               {/* Left: Payment & Compliance Remarks */}
-              <div className="flex-1 pt-3.5 pr-4 text-xs text-slate-700 space-y-1">
+              <div className="flex-1 pt-3.5 pr-0 sm:pr-4 text-xs text-slate-700 space-y-1">
                 <p className="font-bold text-slate-900">
                   {language === 'km' ? 'ការទូទាត់ និងព័ត៌មានបន្ថែម៖' : 'Remarks / Payment Details:'}
                 </p>
@@ -309,7 +309,7 @@ export default function Invoice({ order, onBack }) {
               </div>
 
               {/* Right: Bordered Totals Box Matching Table Widths */}
-              <div className="w-full sm:w-64 shrink-0">
+              <div className="w-full sm:w-64 shrink-0 border-t border-slate-400 sm:border-t-0">
                 <table className="w-full border-collapse text-xs bg-transparent">
                   <tbody>
                     <tr>
@@ -360,7 +360,7 @@ export default function Invoice({ order, onBack }) {
             </div>
 
             {/* Dual Signature Lines */}
-            <div className="grid grid-cols-2 gap-10 sm:gap-16 pt-12 pb-6 px-2 sm:px-6 text-center text-xs">
+            <div className="grid grid-cols-2 gap-6 sm:gap-16 pt-8 sm:pt-12 pb-6 px-2 sm:px-6 text-center text-xs">
               <div>
                 <div className="border-t border-slate-700 pt-1.5 font-semibold text-slate-800">
                   {language === 'km' ? 'ហត្ថលេខាអតិថិជន' : "Customer's Sign"}

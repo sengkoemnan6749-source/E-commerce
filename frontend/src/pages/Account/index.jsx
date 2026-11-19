@@ -48,7 +48,7 @@ export default function AccountOverview() {
     <div className="space-y-10">
       
       {/* 1. TOP METRIC TILES */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         
         {/* Total Orders Card */}
         <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-colors flex flex-col justify-between group">
@@ -115,7 +115,7 @@ export default function AccountOverview() {
 
       {/* 2. RECENT ORDERS */}
       <div>
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100 mb-5">
           <div>
             <h2 className="text-lg font-bold text-slate-900 tracking-tight">
               {language === 'km' ? 'ការកុម្ម៉ង់ថ្មីៗ' : 'Recent Orders'}
@@ -257,7 +257,7 @@ export default function AccountOverview() {
 
       {/* 3. DEFAULT SHIPPING ADDRESS */}
       <div className="pt-4 border-t border-slate-100">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div>
             <h2 className="text-base font-bold text-slate-900 tracking-tight">
               {language === 'km' ? 'អាសយដ្ឋានដឹកជញ្ជូនចម្បង' : 'Primary Shipping Address'}

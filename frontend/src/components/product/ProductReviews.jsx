@@ -210,7 +210,7 @@ export default function ProductReviews({ productId, rating = 0, reviewsCount = 0
   return (
     <div className="flex flex-col gap-8">
       {/* Review Header & Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 sm:p-8 rounded-2xl bg-white border border-slate-200">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4 sm:p-8 rounded-2xl bg-white border border-slate-200">
         {/* Left Rating score */}
         <div className="flex flex-col items-center justify-center text-center p-4 border-b md:border-b-0 md:border-r border-slate-100">
           <div className="text-5xl font-black text-slate-900 tracking-tight mb-2">

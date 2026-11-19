@@ -122,7 +122,7 @@ export default function Cart() {
         </div>
 
         {/* Right Column: Cart Summary */}
-        <div className="lg:col-span-4 sticky top-28">
+        <div className="lg:col-span-4 lg:sticky lg:top-28">
           <CartSummary />
         </div>
       </div>

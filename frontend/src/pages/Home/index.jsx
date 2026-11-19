@@ -335,16 +335,16 @@ export default function Home() {
           </div>
 
           {/* MOBILE & TABLET (< 1024px) - Clean Stacked Layout with Zero Collision */}
-          <div className="lg:hidden relative w-full px-4 sm:px-6 pt-4 sm:pt-6 pb-6 sm:pb-8 flex flex-col items-center">
+          <div className="lg:hidden relative w-full px-4 sm:px-6 md:px-10 pt-5 sm:pt-8 pb-6 sm:pb-10 flex flex-col items-center">
             {/* Top Text & CTAs */}
-            <div className="w-full max-w-lg flex flex-col items-center text-center mb-4 sm:mb-6">
+            <div className="w-full max-w-lg md:max-w-2xl flex flex-col items-center text-center mb-5 sm:mb-6">
 
 
               {/* Headline */}
               <h1 className={`font-black ${
                 language === 'km'
-                  ? 'text-xl sm:text-2xl leading-[1.38] tracking-normal'
-                  : 'text-2xl sm:text-3xl tracking-tight leading-[1.15]'
+                  ? 'text-xl sm:text-2xl md:text-3xl leading-[1.38] tracking-normal'
+                  : 'text-2xl sm:text-3xl md:text-4xl tracking-tight leading-[1.15]'
               } mb-2.5 sm:mb-3.5 text-white`}>
                 <span>{t('hero_title_1', 'Next-Gen Electronics.')}</span>{' '}
                 <br className="hidden sm:inline" />
@@ -354,7 +354,7 @@ export default function Home() {
               </h1>
 
               {/* Subtitle */}
-              <p className="text-xs text-slate-300/85 leading-relaxed max-w-md mb-4 sm:mb-5 font-normal">
+              <p className="text-xs sm:text-sm text-slate-300/85 leading-relaxed max-w-md md:max-w-xl mb-4 sm:mb-6 font-normal">
                 {t(
                   'hero_desc',
                   'Designed for software developers, athletes, and digital creators. Discover aerospace titanium unibody wearables, reference beryllium acoustics, and high-velocity GaN power.'
@@ -382,7 +382,7 @@ export default function Home() {
             </div>
 
             {/* Middle: Gear Showcase Image + Floating Cards */}
-            <div className="w-full max-w-[290px] sm:max-w-sm mx-auto relative mb-4 select-none">
+            <div className="w-full max-w-[280px] sm:max-w-sm md:max-w-md mx-auto relative mb-5 select-none">
               <div
                 className="relative overflow-hidden rounded-full"
                 style={{
@@ -456,7 +456,7 @@ export default function Home() {
             </div>
 
             {/* Bottom Trust Indicators (Mobile / Tablet) */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 w-full max-w-md">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5 w-full max-w-md sm:max-w-2xl">
               <div className="flex items-center gap-3 p-3 rounded-xl bg-[#0b1328]/60 border border-slate-800">
                 <Users className="w-5 h-5 text-sky-400 shrink-0" />
                 <div>
@@ -627,11 +627,11 @@ export default function Home() {
 
       {/* 4. PROMOTIONAL SHOWCASE BANNER */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-8 sm:p-12 lg:p-14 text-white shadow-2xl border border-slate-800">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-5 sm:p-10 lg:p-14 text-white shadow-2xl border border-slate-800">
           {/* Subtle Ambient Lighting */}
           <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 bg-blue-600/10 blur-3xl rounded-full pointer-events-none" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center relative z-10">
             {/* Left Column: Promotion Info */}
             <div className="lg:col-span-7 flex flex-col items-start text-left">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-400 mb-3">
@@ -639,7 +639,7 @@ export default function Home() {
                 <span>{t('promo_badge', 'Exclusive Developer Promotion')}</span>
               </div>
 
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-4 text-white leading-tight">
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-4 text-white leading-tight">
                 {t('promo_title_1', 'Supercharge Your Desk with')} <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-blue-500">
                   {t('promo_title_2', 'GaN 100W Fast Power.')}

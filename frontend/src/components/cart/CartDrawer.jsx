@@ -50,7 +50,7 @@ export default function CartDrawer() {
         onClick={closeDrawer}
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-4 sm:pl-10">
         <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
