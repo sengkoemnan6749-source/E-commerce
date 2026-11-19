@@ -222,20 +222,20 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
               <label
                 key={partner.id}
                 onClick={() => handleChange('deliveryPartner', partner.id)}
-                className={`flex items-center justify-between p-3.5 sm:p-4 cursor-pointer transition-colors ${
+                className={`flex items-center justify-between gap-3 p-3.5 sm:p-4 cursor-pointer transition-colors ${
                   isSelected ? 'bg-blue-50/40' : 'hover:bg-slate-50/70'
                 }`}
               >
-                <div className="flex items-center gap-3.5">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <input
                     type="radio"
                     name="deliveryPartner"
                     checked={isSelected}
                     onChange={() => handleChange('deliveryPartner', partner.id)}
-                    className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500 shrink-0"
                   />
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-x-2 gap-y-0.5 flex-wrap">
                       <span className="text-xs sm:text-sm font-semibold text-slate-900">
                         {language === 'km' ? partner.khmerName : partner.name}
                       </span>
@@ -249,7 +249,7 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
                   </div>
                 </div>
 
-                <span className="text-xs sm:text-sm font-bold text-slate-900 font-mono">
+                <span className="text-xs sm:text-sm font-bold text-slate-900 font-mono whitespace-nowrap shrink-0">
                   ${partner.fee.toFixed(2)} USD
                 </span>
               </label>

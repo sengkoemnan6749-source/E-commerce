@@ -346,15 +346,15 @@ export default function Checkout() {
               </div>
 
               {/* Account Context Bar */}
-              <div className="mb-6 px-3.5 sm:px-4 py-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 min-w-0">
-                  <span className="text-slate-400">{language === 'km' ? 'គណនី៖' : 'Account:'}</span>
-                  <span className="font-semibold text-slate-900">{user?.fullName || user?.name}</span>
-                  <span className="text-slate-400 break-all">({user?.email})</span>
+              <div className="mb-6 px-3.5 sm:px-4 py-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 text-xs text-slate-600">
+                <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 min-w-0">
+                  <span className="text-slate-400 shrink-0">{language === 'km' ? 'គណនី៖' : 'Account:'}</span>
+                  <span className="font-semibold text-slate-900 whitespace-nowrap">{user?.fullName || user?.name}</span>
+                  <span className="text-slate-400 truncate max-w-full">({user?.email})</span>
                 </div>
                 <Link
                   to="/login?redirect=/checkout"
-                  className="font-medium text-blue-600 hover:text-blue-700 hover:underline shrink-0"
+                  className="font-semibold text-blue-600 hover:text-blue-700 hover:underline whitespace-nowrap shrink-0 self-start sm:self-center"
                 >
                   {language === 'km' ? 'ប្តូរគណនី' : 'Switch account'}
                 </Link>

@@ -258,9 +258,9 @@ export default function KHQRPayment({
   const secs = String(secondsLeft % 60).padStart(2, '0');
 
   return (
-    <div className="flex flex-col items-center p-5 sm:p-7 rounded-2xl bg-[#fafafa] border border-slate-200 text-center">
+    <div className="flex flex-col items-center p-4 sm:p-7 rounded-2xl bg-[#fafafa] border border-slate-200 text-center">
       {/* Currency Selector (USD / KHR) */}
-      <div className="inline-flex items-center p-1 rounded-xl bg-white border border-slate-200 shadow-2xs mb-4">
+      <div className="inline-flex flex-wrap justify-center items-center p-1 rounded-xl bg-white border border-slate-200 shadow-2xs mb-4 max-w-full">
         {[
           { code: 'USD', label: language === 'km' ? 'ដុល្លារ ($ USD)' : 'USD ($)' },
           { code: 'KHR', label: language === 'km' ? 'ប្រាក់រៀល (៛ KHR)' : 'KHR (៛)' },
@@ -376,7 +376,7 @@ export default function KHQRPayment({
             {currency === 'KHR' ? formatUSD(totalAmount) : formatKHR(totalAmount)}
           </div>
           {session && !paidConfirmed && (
-            <div className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-mono text-slate-500">
+            <div className="mt-1.5 inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-[11px] font-mono text-slate-500">
               {session.billNumber && (
                 <span className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-700">
                   Ref: {session.billNumber}
