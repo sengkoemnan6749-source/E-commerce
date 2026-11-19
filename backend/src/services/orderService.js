@@ -503,7 +503,10 @@ export async function createOrder(payload = {}, user = null, req = null) {
     throw err;
   }
 
-  sendOrderConfirmationEmail(createdOrder).catch(() => {});
+  const emailPromise = sendOrderConfirmationEmail(createdOrder).catch(() => {});
+  if (process.env.VERCEL === '1') {
+    await Promise.race([emailPromise, new Promise((r) => setTimeout(r, 2500))]);
+  }
 
   return toPublicOrder(createdOrder);
 }

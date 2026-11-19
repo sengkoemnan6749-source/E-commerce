@@ -34,15 +34,20 @@ export async function validatePromo(req, res, next) {
 export async function createOrder(req, res, next) {
   try {
     const order = await orderService.createOrder(req.body, req.user, req);
-    recordAuditEvent(req, {
-      eventType: 'ORDER_CREATED',
-      severity: 'info',
-      targetType: 'order',
-      targetId: order?.id || order?.orderNumber || null,
-      status: 'SUCCESS',
-      details: `Order placed via ${order?.paymentMethod || 'unknown'} ($${Number(order?.total || 0).toFixed(2)})`,
-    });
-    notifyNewOrder(order).catch(() => {});
+    const sideEffects = Promise.allSettled([
+      recordAuditEvent(req, {
+        eventType: 'ORDER_CREATED',
+        severity: 'info',
+        targetType: 'order',
+        targetId: order?.id || order?.orderNumber || null,
+        status: 'SUCCESS',
+        details: `Order placed via ${order?.paymentMethod || 'unknown'} ($${Number(order?.total || 0).toFixed(2)})`,
+      }),
+      notifyNewOrder(order),
+    ]);
+    if (process.env.VERCEL === '1') {
+      await Promise.race([sideEffects, new Promise((r) => setTimeout(r, 3500))]);
+    }
     res.status(201).json({
       success: true,
       data: order,

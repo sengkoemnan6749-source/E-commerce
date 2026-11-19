@@ -96,7 +96,10 @@ export async function createSupportTicket(req, payload = {}) {
     createdAt: ticket.createdAt,
   };
 
-  notifySupportTicket(result);
+  const tgPromise = notifySupportTicket(result);
+  if (process.env.VERCEL === '1') {
+    await Promise.race([tgPromise, new Promise((r) => setTimeout(r, 2500))]);
+  }
 
   return result;
 }

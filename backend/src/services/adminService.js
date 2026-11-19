@@ -626,8 +626,13 @@ export async function updateOrderStatus(orderId, payload = {}) {
   const updatedOrder = { id: refreshed.id, ...refreshed.data() };
 
   if (nextCanonicalStatus && nextCanonicalStatus !== previousStatus) {
-    sendOrderStatusEmail(updatedOrder, previousStatus).catch(() => {});
-    notifyOrderStatusUpdate(updatedOrder, previousStatus).catch(() => {});
+    const notifyPromises = Promise.allSettled([
+      sendOrderStatusEmail(updatedOrder, previousStatus),
+      notifyOrderStatusUpdate(updatedOrder, previousStatus),
+    ]);
+    if (process.env.VERCEL === '1') {
+      await Promise.race([notifyPromises, new Promise((r) => setTimeout(r, 2500))]);
+    }
   }
 
   return updatedOrder;

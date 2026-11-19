@@ -456,7 +456,7 @@ export async function sendTelegramTestAlert(channel = 'support') {
 }
 
 export function notifySupportTicket(ticket) {
-  if (!ticket) return;
+  if (!ticket) return Promise.resolve(false);
   const lines = [
     `💬 <b>សារជំនួយពីអតិថិជន</b> · <code>${escapeHtml(ticket.id)}</code>`,
     '',
@@ -468,7 +468,7 @@ export function notifySupportTicket(ticket) {
     `📝 ${escapeHtml(ticket.message)}`,
   ].filter((line) => line !== null);
 
-  sendTelegramAlert(lines.join('\n'), 'support').catch(() => {});
+  return sendTelegramAlert(lines.join('\n'), 'support').catch(() => false);
 }
 
 async function getOrderStatsSummary() {

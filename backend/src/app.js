@@ -21,16 +21,20 @@ app.set('trust proxy', Number.isFinite(trustProxyHops) && trustProxyHops >= 0 ? 
 app.use(securityHeaders);
 const PORT = Number(process.env.PORT) || 5000;
 
+function normalizeOrigin(value = '') {
+  return String(value || '').trim().replace(/\/+$/, '');
+}
+
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000,http://127.0.0.1:3000')
   .split(',')
-  .map((origin) => origin.trim())
+  .map(normalizeOrigin)
   .filter(Boolean);
 
 app.use(
   cors({
     origin(origin, callback) {
       // Allow non-browser clients (curl, mobile apps, Postman) with no Origin header.
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
         return callback(null, true);
       }
       return callback(new AppError('Origin not allowed by CORS policy', 403, 'CORS_FORBIDDEN'));
@@ -41,6 +45,14 @@ app.use(
 app.use(express.json({ limit: '2mb' }));
 app.use(detectSuspiciousRequest);
 app.use('/api', createRateLimiter({ name: 'global-api', windowMs: 60000, maxRequests: 600, blockDurationMs: 60000 }));
+
+app.get('/', (_req, res) => {
+  res.json({
+    status: 'online',
+    brand: 'TechTonic Store API',
+    health: '/api/health',
+  });
+});
 
 // Health Check Endpoint (minimal public surface; avoids exposing internal project IDs, counts, or file paths)
 app.get('/api/health', async (_req, res, next) => {
