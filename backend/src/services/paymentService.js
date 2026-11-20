@@ -120,6 +120,69 @@ async function finalizePaidSession(
   });
 }
 
+async function findLuyrielPaymentSnap(firestore, { orderRefId = '', luyrielId = '' } = {}) {
+  const cleanOrderId = String(orderRefId || '').trim();
+  const cleanLuyrielId = String(luyrielId || '').trim();
+
+  if (cleanOrderId.startsWith('KHQR-')) {
+    const candidate = await firestore.collection('payments').doc(cleanOrderId).get();
+    if (candidate.exists) return candidate;
+  }
+  if (cleanLuyrielId) {
+    const query = await firestore
+      .collection('payments')
+      .where('luyrielPaymentId', '==', cleanLuyrielId)
+      .limit(1)
+      .get();
+    if (!query.empty) return query.docs[0];
+  }
+  return null;
+}
+
+async function settleLuyrielFromRemote(
+  firestore,
+  paymentSnap,
+  paymentData,
+  remote,
+  { req = null, user = null, verifiedBy = 'luyriel_api', providerLabel = 'LuyRiel', eventName = null } = {}
+) {
+  const checked = await validateAmountAndCurrencyMatch(
+    paymentData,
+    remote?.amount ?? paymentData.amount,
+    remote?.currency || paymentData.currency,
+    { req, user, providerLabel }
+  );
+
+  const luyrielData = {
+    paymentId: remote?.id || paymentData.luyrielPaymentId || null,
+    hash: remote?.hash || null,
+    paidAmount: checked.paidAmount,
+    currency: checked.currency,
+    paidAt: remote?.paidAt || null,
+    ...(eventName ? { event: eventName } : {}),
+  };
+
+  const verifiedRecord = await finalizePaidSession(firestore, paymentSnap.ref, paymentData, {
+    verifiedBy,
+    paidAt: remote?.paidAt || new Date().toISOString(),
+    luyrielData,
+  });
+
+  return { verifiedRecord, luyrielData, checked };
+}
+
+function isLuyrielPaidStatus(status) {
+  const s = String(status || '').trim().toUpperCase();
+  return s === 'PAID' || s === 'SUCCEEDED' || s === 'COMPLETED';
+}
+
+async function reportIncidentBounded(reqOrUser, details, timeoutMs = 1200) {
+  await Promise.race([
+    reportPaymentSecurityIncident(reqOrUser, details).catch(() => {}),
+    new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+  ]);
+}
+
 async function checkBakongTransactionByMd5(md5Hash, config) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
@@ -400,27 +463,14 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
 
   if (paymentData.mode === 'luyriel' && paymentData.luyrielPaymentId) {
     const remote = await getLuyrielPaymentStatus(paymentData.luyrielPaymentId);
-    if (remote.status === 'PAID' || remote.status === 'SUCCEEDED' || remote.status === 'COMPLETED') {
-      const checked = await validateAmountAndCurrencyMatch(
+    if (isLuyrielPaidStatus(remote.status)) {
+      const { verifiedRecord, luyrielData } = await settleLuyrielFromRemote(
+        firestore,
+        paymentSnap,
         paymentData,
-        remote.amount ?? paymentData.amount,
-        remote.currency || paymentData.currency,
-        { req, user, providerLabel: 'LuyRiel' }
+        remote,
+        { req, user, verifiedBy: 'luyriel_api', providerLabel: 'LuyRiel' }
       );
-
-      const luyrielData = {
-        paymentId: remote.id,
-        hash: remote.hash || null,
-        paidAmount: checked.paidAmount,
-        currency: checked.currency,
-        paidAt: remote.paidAt || null,
-      };
-
-      const verifiedRecord = await finalizePaidSession(firestore, paymentSnap.ref, paymentData, {
-        verifiedBy: 'luyriel_api',
-        paidAt: remote.paidAt || new Date().toISOString(),
-        luyrielData,
-      });
 
       return {
         ...formatPaidReceipt(verifiedRecord),
@@ -631,100 +681,143 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
  */
 export async function processLuyrielWebhook(req) {
   const firestore = ensureDb();
-  const { webhookSecret } = getLuyrielConfig();
+  const { webhookSecret, apiKey } = getLuyrielConfig();
   const signature = req.headers?.['x-signature'] || '';
   const rawPayload = req.rawBody ?? JSON.stringify(req.body || {});
-
-  if (!verifyLuyrielWebhookSignature(rawPayload, signature, webhookSecret)) {
-    await reportPaymentSecurityIncident(req, {
-      reason: 'LUYRIEL_WEBHOOK_SPOOF_BLOCKED',
-      severity: 'critical',
-      details: 'Rejected unverified POST to /payments/khqr/luyriel-webhook (invalid or missing X-Signature)',
-    });
-    return { verified: false };
-  }
-
   const payload = req.body && typeof req.body === 'object' ? req.body : {};
   const eventName = String(payload.event || '').trim().toLowerCase();
   const eventData = payload.data && typeof payload.data === 'object' ? payload.data : payload;
   const remoteStatus = String(eventData.status || '').trim().toUpperCase();
-
-  if (eventName === 'webhook.test' || eventName === 'test') {
-    return { verified: true, handled: true, test: true };
-  }
-
-  const isPaidEvent =
-    eventName === 'payment.paid' ||
-    eventName === 'payment.succeeded' ||
-    remoteStatus === 'PAID' ||
-    remoteStatus === 'SUCCEEDED' ||
-    remoteStatus === 'COMPLETED';
-
-  if (!isPaidEvent) {
-    return { verified: true, handled: false, reason: 'NON_PAID_EVENT' };
-  }
-
   const luyrielId = String(eventData.id || eventData.payment_id || '').trim();
   const orderRefId = String(eventData.order_id || '').trim();
 
-  let paymentSnap = null;
-  if (orderRefId.startsWith('KHQR-')) {
-    const candidate = await firestore.collection('payments').doc(orderRefId).get();
-    if (candidate.exists) {
-      paymentSnap = candidate;
+  if (webhookSecret) {
+    if (!verifyLuyrielWebhookSignature(rawPayload, signature, webhookSecret)) {
+      await reportIncidentBounded(req, {
+        reason: 'LUYRIEL_WEBHOOK_SPOOF_BLOCKED',
+        severity: 'critical',
+        details: 'Rejected unverified POST to /payments/khqr/luyriel-webhook (invalid or missing X-Signature)',
+      });
+      return { verified: false };
     }
-  }
-  if (!paymentSnap && luyrielId) {
-    const query = await firestore
-      .collection('payments')
-      .where('luyrielPaymentId', '==', luyrielId)
-      .limit(1)
-      .get();
-    if (!query.empty) {
-      paymentSnap = query.docs[0];
+
+    if (eventName === 'webhook.test' || eventName === 'test') {
+      return { verified: true, handled: true, test: true };
     }
+
+    const isPaidEvent =
+      eventName === 'payment.paid' ||
+      eventName === 'payment.succeeded' ||
+      isLuyrielPaidStatus(remoteStatus);
+
+    if (!isPaidEvent) {
+      return { verified: true, handled: false, reason: 'NON_PAID_EVENT' };
+    }
+
+    const paymentSnap = await findLuyrielPaymentSnap(firestore, { orderRefId, luyrielId });
+    if (!paymentSnap) {
+      return { verified: true, handled: false, reason: 'PAYMENT_SESSION_NOT_FOUND' };
+    }
+
+    const paymentData = paymentSnap.data() || {};
+    if (paymentData.status === 'PAID' && verifyPaymentProof(paymentData)) {
+      return { verified: true, handled: true, alreadyPaid: true, transactionId: paymentData.transactionId };
+    }
+
+    const { luyrielData, checked } = await settleLuyrielFromRemote(
+      firestore,
+      paymentSnap,
+      paymentData,
+      {
+        id: luyrielId || paymentData.luyrielPaymentId || null,
+        hash: eventData.hash || null,
+        amount: eventData.amount ?? paymentData.amount,
+        currency: eventData.currency || paymentData.currency,
+        paidAt: eventData.paid_at || payload.created_at || null,
+      },
+      {
+        req,
+        verifiedBy: 'luyriel_webhook',
+        providerLabel: 'LuyRiel Webhook',
+        eventName: eventName || 'payment.paid',
+      }
+    );
+
+    await recordAuditEvent(req, {
+      eventType: 'PAYMENT_KHQR_WEBHOOK_PAID',
+      severity: 'info',
+      targetType: 'payment',
+      targetId: paymentData.transactionId,
+      status: 'SUCCESS',
+      details: `LuyRiel webhook confirmed ${checked.paidAmount} ${checked.currency} (${luyrielData.paymentId || 'webhook'})`,
+    });
+
+    return { verified: true, handled: true, transactionId: paymentData.transactionId };
   }
 
-  if (!paymentSnap || !paymentSnap.exists) {
-    return { verified: true, handled: false, reason: 'PAYMENT_SESSION_NOT_FOUND' };
+  // Zero-trust callback recheck mode when LUYRIEL_WEBHOOK_SECRET is not exposed by provider UI:
+  // never trust request body state; re-query authoritative LuyRiel API only if a matching PENDING session exists.
+  if (!apiKey) {
+    await reportIncidentBounded(req, {
+      reason: 'LUYRIEL_WEBHOOK_UNCONFIGURED',
+      severity: 'warning',
+      details: 'Rejected webhook POST while neither LUYRIEL_WEBHOOK_SECRET nor LUYRIEL_API_KEY was set',
+    });
+    return { verified: false };
+  }
+
+  if (eventName === 'webhook.test' || eventName === 'test') {
+    return { verified: true, handled: false, mode: 'callback_recheck', test: true };
+  }
+
+  const paymentSnap = await findLuyrielPaymentSnap(firestore, { orderRefId, luyrielId });
+  if (!paymentSnap) {
+    return { verified: true, handled: false, mode: 'callback_recheck', reason: 'NO_MATCHING_SESSION' };
   }
 
   const paymentData = paymentSnap.data() || {};
+  if (paymentData.mode !== 'luyriel' || !paymentData.luyrielPaymentId) {
+    return { verified: true, handled: false, mode: 'callback_recheck', reason: 'NOT_LUYRIEL_SESSION' };
+  }
+
   if (paymentData.status === 'PAID' && verifyPaymentProof(paymentData)) {
     return { verified: true, handled: true, alreadyPaid: true, transactionId: paymentData.transactionId };
   }
 
-  const checked = await validateAmountAndCurrencyMatch(
+  const liveRemote = await getLuyrielPaymentStatus(paymentData.luyrielPaymentId);
+  if (!isLuyrielPaidStatus(liveRemote.status)) {
+    return {
+      verified: true,
+      handled: false,
+      mode: 'callback_recheck',
+      status: liveRemote.status,
+      transactionId: paymentData.transactionId,
+    };
+  }
+
+  const { luyrielData, checked } = await settleLuyrielFromRemote(
+    firestore,
+    paymentSnap,
     paymentData,
-    eventData.amount ?? paymentData.amount,
-    eventData.currency || paymentData.currency,
-    { req, providerLabel: 'LuyRiel Webhook' }
+    liveRemote,
+    {
+      req,
+      verifiedBy: 'luyriel_api',
+      providerLabel: 'LuyRiel Callback Verification',
+      eventName: eventName || 'payment.paid',
+    }
   );
 
-  const luyrielData = {
-    paymentId: luyrielId || paymentData.luyrielPaymentId || null,
-    hash: eventData.hash || null,
-    paidAmount: checked.paidAmount,
-    currency: checked.currency,
-    event: eventName || 'payment.paid',
-  };
-
-  await finalizePaidSession(firestore, paymentSnap.ref, paymentData, {
-    verifiedBy: 'luyriel_webhook',
-    paidAt: eventData.paid_at || payload.created_at || new Date().toISOString(),
-    luyrielData,
-  });
-
   await recordAuditEvent(req, {
-    eventType: 'PAYMENT_KHQR_WEBHOOK_PAID',
+    eventType: 'PAYMENT_KHQR_CALLBACK_VERIFIED',
     severity: 'info',
     targetType: 'payment',
     targetId: paymentData.transactionId,
     status: 'SUCCESS',
-    details: `LuyRiel webhook confirmed ${checked.paidAmount} ${checked.currency} (${luyrielData.paymentId || 'webhook'})`,
+    details: `LuyRiel callback recheck confirmed ${checked.paidAmount} ${checked.currency} (${luyrielData.paymentId || 'api'})`,
   });
 
-  return { verified: true, handled: true, transactionId: paymentData.transactionId };
+  return { verified: true, handled: true, mode: 'callback_recheck', transactionId: paymentData.transactionId };
 }
 
 /**
