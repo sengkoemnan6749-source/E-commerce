@@ -330,10 +330,10 @@ export async function createOrder(payload = {}, user = null, req = null) {
           );
         }
 
-        const allowedVerifiers = ['bakong_api', 'telegram_admin'];
+        const allowedVerifiers = ['bakong_api', 'telegram_admin', 'luyriel_api', 'luyriel_webhook'];
         if (pay.status !== 'PAID' || !allowedVerifiers.includes(pay.verifiedBy)) {
           throw makeSecurityError(
-            'KHQR payment has not been verified by Bakong or shop admin yet.',
+            'KHQR payment has not been verified by Bakong, LuyRiel, or shop admin yet.',
             402,
             'PAYMENT_NOT_VERIFIED',
             {
@@ -403,7 +403,14 @@ export async function createOrder(payload = {}, user = null, req = null) {
 
         verifiedBy = pay.verifiedBy;
         verifiedTxId = submittedTxId;
-        verifiedPaymentMethod = paidCurrency === 'KHR' ? 'KHQR Bakong (KHR)' : 'KHQR Bakong';
+        const isLuyriel = String(verifiedBy || '').startsWith('luyriel') || pay.mode === 'luyriel';
+        verifiedPaymentMethod = isLuyriel
+          ? paidCurrency === 'KHR'
+            ? 'ABA PayWay KHQR (KHR)'
+            : 'ABA PayWay KHQR'
+          : paidCurrency === 'KHR'
+          ? 'KHQR Bakong (KHR)'
+          : 'KHQR Bakong';
         verifiedPayerName = String(pay.payerAccountName || verifiedPayerName || '').trim().slice(0, 80);
         verifiedTelegramUser = pay.verifiedByTelegramUser || null;
         paidAt = pay.paidAt || nowIso;

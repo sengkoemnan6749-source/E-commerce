@@ -109,23 +109,28 @@ export default function KHQRPayment({
     return () => window.clearInterval(timer);
   }, [session, paidConfirmed, isExpired]);
 
-  // Conserve NBC Bakong 100 req/day quota: poll every 8s up to 15 checks (~2 min); user can always tap Check Now
+  // Auto-poll live gateway verification: 3.5s for LuyRiel (100 req/min limit + webhook), 8s (max 15) for Bakong (100 req/day quota)
   useEffect(() => {
-    if (!session?.md5Hash || !session?.liveVerificationEnabled || paidConfirmed || isExpired) {
+    const verifyTarget = session?.transactionId || session?.md5Hash;
+    if (!verifyTarget || !session?.liveVerificationEnabled || paidConfirmed || isExpired) {
       return undefined;
     }
 
+    const isLuyriel = session?.provider === 'luyriel';
+    const intervalMs = isLuyriel ? 3500 : 8000;
+    const maxPolls = isLuyriel ? 170 : 15;
     let stopped = false;
     let pollCount = 0;
+
     const pollId = window.setInterval(async () => {
       if (stopped || document.visibilityState !== 'visible') return;
       pollCount += 1;
-      if (pollCount > 15) {
+      if (pollCount > maxPolls) {
         window.clearInterval(pollId);
         return;
       }
       try {
-        const res = await paymentService.verifyKHQRPayment(session.md5Hash, {
+        const res = await paymentService.verifyKHQRPayment(verifyTarget, {
           amount: session.amount,
           mode: 'poll',
         });
@@ -136,7 +141,7 @@ export default function KHQRPayment({
       } catch {
         // Silent retry on next poll tick
       }
-    }, 8000);
+    }, intervalMs);
 
     return () => {
       stopped = true;
@@ -289,10 +294,16 @@ export default function KHQRPayment({
             <span className="bg-white text-red-600 px-1.5 py-0.5 rounded font-black text-xs">
               KHQR
             </span>
-            <span>BAKONG</span>
+            <span>{session?.provider === 'luyriel' ? 'ABA PAYWAY' : 'BAKONG'}</span>
           </div>
           <span className="text-[10px] font-semibold tracking-wide uppercase text-red-100">
-            {language === 'km' ? 'ស្តង់ដារ NBC' : 'NBC Standard'}
+            {session?.provider === 'luyriel'
+              ? language === 'km'
+                ? 'ស្វ័យប្រវត្តិ (Tag 99)'
+                : 'Auto Verify'
+              : language === 'km'
+              ? 'ស្តង់ដារ NBC'
+              : 'NBC Standard'}
           </span>
         </div>
 
