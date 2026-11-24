@@ -109,16 +109,16 @@ export default function KHQRPayment({
     return () => window.clearInterval(timer);
   }, [session, paidConfirmed, isExpired]);
 
-  // Auto-poll live gateway verification: 3.5s for LuyRiel (100 req/min limit + webhook), 8s (max 15) for Bakong (100 req/day quota)
+  // Auto-poll live gateway verification: 4s for LuyRiel / Bakong Gateway, 8s (max 15) for direct NBC API (100 req/day quota)
   useEffect(() => {
     const verifyTarget = session?.transactionId || session?.md5Hash;
     if (!verifyTarget || !session?.liveVerificationEnabled || paidConfirmed || isExpired) {
       return undefined;
     }
 
-    const isLuyriel = session?.provider === 'luyriel';
-    const intervalMs = isLuyriel ? 3500 : 8000;
-    const maxPolls = isLuyriel ? 170 : 15;
+    const fastPoll = Boolean(session?.fastPolling || session?.provider === 'luyriel');
+    const intervalMs = fastPoll ? 4000 : 8000;
+    const maxPolls = fastPoll ? 150 : 15;
     let stopped = false;
     let pollCount = 0;
 
@@ -137,6 +137,10 @@ export default function KHQRPayment({
         if (!stopped && res?.status === 'PAID') {
           setPaidConfirmed(true);
           onPaymentSuccessRef.current?.(res);
+        } else if (!stopped && res?.liveVerificationEnabled === false && res?.telegramVerificationEnabled) {
+          setSession((prev) =>
+            prev ? { ...prev, liveVerificationEnabled: false, telegramVerificationEnabled: true } : prev
+          );
         }
       } catch {
         // Silent retry on next poll tick

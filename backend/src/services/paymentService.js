@@ -38,15 +38,21 @@ function getBakongConfig() {
     merchantName: String(process.env.BAKONG_MERCHANT_NAME || 'TechTonic Store').trim().slice(0, 25),
     merchantCity: String(process.env.BAKONG_MERCHANT_CITY || 'Phnom Penh').trim().slice(0, 15),
     apiUrl: String(process.env.BAKONG_API_URL || 'https://api-bakong.nbc.gov.kh').replace(/\/+$/, ''),
+    gatewayUrl: String(
+      process.env.BAKONG_GATEWAY_URL !== undefined
+        ? process.env.BAKONG_GATEWAY_URL
+        : 'https://lorndavid.online'
+    )
+      .trim()
+      .replace(/\/+$/, ''),
     token: String(process.env.BAKONG_TOKEN || '').trim(),
   };
 }
 
 function resolveKhqrProvider(luyrielConfig) {
-  const configured = String(process.env.KHQR_PROVIDER || 'auto').trim().toLowerCase();
-  if (configured === 'luyriel') return 'luyriel';
-  if (configured === 'bakong') return 'bakong';
-  return luyrielConfig.apiKey ? 'luyriel' : 'bakong';
+  const configured = String(process.env.KHQR_PROVIDER || 'bakong').trim().toLowerCase();
+  if (configured === 'luyriel' && luyrielConfig.apiKey) return 'luyriel';
+  return 'bakong';
 }
 
 async function validateAmountAndCurrencyMatch(
@@ -222,6 +228,93 @@ async function checkBakongTransactionByMd5(md5Hash, config) {
   }
 }
 
+async function generateBakongViaGateway(config, { amount, currency, billNumber }) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000);
+  try {
+    const res = await fetch(`${config.gatewayUrl}/api/v1/khqr/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        accountId: config.accountId,
+        merchantName: config.merchantName,
+        amount: Number(amount),
+        currency,
+        billNumber,
+        storeLabel: 'TechTonic Store',
+      }),
+      signal: controller.signal,
+    });
+    const json = await res.json().catch(() => null);
+    const khqrString = String(json?.qrString || json?.qr || '').trim();
+    const md5Hash = String(json?.md5 || '').trim().toLowerCase();
+    if (!res.ok || !khqrString || !/^[a-f0-9]{32}$/i.test(md5Hash)) {
+      throw new AppError(
+        json?.message || `Bakong gateway generate returned HTTP ${res.status}`,
+        502,
+        'BAKONG_GATEWAY_UNAVAILABLE'
+      );
+    }
+    return {
+      khqrString,
+      md5Hash,
+      deeplink: json?.deeplink || null,
+      expirationTimestamp: Number(json?.expirationTimestamp) || null,
+    };
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(
+      err?.name === 'AbortError'
+        ? 'Bakong gateway QR generation timed out.'
+        : `Unable to reach Bakong gateway: ${err?.message || 'Network error'}`,
+      502,
+      'BAKONG_UNREACHABLE'
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function checkBakongViaGateway(md5Hash, gatewayUrl) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(`${gatewayUrl}/api/v1/check/${encodeURIComponent(md5Hash)}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
+    });
+    const json = await res.json().catch(() => null);
+    if (res.status === 404 && json && typeof json.responseCode === 'number') {
+      return json;
+    }
+    if (!res.ok || !json || typeof json !== 'object') {
+      throw new AppError(
+        `Bakong gateway returned HTTP ${res.status}`,
+        502,
+        'BAKONG_GATEWAY_UNAVAILABLE'
+      );
+    }
+    return json;
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(
+      err?.name === 'AbortError'
+        ? 'Bakong gateway verification timed out.'
+        : `Unable to reach Bakong gateway: ${err?.message || 'Network error'}`,
+      502,
+      'BAKONG_UNREACHABLE'
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /**
  * Generates an official EMVCo KHQR payload (via LuyRiel PayWay API or local Bakong generator) & PNG QR Data URL locked to server pricing.
  */
@@ -268,6 +361,7 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
 
   let khqrString;
   let md5Hash;
+  let deeplink = null;
   let luyrielPaymentId = null;
   let accountLabel = config.accountId;
 
@@ -288,33 +382,55 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
       expiresAt = new Date(parsedExpiry).toISOString();
     }
   } else {
-    const khqrCurrency = currency === 'KHR' ? khqrData.currency.khr : khqrData.currency.usd;
-    const individualInfo = new IndividualInfo(
-      config.accountId,
-      config.merchantName,
-      config.merchantCity,
-      {
-        currency: khqrCurrency,
-        amount: normalizedAmount,
-        billNumber,
-        storeLabel: 'TechTonic Store',
-        terminalLabel: 'TechTonic Store',
-        purposeOfTransaction: 'TechTonic Store',
-        expirationTimestamp: expiresMs,
+    let generatedViaGateway = false;
+    if (config.gatewayUrl) {
+      try {
+        const gwResult = await generateBakongViaGateway(config, {
+          amount: normalizedAmount,
+          currency,
+          billNumber,
+        });
+        khqrString = gwResult.khqrString;
+        md5Hash = gwResult.md5Hash;
+        deeplink = gwResult.deeplink || null;
+        if (gwResult.expirationTimestamp && gwResult.expirationTimestamp > Date.now() + 15000) {
+          expiresAt = new Date(gwResult.expirationTimestamp).toISOString();
+        }
+        generatedViaGateway = true;
+      } catch (err) {
+        console.warn('[Bakong Gateway Generate Fallback]', err?.message || 'Using local BakongKHQR generator');
       }
-    );
-
-    const generated = new BakongKHQR().generateIndividual(individualInfo);
-    if (generated?.status?.code !== 0 || !generated?.data?.qr || !generated?.data?.md5) {
-      throw new AppError(
-        generated?.status?.message || 'Failed to generate official Bakong KHQR payload',
-        500,
-        'KHQR_GENERATION_FAILED'
-      );
     }
 
-    khqrString = generated.data.qr;
-    md5Hash = generated.data.md5;
+    if (!generatedViaGateway) {
+      const khqrCurrency = currency === 'KHR' ? khqrData.currency.khr : khqrData.currency.usd;
+      const individualInfo = new IndividualInfo(
+        config.accountId,
+        config.merchantName,
+        config.merchantCity,
+        {
+          currency: khqrCurrency,
+          amount: normalizedAmount,
+          billNumber,
+          storeLabel: 'TechTonic Store',
+          terminalLabel: 'TechTonic Store',
+          purposeOfTransaction: 'TechTonic Store',
+          expirationTimestamp: expiresMs,
+        }
+      );
+
+      const generated = new BakongKHQR().generateIndividual(individualInfo);
+      if (generated?.status?.code !== 0 || !generated?.data?.qr || !generated?.data?.md5) {
+        throw new AppError(
+          generated?.status?.message || 'Failed to generate official Bakong KHQR payload',
+          500,
+          'KHQR_GENERATION_FAILED'
+        );
+      }
+
+      khqrString = generated.data.qr;
+      md5Hash = generated.data.md5;
+    }
   }
 
   const qrDataUrl = await QRCode.toDataURL(khqrString, {
@@ -327,12 +443,16 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
   });
 
   const isLuyriel = activeProvider === 'luyriel';
+  const hasBakongAutoVerify = !isLuyriel && Boolean(config.token || config.gatewayUrl);
+  const liveVerificationEnabled = isLuyriel || hasBakongAutoVerify;
+  const fastPolling = Boolean(isLuyriel || (!config.token && config.gatewayUrl));
   const record = {
     id: transactionId,
     transactionId,
     luyrielPaymentId,
     md5Hash,
     billNumber,
+    deeplink: deeplink || null,
     bakongAccountId: accountLabel,
     merchantName: config.merchantName,
     orderId: null,
@@ -346,7 +466,13 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
     promoCode: appliedPromoCode,
     khqrString,
     status: 'PENDING',
-    mode: isLuyriel ? 'luyriel' : config.token ? 'bakong_live' : 'telegram_verified',
+    mode: isLuyriel
+      ? 'luyriel'
+      : config.token
+      ? 'bakong_live'
+      : config.gatewayUrl
+      ? 'bakong_gateway'
+      : 'telegram_verified',
     createdAt: nowIso,
     expiresAt,
     updatedAt: FieldValue.serverTimestamp(),
@@ -354,8 +480,7 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
 
   await firestore.collection('payments').doc(transactionId).set(record);
 
-  const liveVerificationEnabled = isLuyriel || Boolean(config.token);
-  const telegramReady = !liveVerificationEnabled && (await isOrderTelegramReady());
+  const telegramReady = await isOrderTelegramReady();
 
   return {
     transactionId,
@@ -364,6 +489,7 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
     billNumber,
     khqrString,
     qrDataUrl,
+    deeplink: deeplink || null,
     bakongAccountId: accountLabel,
     merchantName: config.merchantName,
     amount: record.amount,
@@ -372,6 +498,7 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
     status: 'PENDING',
     expiresAt,
     provider: isLuyriel ? 'luyriel' : 'bakong',
+    fastPolling,
     liveVerificationEnabled,
     telegramVerificationEnabled: telegramReady,
   };
@@ -429,7 +556,8 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
     verifiedByTelegramUser: data.verifiedByTelegramUser || null,
     payerAccountName: data.payerAccountName || payload.payerAccountName || null,
     provider: data.mode === 'luyriel' ? 'luyriel' : 'bakong',
-    liveVerificationEnabled: data.mode === 'luyriel' || Boolean(config.token),
+    liveVerificationEnabled:
+      data.mode === 'luyriel' || data.mode === 'bakong_gateway' || Boolean(config.token),
     telegramVerificationEnabled: data.verifiedBy === 'telegram_admin',
     transactionId: data.transactionId,
     luyrielPaymentId: data.luyrielPaymentId || null,
@@ -505,76 +633,104 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
     );
   }
 
-  if (config.token) {
-    const apiResult = await checkBakongTransactionByMd5(paymentData.md5Hash, config);
-    if (apiResult?.responseCode === 0 && apiResult?.data) {
-      const checked = await validateAmountAndCurrencyMatch(
-        paymentData,
-        apiResult.data.amount,
-        apiResult.data.currency || paymentData.currency,
-        { req, user, providerLabel: 'Bakong' }
-      );
+  if (config.token || config.gatewayUrl) {
+    let gatewayFallbackTriggered = false;
+    try {
+      const apiResult = config.token
+        ? await checkBakongTransactionByMd5(paymentData.md5Hash, config)
+        : await checkBakongViaGateway(paymentData.md5Hash, config.gatewayUrl);
 
-      if (
-        apiResult.data.toAccountId &&
-        String(apiResult.data.toAccountId).trim().toLowerCase() !== config.accountId.toLowerCase()
-      ) {
-        await reportPaymentSecurityIncident(req || user, {
-          reason: 'PAYMENT_RECIPIENT_MISMATCH',
-          transactionId: paymentData.transactionId,
-          details: `Bakong destination ${apiResult.data.toAccountId} does not match ${config.accountId}`,
+      if (apiResult?.responseCode === 0 && apiResult?.data) {
+        const checked = await validateAmountAndCurrencyMatch(
+          paymentData,
+          apiResult.data.amount,
+          apiResult.data.currency || paymentData.currency,
+          { req, user, providerLabel: 'Bakong' }
+        );
+
+        if (
+          apiResult.data.toAccountId &&
+          String(apiResult.data.toAccountId).trim().toLowerCase() !== config.accountId.toLowerCase()
+        ) {
+          await reportPaymentSecurityIncident(req || user, {
+            reason: 'PAYMENT_RECIPIENT_MISMATCH',
+            transactionId: paymentData.transactionId,
+            details: `Bakong destination ${apiResult.data.toAccountId} does not match ${config.accountId}`,
+          });
+          throw new AppError('Payment destination account mismatch.', 403, 'PAYMENT_RECIPIENT_MISMATCH');
+        }
+
+        const autoDetectedPayer = String(
+          apiResult.data.fromAccountName ||
+            apiResult.data.senderName ||
+            apiResult.data.payerName ||
+            apiResult.data.accountName ||
+            apiResult.data.fromAccountId ||
+            ''
+        )
+          .trim()
+          .slice(0, 80);
+
+        const bakongData = {
+          hash: apiResult.data.hash || null,
+          fromAccountId: apiResult.data.fromAccountId || null,
+          fromAccountName: autoDetectedPayer || null,
+          toAccountId: apiResult.data.toAccountId || null,
+          externalRef: apiResult.data.externalRef || null,
+          paidAmount: checked.paidAmount,
+          currency: checked.currency,
+        };
+        const verifiedRecord = await finalizePaidSession(firestore, paymentSnap.ref, paymentData, {
+          verifiedBy: 'bakong_api',
+          paidAt: new Date().toISOString(),
+          payerAccountName: autoDetectedPayer || null,
+          bakongData,
         });
-        throw new AppError('Payment destination account mismatch.', 403, 'PAYMENT_RECIPIENT_MISMATCH');
+
+        return {
+          ...formatPaidReceipt(verifiedRecord),
+          bakongData,
+        };
       }
 
-      const autoDetectedPayer = String(
-        apiResult.data.fromAccountName ||
-          apiResult.data.senderName ||
-          apiResult.data.payerName ||
-          apiResult.data.accountName ||
-          apiResult.data.fromAccountId ||
-          ''
-      )
-        .trim()
-        .slice(0, 80);
-
-      const bakongData = {
-        hash: apiResult.data.hash || null,
-        fromAccountId: apiResult.data.fromAccountId || null,
-        fromAccountName: autoDetectedPayer || null,
-        toAccountId: apiResult.data.toAccountId || null,
-        externalRef: apiResult.data.externalRef || null,
-        paidAmount: checked.paidAmount,
-        currency: checked.currency,
-      };
-      const verifiedRecord = await finalizePaidSession(firestore, paymentSnap.ref, paymentData, {
-        verifiedBy: 'bakong_api',
-        paidAt: new Date().toISOString(),
-        payerAccountName: autoDetectedPayer || null,
-        bakongData,
-      });
-
-      return {
-        ...formatPaidReceipt(verifiedRecord),
-        bakongData,
-      };
+      if (mode === 'telegram_request' && (await isOrderTelegramReady())) {
+        gatewayFallbackTriggered = true;
+      } else if (mode === 'poll') {
+        return {
+          success: false,
+          status: 'PENDING',
+          provider: 'bakong',
+          liveVerificationEnabled: true,
+          transactionId: paymentData.transactionId,
+          md5Hash: paymentData.md5Hash,
+          message: 'Waiting for Bakong payment confirmation.',
+        };
+      } else {
+        throw new AppError(
+          'Bakong payment has not been received yet. Please scan and complete payment in your banking app first.',
+          402,
+          'PAYMENT_PENDING'
+        );
+      }
+    } catch (err) {
+      const recoverable =
+        !config.token &&
+        (err?.code === 'BAKONG_GATEWAY_UNAVAILABLE' || err?.code === 'BAKONG_UNREACHABLE') &&
+        (await isOrderTelegramReady());
+      if (!recoverable) {
+        throw err;
+      }
+      console.warn('[Bakong Gateway Verify Fallback]', err?.message || 'Falling back to Telegram verification');
+      gatewayFallbackTriggered = true;
     }
 
-    if (mode === 'poll') {
-      return {
-        success: false,
-        status: 'PENDING',
-        liveVerificationEnabled: true,
-        transactionId: paymentData.transactionId,
-        md5Hash: paymentData.md5Hash,
-        message: 'Waiting for Bakong payment confirmation.',
-      };
+    if (!gatewayFallbackTriggered) {
+      throw new AppError(
+        'Bakong payment has not been received yet. Please scan and complete payment in your banking app first.',
+        402,
+        'PAYMENT_PENDING'
+      );
     }
-    throw new AppError(
-      'Bakong payment has not been received yet. Please scan and complete payment in your banking app first.',
-      402,
-      'PAYMENT_PENDING'
-    );
   }
 
   const telegramReady = await isOrderTelegramReady();
