@@ -744,7 +744,7 @@ let watcherStop = null;
  * Watches Firestore KHQR sessions via real-time onSnapshot and settles payments from a Cambodia-reachable IP.
  */
 export function startBakongSettlementWatcher({
-  intervalMs = 2500,
+  intervalMs = 1200,
   onSessionsUpdate = null,
   onSettled = null,
   onError = null,
@@ -862,13 +862,31 @@ export function startBakongSettlementWatcher({
     .onSnapshot(
       (snap) => {
         activeSessions.clear();
+        const newestByUser = new Map();
         for (const doc of snap.docs) {
-          activeSessions.set(doc.id, { id: doc.id, ref: doc.ref, data: doc.data() });
+          const d = doc.data() || {};
+          const uid = d.userId || doc.id;
+          const prev = newestByUser.get(uid);
+          if (!prev || String(d.createdAt || '') >= String(prev.data?.createdAt || '')) {
+            if (prev && prev.data?.status === 'PENDING') {
+              prev.ref
+                .set({ status: 'EXPIRED', updatedAt: FieldValue.serverTimestamp() }, { merge: true })
+                .catch(() => {});
+            }
+            newestByUser.set(uid, { id: doc.id, ref: doc.ref, data: d });
+          } else if (d.status === 'PENDING') {
+            doc.ref
+              .set({ status: 'EXPIRED', updatedAt: FieldValue.serverTimestamp() }, { merge: true })
+              .catch(() => {});
+          }
+        }
+        for (const [ , entry] of newestByUser.entries()) {
+          activeSessions.set(entry.id, entry);
         }
         emitSessions();
         const hasAdded = snap.docChanges().some((c) => c.type === 'added');
         if (hasAdded && activeSessions.size > 0) {
-          setTimeout(tick, 1200);
+          setTimeout(tick, 400);
         }
       },
       (err) => {

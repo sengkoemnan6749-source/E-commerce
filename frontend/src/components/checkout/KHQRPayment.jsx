@@ -116,8 +116,8 @@ export default function KHQRPayment({
       return undefined;
     }
 
-    const intervalMs = 4000;
-    const maxPolls = 160;
+    const intervalMs = 2000;
+    const maxPolls = 320;
     let stopped = false;
     let inFlight = false;
     let pollCount = 0;

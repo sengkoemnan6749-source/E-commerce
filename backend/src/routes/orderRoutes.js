@@ -26,7 +26,7 @@ const khqrCreateLimiter = createRateLimiter({
 const khqrVerifyLimiter = createRateLimiter({
   name: 'payment-khqr-verify',
   windowMs: 60 * 1000,
-  maxRequests: 60,
+  maxRequests: 120,
   blockDurationMs: 3 * 60 * 1000,
 });
 

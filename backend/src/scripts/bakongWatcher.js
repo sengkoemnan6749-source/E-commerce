@@ -105,7 +105,7 @@ function startWatcher() {
   paused = false;
   lastError = null;
   stopWatcherFn = startBakongSettlementWatcher({
-    intervalMs: 2500,
+    intervalMs: 1200,
     onSessionsUpdate: (list) => {
       activeSessions = Array.isArray(list) ? list : [];
     },
