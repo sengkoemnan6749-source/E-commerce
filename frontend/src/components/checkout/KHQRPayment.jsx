@@ -109,16 +109,15 @@ export default function KHQRPayment({
     return () => window.clearInterval(timer);
   }, [session, paidConfirmed, isExpired]);
 
-  // Auto-poll live Bakong verification: 4s for Bakong Gateway, 8s (max 15) for direct NBC API (100 req/day quota)
+  // Auto-poll payment status every 4s (reflects Cambodia watcher or NBC Bakong API settlement) and re-check immediately on tab return
   useEffect(() => {
     const verifyTarget = session?.transactionId || session?.md5Hash;
-    if (!verifyTarget || !session?.liveVerificationEnabled || paidConfirmed || isExpired) {
+    if (!verifyTarget || paidConfirmed || isExpired || awaitingAdmin) {
       return undefined;
     }
 
-    const fastPoll = Boolean(session?.fastPolling);
-    const intervalMs = fastPoll ? 4000 : 8000;
-    const maxPolls = fastPoll ? 150 : 15;
+    const intervalMs = 4000;
+    const maxPolls = 160;
     let stopped = false;
     let inFlight = false;
     let pollCount = 0;
@@ -139,10 +138,6 @@ export default function KHQRPayment({
         if (!stopped && res?.status === 'PAID') {
           setPaidConfirmed(true);
           onPaymentSuccessRef.current?.(res);
-        } else if (!stopped && res?.liveVerificationEnabled === false && res?.telegramVerificationEnabled) {
-          setSession((prev) =>
-            prev ? { ...prev, liveVerificationEnabled: false, telegramVerificationEnabled: true } : prev
-          );
         }
       } catch {
         // Silent retry on next poll tick
@@ -167,7 +162,7 @@ export default function KHQRPayment({
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('focus', onVisible);
     };
-  }, [session, paidConfirmed, isExpired]);
+  }, [session, paidConfirmed, isExpired, awaitingAdmin]);
 
   // Fast 2.5s polling while awaiting Admin 1-Tap Confirm on Telegram Order Bot
   useEffect(() => {
@@ -409,13 +404,12 @@ export default function KHQRPayment({
               )}
               <Clock className="w-3 h-3 text-red-500" />
               <span>{mins}:{secs}</span>
-              {session.liveVerificationEnabled && (
+              {!awaitingAdmin ? (
                 <span className="ml-1 inline-flex items-center gap-1 text-slate-700 font-sans font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   {language === 'km' ? 'រង់ចាំទូទាត់ (ផ្ទៀងផ្ទាត់ស្វ័យប្រវត្តិ)' : 'Auto-checking'}
                 </span>
-              )}
-              {!session.liveVerificationEnabled && awaitingAdmin && (
+              ) : (
                 <span className="ml-1 inline-flex items-center gap-1 text-slate-700 font-sans font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-700 animate-pulse" />
                   {language === 'km' ? 'រង់ចាំបញ្ជាក់លើ Telegram' : 'Waiting Telegram'}

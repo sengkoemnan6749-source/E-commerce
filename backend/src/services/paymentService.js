@@ -113,6 +113,68 @@ async function finalizePaidSession(
   });
 }
 
+async function trySettleFromBakongApiResult(
+  firestore,
+  paymentRef,
+  paymentData,
+  apiResult,
+  config,
+  { req = null, user = null, providerLabel = 'Bakong' } = {}
+) {
+  if (apiResult?.responseCode !== 0 || !apiResult?.data) {
+    return null;
+  }
+
+  const checked = await validateAmountAndCurrencyMatch(
+    paymentData,
+    apiResult.data.amount,
+    apiResult.data.currency || paymentData.currency,
+    { req, user, providerLabel }
+  );
+
+  if (
+    apiResult.data.toAccountId &&
+    String(apiResult.data.toAccountId).trim().toLowerCase() !== config.accountId.toLowerCase()
+  ) {
+    await reportPaymentSecurityIncident(req || user, {
+      reason: 'PAYMENT_RECIPIENT_MISMATCH',
+      transactionId: paymentData.transactionId,
+      details: `Bakong destination ${apiResult.data.toAccountId} does not match ${config.accountId}`,
+    });
+    throw new AppError('Payment destination account mismatch.', 403, 'PAYMENT_RECIPIENT_MISMATCH');
+  }
+
+  const autoDetectedPayer = String(
+    apiResult.data.fromAccountName ||
+      apiResult.data.senderName ||
+      apiResult.data.payerName ||
+      apiResult.data.accountName ||
+      apiResult.data.fromAccountId ||
+      ''
+  )
+    .trim()
+    .slice(0, 80);
+
+  const bakongData = {
+    hash: apiResult.data.hash || null,
+    fromAccountId: apiResult.data.fromAccountId || null,
+    fromAccountName: autoDetectedPayer || null,
+    toAccountId: apiResult.data.toAccountId || null,
+    externalRef: apiResult.data.externalRef || null,
+    paidAmount: checked.paidAmount,
+    currency: checked.currency,
+  };
+
+  const verifiedRecord = await finalizePaidSession(firestore, paymentRef, paymentData, {
+    verifiedBy: 'bakong_api',
+    paidAt: new Date().toISOString(),
+    payerAccountName: autoDetectedPayer || null,
+    bakongData,
+  });
+
+  return { settled: true, verifiedRecord, bakongData };
+}
+
 async function checkBakongTransactionByMd5(md5Hash, config) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
@@ -484,63 +546,28 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
     throw new AppError('This KHQR code has expired. Please generate a new QR code.', 400, 'PAYMENT_EXPIRED');
   }
 
-  if (config.token || config.gatewayUrl) {
+  const shouldSkipPollGateway =
+    mode === 'poll' && paymentData.mode === 'telegram_verified' && !config.token;
+
+  if (!shouldSkipPollGateway && (config.token || config.gatewayUrl)) {
     let gatewayFallbackTriggered = false;
     try {
       const apiResult = config.token
         ? await checkBakongTransactionByMd5(paymentData.md5Hash, config)
         : await checkBakongViaGateway(paymentData.md5Hash, config.gatewayUrl);
 
-      if (apiResult?.responseCode === 0 && apiResult?.data) {
-        const checked = await validateAmountAndCurrencyMatch(
-          paymentData,
-          apiResult.data.amount,
-          apiResult.data.currency || paymentData.currency,
-          { req, user, providerLabel: 'Bakong' }
-        );
-
-        if (
-          apiResult.data.toAccountId &&
-          String(apiResult.data.toAccountId).trim().toLowerCase() !== config.accountId.toLowerCase()
-        ) {
-          await reportPaymentSecurityIncident(req || user, {
-            reason: 'PAYMENT_RECIPIENT_MISMATCH',
-            transactionId: paymentData.transactionId,
-            details: `Bakong destination ${apiResult.data.toAccountId} does not match ${config.accountId}`,
-          });
-          throw new AppError('Payment destination account mismatch.', 403, 'PAYMENT_RECIPIENT_MISMATCH');
-        }
-
-        const autoDetectedPayer = String(
-          apiResult.data.fromAccountName ||
-            apiResult.data.senderName ||
-            apiResult.data.payerName ||
-            apiResult.data.accountName ||
-            apiResult.data.fromAccountId ||
-            ''
-        )
-          .trim()
-          .slice(0, 80);
-
-        const bakongData = {
-          hash: apiResult.data.hash || null,
-          fromAccountId: apiResult.data.fromAccountId || null,
-          fromAccountName: autoDetectedPayer || null,
-          toAccountId: apiResult.data.toAccountId || null,
-          externalRef: apiResult.data.externalRef || null,
-          paidAmount: checked.paidAmount,
-          currency: checked.currency,
-        };
-        const verifiedRecord = await finalizePaidSession(firestore, paymentSnap.ref, paymentData, {
-          verifiedBy: 'bakong_api',
-          paidAt: new Date().toISOString(),
-          payerAccountName: autoDetectedPayer || null,
-          bakongData,
-        });
-
+      const settled = await trySettleFromBakongApiResult(
+        firestore,
+        paymentSnap.ref,
+        paymentData,
+        apiResult,
+        config,
+        { req, user, providerLabel: 'Bakong' }
+      );
+      if (settled) {
         return {
-          ...formatPaidReceipt(verifiedRecord),
-          bakongData,
+          ...formatPaidReceipt(settled.verifiedRecord),
+          bakongData: settled.bakongData,
         };
       }
 
@@ -587,6 +614,18 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
   const telegramReady = await isOrderTelegramReady();
   if (telegramReady) {
     if (mode === 'poll') {
+      if (paymentData.status !== 'AWAITING_ADMIN') {
+        return {
+          success: false,
+          status: 'PENDING',
+          provider: 'bakong',
+          liveVerificationEnabled: false,
+          telegramVerificationEnabled: true,
+          transactionId: paymentData.transactionId,
+          md5Hash: paymentData.md5Hash,
+          message: 'Waiting for Bakong payment confirmation.',
+        };
+      }
       await pollOrderPaymentCallbacks();
       const refreshedSnap = await paymentSnap.ref.get();
       const latestData = refreshedSnap.exists ? refreshedSnap.data() : paymentData;
@@ -697,5 +736,115 @@ export async function processCardPayment(_payload = {}, user = null, req = null)
     403,
     'CARD_PAYMENT_DISABLED'
   );
+}
+
+let watcherStop = null;
+
+/**
+ * Watches Firestore KHQR sessions via real-time onSnapshot and settles payments from a Cambodia-reachable IP.
+ */
+export function startBakongSettlementWatcher({ intervalMs = 2500 } = {}) {
+  if (watcherStop) return watcherStop;
+
+  const firestore = ensureDb();
+  const config = getBakongConfig();
+  if (!config.gatewayUrl && !config.token) {
+    return () => {};
+  }
+
+  const activeSessions = new Map();
+  const inFlightIds = new Set();
+
+  const checkEntry = async (id, entry) => {
+    if (inFlightIds.has(id)) return;
+    const data = entry.data || {};
+
+    if (data.expiresAt && Date.now() > Date.parse(data.expiresAt) + 2 * 60 * 1000) {
+      await entry.ref
+        .set({ status: 'EXPIRED', updatedAt: FieldValue.serverTimestamp() }, { merge: true })
+        .catch(() => {});
+      activeSessions.delete(id);
+      return;
+    }
+
+    if (!data.md5Hash) return;
+
+    inFlightIds.add(id);
+    try {
+      let apiResult = null;
+      if (config.token) {
+        apiResult = await checkBakongTransactionByMd5(data.md5Hash, config);
+      } else {
+        try {
+          apiResult = await checkBakongViaGateway(data.md5Hash, config.gatewayUrl);
+        } catch (gwErr) {
+          if (config.token) {
+            apiResult = await checkBakongTransactionByMd5(data.md5Hash, config);
+          } else {
+            throw gwErr;
+          }
+        }
+      }
+
+      const settled = await trySettleFromBakongApiResult(
+        firestore,
+        entry.ref,
+        data,
+        apiResult,
+        config,
+        { providerLabel: 'Bakong Auto-Verify' }
+      );
+      if (settled) {
+        console.log(`[Bakong Auto-Verify] Settled ${id} (${data.amount} ${data.currency})`);
+        activeSessions.delete(id);
+      }
+    } catch (err) {
+      if (
+        err?.code === 'PAYMENT_RECIPIENT_MISMATCH' ||
+        err?.code === 'PAYMENT_AMOUNT_MISMATCH' ||
+        err?.code === 'PAYMENT_CURRENCY_MISMATCH' ||
+        err?.code === 'UNDERPAID'
+      ) {
+        console.warn(`[Bakong Auto-Verify] Security mismatch on ${id}: ${err.message}`);
+        activeSessions.delete(id);
+      }
+    } finally {
+      inFlightIds.delete(id);
+    }
+  };
+
+  const tick = () => {
+    if (activeSessions.size === 0) return;
+    for (const [id, entry] of activeSessions.entries()) {
+      void checkEntry(id, entry);
+    }
+  };
+
+  const unsubscribe = firestore
+    .collection('payments')
+    .where('status', 'in', ['PENDING', 'AWAITING_ADMIN'])
+    .onSnapshot(
+      (snap) => {
+        activeSessions.clear();
+        for (const doc of snap.docs) {
+          activeSessions.set(doc.id, { id: doc.id, ref: doc.ref, data: doc.data() });
+        }
+        const hasAdded = snap.docChanges().some((c) => c.type === 'added');
+        if (hasAdded && activeSessions.size > 0) {
+          setTimeout(tick, 1200);
+        }
+      },
+      (err) => {
+        console.warn('[Bakong Watcher Snapshot Error]', err?.message || err);
+      }
+    );
+
+  const timer = setInterval(tick, intervalMs);
+  watcherStop = () => {
+    clearInterval(timer);
+    unsubscribe();
+    watcherStop = null;
+  };
+  return watcherStop;
 }
 
