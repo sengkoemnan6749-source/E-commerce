@@ -71,13 +71,29 @@ function setAutoStart(enabled) {
   if (process.platform !== 'win32' || IS_CLOUD) return false;
   if (enabled) {
     fs.mkdirSync(STARTUP_DIR, { recursive: true });
-    const escapedPs1 = KEEP_ALIVE_PS1.replace(/"/g, '""');
+    // Path without the drive letter so removable drives (USB) still work if the letter changes.
+    const relPs1 = KEEP_ALIVE_PS1.slice(path.parse(KEEP_ALIVE_PS1).root.length - 1).replace(/"/g, '""');
     const vbs = [
-      'Set WshShell = CreateObject("WScript.Shell")',
-      `WshShell.Run "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""${escapedPs1}""", 0, False`,
+      'Set fso = CreateObject("Scripting.FileSystemObject")',
+      'Set sh = CreateObject("WScript.Shell")',
+      `rel = "${relPs1}"`,
+      'Do',
+      '  On Error Resume Next',
+      '  For Each d In fso.Drives',
+      '    If d.IsReady Then',
+      '      p = d.DriveLetter & ":" & rel',
+      '      If fso.FileExists(p) Then',
+      '        sh.Run "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File """ & p & """", 0, False',
+      '        WScript.Quit',
+      '      End If',
+      '    End If',
+      '  Next',
+      '  On Error GoTo 0',
+      '  WScript.Sleep 5000',
+      'Loop',
       '',
     ].join('\r\n');
-    fs.writeFileSync(STARTUP_VBS_PATH, vbs, 'utf8');
+    fs.writeFileSync(STARTUP_VBS_PATH, vbs, 'ascii');
   } else if (fs.existsSync(STARTUP_VBS_PATH)) {
     fs.unlinkSync(STARTUP_VBS_PATH);
   }
