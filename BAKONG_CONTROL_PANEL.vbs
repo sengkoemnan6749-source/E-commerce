@@ -5,9 +5,23 @@ Set WshShell = CreateObject("WScript.Shell")
 
 ' Ensure background watcher supervisor is running invisibly
 WshShell.Run "wscript.exe """ & silentStart & """", 0, False
-WScript.Sleep 1500
 
 url = "http://127.0.0.1:5055"
+statusUrl = url & "/api/status"
+
+On Error Resume Next
+For i = 1 To 20
+    Set http = CreateObject("MSXML2.XMLHTTP")
+    http.Open "GET", statusUrl, False
+    http.Send
+    If Err.Number = 0 And http.Status = 200 Then
+        Exit For
+    End If
+    Err.Clear
+    WScript.Sleep 400
+Next
+On Error GoTo 0
+
 edge64 = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 edge = "C:\Program Files\Microsoft\Edge\Application\msedge.exe"
 chrome = "C:\Program Files\Google\Chrome\Application\chrome.exe"
