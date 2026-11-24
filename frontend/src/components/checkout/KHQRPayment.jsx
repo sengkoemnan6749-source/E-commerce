@@ -109,26 +109,28 @@ export default function KHQRPayment({
     return () => window.clearInterval(timer);
   }, [session, paidConfirmed, isExpired]);
 
-  // Auto-poll live gateway verification: 4s for LuyRiel / Bakong Gateway, 8s (max 15) for direct NBC API (100 req/day quota)
+  // Auto-poll live Bakong verification: 4s for Bakong Gateway, 8s (max 15) for direct NBC API (100 req/day quota)
   useEffect(() => {
     const verifyTarget = session?.transactionId || session?.md5Hash;
     if (!verifyTarget || !session?.liveVerificationEnabled || paidConfirmed || isExpired) {
       return undefined;
     }
 
-    const fastPoll = Boolean(session?.fastPolling || session?.provider === 'luyriel');
+    const fastPoll = Boolean(session?.fastPolling);
     const intervalMs = fastPoll ? 4000 : 8000;
     const maxPolls = fastPoll ? 150 : 15;
     let stopped = false;
+    let inFlight = false;
     let pollCount = 0;
 
-    const pollId = window.setInterval(async () => {
-      if (stopped || document.visibilityState !== 'visible') return;
+    const runPoll = async () => {
+      if (stopped || inFlight || document.visibilityState !== 'visible') return;
       pollCount += 1;
       if (pollCount > maxPolls) {
         window.clearInterval(pollId);
         return;
       }
+      inFlight = true;
       try {
         const res = await paymentService.verifyKHQRPayment(verifyTarget, {
           amount: session.amount,
@@ -144,12 +146,26 @@ export default function KHQRPayment({
         }
       } catch {
         // Silent retry on next poll tick
+      } finally {
+        inFlight = false;
       }
-    }, intervalMs);
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        runPoll();
+      }
+    };
+
+    const pollId = window.setInterval(runPoll, intervalMs);
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
 
     return () => {
       stopped = true;
       window.clearInterval(pollId);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
     };
   }, [session, paidConfirmed, isExpired]);
 
@@ -298,16 +314,10 @@ export default function KHQRPayment({
             <span className="bg-white text-red-600 px-1.5 py-0.5 rounded font-black text-xs">
               KHQR
             </span>
-            <span>{session?.provider === 'luyriel' ? 'ABA PAYWAY' : 'BAKONG'}</span>
+            <span>BAKONG</span>
           </div>
           <span className="text-[10px] font-semibold tracking-wide uppercase text-red-100">
-            {session?.provider === 'luyriel'
-              ? language === 'km'
-                ? 'ស្វ័យប្រវត្តិ (Tag 99)'
-                : 'Auto Verify'
-              : language === 'km'
-              ? 'ស្តង់ដារ NBC'
-              : 'NBC Standard'}
+            {language === 'km' ? 'ស្តង់ដារ NBC' : 'NBC Standard'}
           </span>
         </div>
 
@@ -420,8 +430,8 @@ export default function KHQRPayment({
       <div className="w-full max-w-xs space-y-3">
         <p className="text-[11px] text-slate-500 leading-relaxed">
           {language === 'km'
-            ? 'គាំទ្រ Bakong · ABA · Wing · ACLEDA · Sathapana · Canadia'
-            : 'Supports Bakong · ABA · Wing · ACLEDA · Sathapana · Canadia'}
+            ? 'ស្កេនកូដ Bakong KHQR ដោយប្រើកម្មវិធី Bakong ឬធនាគារដៃគូ KHQR'
+            : 'Scan Bakong KHQR with Bakong or any KHQR banking app'}
         </p>
 
         <div className="flex items-center justify-center gap-2">

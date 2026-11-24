@@ -5,7 +5,6 @@ import {
   getActivePromos,
   getMyOrders,
   getOrderById,
-  luyrielPaymentWebhook,
   processCardPayment,
   telegramPaymentWebhook,
   validatePromo,
@@ -72,7 +71,6 @@ router.get('/orders/:id', orderLookupLimiter, optionalFirebaseToken, getOrderByI
 router.post('/payments/khqr', verifyFirebaseToken, requireUser2fa, khqrCreateLimiter, createKhqrPayment);
 router.post('/payments/khqr/verify', verifyFirebaseToken, requireUser2fa, khqrVerifyLimiter, verifyKhqrPayment);
 router.post('/payments/khqr/telegram-webhook', telegramPaymentWebhook);
-router.post('/payments/khqr/luyriel-webhook', luyrielPaymentWebhook);
 router.post('/payments/card', verifyFirebaseToken, cardDisabledLimiter, processCardPayment);
 
 export default router;

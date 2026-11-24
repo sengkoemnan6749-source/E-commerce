@@ -232,10 +232,6 @@ export default function Checkout() {
         paymentMethod:
           Number(total || 0) <= 0
             ? 'Promo / Free Checkout ($0.00)'
-            : paymentResult?.provider === 'luyriel' || String(paymentResult?.verifiedBy || '').startsWith('luyriel')
-            ? paymentResult?.currency === 'KHR'
-              ? 'ABA PayWay KHQR (KHR)'
-              : 'ABA PayWay KHQR'
             : paymentResult?.currency === 'KHR'
             ? 'KHQR Bakong (KHR)'
             : 'KHQR Bakong',

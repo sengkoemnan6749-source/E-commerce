@@ -145,18 +145,6 @@ export async function telegramPaymentWebhook(req, res) {
   return res.json({ ok: true });
 }
 
-export async function luyrielPaymentWebhook(req, res, next) {
-  try {
-    const result = await paymentService.processLuyrielWebhook(req);
-    if (!result?.verified) {
-      return res.status(403).json({ received: false, error: 'Forbidden' });
-    }
-    return res.json({ received: true, ...result });
-  } catch (error) {
-    return next(error);
-  }
-}
-
 export async function processCardPayment(req, res, next) {
   try {
     const receipt = await paymentService.processCardPayment(req.body, req.user, req);

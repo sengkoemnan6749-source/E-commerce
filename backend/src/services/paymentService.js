@@ -12,18 +12,12 @@ import {
   verifyPaymentProof,
 } from './paymentSecurity.js';
 import {
-  createLuyrielPayment,
-  getLuyrielConfig,
-  getLuyrielPaymentStatus,
-  verifyLuyrielWebhookSignature,
-} from './luyrielService.js';
-import {
   isOrderTelegramReady,
   pollOrderPaymentCallbacks,
   sendOrderPaymentVerificationPrompt,
 } from './telegramService.js';
 
-const ALLOWED_VERIFIERS = ['bakong_api', 'telegram_admin', 'luyriel_api', 'luyriel_webhook'];
+const ALLOWED_VERIFIERS = ['bakong_api', 'telegram_admin'];
 
 function ensureDb() {
   if (!db) {
@@ -47,12 +41,6 @@ function getBakongConfig() {
       .replace(/\/+$/, ''),
     token: String(process.env.BAKONG_TOKEN || '').trim(),
   };
-}
-
-function resolveKhqrProvider(luyrielConfig) {
-  const configured = String(process.env.KHQR_PROVIDER || 'bakong').trim().toLowerCase();
-  if (configured === 'luyriel' && luyrielConfig.apiKey) return 'luyriel';
-  return 'bakong';
 }
 
 async function validateAmountAndCurrencyMatch(
@@ -95,7 +83,7 @@ async function finalizePaidSession(
   firestore,
   paymentRef,
   fallbackData,
-  { verifiedBy, paidAt, payerAccountName = null, bakongData = null, luyrielData = null }
+  { verifiedBy, paidAt, payerAccountName = null, bakongData = null }
 ) {
   return firestore.runTransaction(async (tx) => {
     const fresh = await tx.get(paymentRef);
@@ -110,7 +98,6 @@ async function finalizePaidSession(
       verifiedBy,
       payerAccountName: payerAccountName || cur.payerAccountName || null,
       ...(bakongData ? { bakongData } : {}),
-      ...(luyrielData ? { luyrielData } : {}),
       paidAt: effectivePaidAt,
       verificationProof: signPaymentProof({
         ...cur,
@@ -124,69 +111,6 @@ async function finalizePaidSession(
     tx.set(paymentRef, updates, { merge: true });
     return { ...cur, ...updates };
   });
-}
-
-async function findLuyrielPaymentSnap(firestore, { orderRefId = '', luyrielId = '' } = {}) {
-  const cleanOrderId = String(orderRefId || '').trim();
-  const cleanLuyrielId = String(luyrielId || '').trim();
-
-  if (cleanOrderId.startsWith('KHQR-')) {
-    const candidate = await firestore.collection('payments').doc(cleanOrderId).get();
-    if (candidate.exists) return candidate;
-  }
-  if (cleanLuyrielId) {
-    const query = await firestore
-      .collection('payments')
-      .where('luyrielPaymentId', '==', cleanLuyrielId)
-      .limit(1)
-      .get();
-    if (!query.empty) return query.docs[0];
-  }
-  return null;
-}
-
-async function settleLuyrielFromRemote(
-  firestore,
-  paymentSnap,
-  paymentData,
-  remote,
-  { req = null, user = null, verifiedBy = 'luyriel_api', providerLabel = 'LuyRiel', eventName = null } = {}
-) {
-  const checked = await validateAmountAndCurrencyMatch(
-    paymentData,
-    remote?.amount ?? paymentData.amount,
-    remote?.currency || paymentData.currency,
-    { req, user, providerLabel }
-  );
-
-  const luyrielData = {
-    paymentId: remote?.id || paymentData.luyrielPaymentId || null,
-    hash: remote?.hash || null,
-    paidAmount: checked.paidAmount,
-    currency: checked.currency,
-    paidAt: remote?.paidAt || null,
-    ...(eventName ? { event: eventName } : {}),
-  };
-
-  const verifiedRecord = await finalizePaidSession(firestore, paymentSnap.ref, paymentData, {
-    verifiedBy,
-    paidAt: remote?.paidAt || new Date().toISOString(),
-    luyrielData,
-  });
-
-  return { verifiedRecord, luyrielData, checked };
-}
-
-function isLuyrielPaidStatus(status) {
-  const s = String(status || '').trim().toUpperCase();
-  return s === 'PAID' || s === 'SUCCEEDED' || s === 'COMPLETED';
-}
-
-async function reportIncidentBounded(reqOrUser, details, timeoutMs = 1200) {
-  await Promise.race([
-    reportPaymentSecurityIncident(reqOrUser, details).catch(() => {}),
-    new Promise((resolve) => setTimeout(resolve, timeoutMs)),
-  ]);
 }
 
 async function checkBakongTransactionByMd5(md5Hash, config) {
@@ -316,7 +240,7 @@ async function checkBakongViaGateway(md5Hash, gatewayUrl) {
 }
 
 /**
- * Generates an official EMVCo KHQR payload (via LuyRiel PayWay API or local Bakong generator) & PNG QR Data URL locked to server pricing.
+ * Generates an official EMVCo Bakong KHQR payload & PNG QR Data URL locked to server pricing.
  */
 export async function initiateKhqrPayment(payload = {}, user = null) {
   const firestore = ensureDb();
@@ -325,8 +249,6 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
   }
 
   const config = getBakongConfig();
-  const luyrielConfig = getLuyrielConfig();
-  const activeProvider = resolveKhqrProvider(luyrielConfig);
   const currency = payload.currency === 'KHR' ? 'KHR' : 'USD';
 
   if (!Array.isArray(payload.items) || payload.items.length === 0) {
@@ -362,75 +284,55 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
   let khqrString;
   let md5Hash;
   let deeplink = null;
-  let luyrielPaymentId = null;
-  let accountLabel = config.accountId;
+  let generatedViaGateway = false;
 
-  if (activeProvider === 'luyriel') {
-    const luyrielResult = await createLuyrielPayment({
-      amount: normalizedAmount,
-      currency,
-      orderId: transactionId,
-      description: `TechTonic Store Order ${billNumber}`,
-    });
-    khqrString = luyrielResult.khqrString;
-    md5Hash = luyrielResult.md5Hash || null;
-    luyrielPaymentId = luyrielResult.luyrielPaymentId;
-    accountLabel = luyrielConfig.merchantLabel || 'ABA PayWay KHQR';
-
-    const parsedExpiry = luyrielResult.expiresAt ? Date.parse(luyrielResult.expiresAt) : NaN;
-    if (Number.isFinite(parsedExpiry) && parsedExpiry > Date.now() + 15000) {
-      expiresAt = new Date(parsedExpiry).toISOString();
-    }
-  } else {
-    let generatedViaGateway = false;
-    if (config.gatewayUrl) {
-      try {
-        const gwResult = await generateBakongViaGateway(config, {
-          amount: normalizedAmount,
-          currency,
-          billNumber,
-        });
-        khqrString = gwResult.khqrString;
-        md5Hash = gwResult.md5Hash;
-        deeplink = gwResult.deeplink || null;
-        if (gwResult.expirationTimestamp && gwResult.expirationTimestamp > Date.now() + 15000) {
-          expiresAt = new Date(gwResult.expirationTimestamp).toISOString();
-        }
-        generatedViaGateway = true;
-      } catch (err) {
-        console.warn('[Bakong Gateway Generate Fallback]', err?.message || 'Using local BakongKHQR generator');
+  if (!config.token && config.gatewayUrl) {
+    try {
+      const gwResult = await generateBakongViaGateway(config, {
+        amount: normalizedAmount,
+        currency,
+        billNumber,
+      });
+      khqrString = gwResult.khqrString;
+      md5Hash = gwResult.md5Hash;
+      deeplink = gwResult.deeplink || null;
+      if (gwResult.expirationTimestamp && gwResult.expirationTimestamp > Date.now() + 15000) {
+        expiresAt = new Date(gwResult.expirationTimestamp).toISOString();
       }
+      generatedViaGateway = true;
+    } catch (err) {
+      console.warn('[Bakong Gateway Generate Fallback]', err?.message || 'Using local BakongKHQR generator');
     }
+  }
 
-    if (!generatedViaGateway) {
-      const khqrCurrency = currency === 'KHR' ? khqrData.currency.khr : khqrData.currency.usd;
-      const individualInfo = new IndividualInfo(
-        config.accountId,
-        config.merchantName,
-        config.merchantCity,
-        {
-          currency: khqrCurrency,
-          amount: normalizedAmount,
-          billNumber,
-          storeLabel: 'TechTonic Store',
-          terminalLabel: 'TechTonic Store',
-          purposeOfTransaction: 'TechTonic Store',
-          expirationTimestamp: expiresMs,
-        }
+  if (!generatedViaGateway) {
+    const khqrCurrency = currency === 'KHR' ? khqrData.currency.khr : khqrData.currency.usd;
+    const individualInfo = new IndividualInfo(
+      config.accountId,
+      config.merchantName,
+      config.merchantCity,
+      {
+        currency: khqrCurrency,
+        amount: normalizedAmount,
+        billNumber,
+        storeLabel: 'TechTonic Store',
+        terminalLabel: 'TechTonic Store',
+        purposeOfTransaction: 'TechTonic Store',
+        expirationTimestamp: expiresMs,
+      }
+    );
+
+    const generated = new BakongKHQR().generateIndividual(individualInfo);
+    if (generated?.status?.code !== 0 || !generated?.data?.qr || !generated?.data?.md5) {
+      throw new AppError(
+        generated?.status?.message || 'Failed to generate official Bakong KHQR payload',
+        500,
+        'KHQR_GENERATION_FAILED'
       );
-
-      const generated = new BakongKHQR().generateIndividual(individualInfo);
-      if (generated?.status?.code !== 0 || !generated?.data?.qr || !generated?.data?.md5) {
-        throw new AppError(
-          generated?.status?.message || 'Failed to generate official Bakong KHQR payload',
-          500,
-          'KHQR_GENERATION_FAILED'
-        );
-      }
-
-      khqrString = generated.data.qr;
-      md5Hash = generated.data.md5;
     }
+
+    khqrString = generated.data.qr;
+    md5Hash = generated.data.md5;
   }
 
   const qrDataUrl = await QRCode.toDataURL(khqrString, {
@@ -442,23 +344,21 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
     },
   });
 
-  const isLuyriel = activeProvider === 'luyriel';
-  const hasBakongAutoVerify = !isLuyriel && Boolean(config.token || config.gatewayUrl);
-  const liveVerificationEnabled = isLuyriel || hasBakongAutoVerify;
-  const fastPolling = Boolean(isLuyriel || (!config.token && config.gatewayUrl));
+  const hasBakongAutoVerify = Boolean(config.token || generatedViaGateway);
+  const liveVerificationEnabled = hasBakongAutoVerify;
+  const fastPolling = Boolean(!config.token && generatedViaGateway);
   const record = {
     id: transactionId,
     transactionId,
-    luyrielPaymentId,
     md5Hash,
     billNumber,
     deeplink: deeplink || null,
-    bakongAccountId: accountLabel,
+    bakongAccountId: config.accountId,
     merchantName: config.merchantName,
     orderId: null,
     userId: user.uid,
-    provider: isLuyriel ? 'LuyRiel ABA KHQR' : 'Bakong KHQR',
-    paymentMethod: isLuyriel ? 'ABA PayWay KHQR (LuyRiel)' : 'Bakong KHQR (ABA / Wing / ACLEDA)',
+    provider: 'Bakong KHQR',
+    paymentMethod: 'Bakong KHQR',
     currency,
     amount: normalizedAmount,
     expectedTotalUsd,
@@ -466,11 +366,9 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
     promoCode: appliedPromoCode,
     khqrString,
     status: 'PENDING',
-    mode: isLuyriel
-      ? 'luyriel'
-      : config.token
+    mode: config.token
       ? 'bakong_live'
-      : config.gatewayUrl
+      : generatedViaGateway
       ? 'bakong_gateway'
       : 'telegram_verified',
     createdAt: nowIso,
@@ -484,20 +382,19 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
 
   return {
     transactionId,
-    luyrielPaymentId,
     md5Hash,
     billNumber,
     khqrString,
     qrDataUrl,
     deeplink: deeplink || null,
-    bakongAccountId: accountLabel,
+    bakongAccountId: config.accountId,
     merchantName: config.merchantName,
     amount: record.amount,
     expectedTotalUsd,
     currency,
     status: 'PENDING',
     expiresAt,
-    provider: isLuyriel ? 'luyriel' : 'bakong',
+    provider: 'bakong',
     fastPolling,
     liveVerificationEnabled,
     telegramVerificationEnabled: telegramReady,
@@ -505,7 +402,7 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
 }
 
 /**
- * Verifies a KHQR payment strictly via LuyRiel PayWay API/Webhook, NBC Bakong API, or signed Telegram Admin confirmation (fail-closed).
+ * Verifies a Bakong KHQR payment strictly via NBC Bakong API / Bakong gateway or signed Telegram Admin confirmation (fail-closed).
  */
 export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
   const firestore = ensureDb();
@@ -555,12 +452,10 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
     verifiedBy: data.verifiedBy,
     verifiedByTelegramUser: data.verifiedByTelegramUser || null,
     payerAccountName: data.payerAccountName || payload.payerAccountName || null,
-    provider: data.mode === 'luyriel' ? 'luyriel' : 'bakong',
-    liveVerificationEnabled:
-      data.mode === 'luyriel' || data.mode === 'bakong_gateway' || Boolean(config.token),
+    provider: 'bakong',
+    liveVerificationEnabled: data.mode === 'bakong_gateway' || Boolean(config.token),
     telegramVerificationEnabled: data.verifiedBy === 'telegram_admin',
     transactionId: data.transactionId,
-    luyrielPaymentId: data.luyrielPaymentId || null,
     md5Hash: data.md5Hash,
     paymentMethod: data.paymentMethod,
     amount: data.amount,
@@ -587,50 +482,6 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
       { merge: true }
     );
     throw new AppError('This KHQR code has expired. Please generate a new QR code.', 400, 'PAYMENT_EXPIRED');
-  }
-
-  if (paymentData.mode === 'luyriel' && paymentData.luyrielPaymentId) {
-    const remote = await getLuyrielPaymentStatus(paymentData.luyrielPaymentId);
-    if (isLuyrielPaidStatus(remote.status)) {
-      const { verifiedRecord, luyrielData } = await settleLuyrielFromRemote(
-        firestore,
-        paymentSnap,
-        paymentData,
-        remote,
-        { req, user, verifiedBy: 'luyriel_api', providerLabel: 'LuyRiel' }
-      );
-
-      return {
-        ...formatPaidReceipt(verifiedRecord),
-        luyrielData,
-      };
-    }
-
-    if (remote.status === 'EXPIRED' || remote.status === 'CANCELLED' || remote.status === 'FAILED') {
-      await paymentSnap.ref.set(
-        { status: 'EXPIRED', updatedAt: FieldValue.serverTimestamp() },
-        { merge: true }
-      );
-      throw new AppError('This KHQR payment has expired. Please generate a new QR code.', 400, 'PAYMENT_EXPIRED');
-    }
-
-    if (mode === 'poll') {
-      return {
-        success: false,
-        status: 'PENDING',
-        provider: 'luyriel',
-        liveVerificationEnabled: true,
-        transactionId: paymentData.transactionId,
-        md5Hash: paymentData.md5Hash,
-        message: 'Waiting for ABA PayWay KHQR confirmation via LuyRiel.',
-      };
-    }
-
-    throw new AppError(
-      'Payment has not been confirmed yet. Please scan and complete payment in your banking app first.',
-      402,
-      'PAYMENT_PENDING'
-    );
   }
 
   if (config.token || config.gatewayUrl) {
@@ -823,157 +674,13 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
     reason: 'PAYMENT_VERIFIER_UNAVAILABLE',
     transactionId: paymentData.transactionId,
     severity: 'warning',
-    details: 'KHQR verification requested while neither LuyRiel, Bakong API, nor Telegram verifier was ready (blocked fail-closed)',
+    details: 'KHQR verification requested while neither Bakong API nor Telegram verifier was ready (blocked fail-closed)',
   });
   throw new AppError(
     'Payment verification service is currently unavailable. Please contact support before retrying.',
     503,
     'PAYMENT_VERIFICATION_UNAVAILABLE'
   );
-}
-
-/**
- * Verifies signed HMAC-SHA512 webhook events from LuyRiel and atomically marks matching KHQR sessions as PAID.
- */
-export async function processLuyrielWebhook(req) {
-  const firestore = ensureDb();
-  const { webhookSecret, apiKey } = getLuyrielConfig();
-  const signature = req.headers?.['x-signature'] || '';
-  const rawPayload = req.rawBody ?? JSON.stringify(req.body || {});
-  const payload = req.body && typeof req.body === 'object' ? req.body : {};
-  const eventName = String(payload.event || '').trim().toLowerCase();
-  const eventData = payload.data && typeof payload.data === 'object' ? payload.data : payload;
-  const remoteStatus = String(eventData.status || '').trim().toUpperCase();
-  const luyrielId = String(eventData.id || eventData.payment_id || '').trim();
-  const orderRefId = String(eventData.order_id || '').trim();
-
-  if (webhookSecret) {
-    if (!verifyLuyrielWebhookSignature(rawPayload, signature, webhookSecret)) {
-      await reportIncidentBounded(req, {
-        reason: 'LUYRIEL_WEBHOOK_SPOOF_BLOCKED',
-        severity: 'critical',
-        details: 'Rejected unverified POST to /payments/khqr/luyriel-webhook (invalid or missing X-Signature)',
-      });
-      return { verified: false };
-    }
-
-    if (eventName === 'webhook.test' || eventName === 'test') {
-      return { verified: true, handled: true, test: true };
-    }
-
-    const isPaidEvent =
-      eventName === 'payment.paid' ||
-      eventName === 'payment.succeeded' ||
-      isLuyrielPaidStatus(remoteStatus);
-
-    if (!isPaidEvent) {
-      return { verified: true, handled: false, reason: 'NON_PAID_EVENT' };
-    }
-
-    const paymentSnap = await findLuyrielPaymentSnap(firestore, { orderRefId, luyrielId });
-    if (!paymentSnap) {
-      return { verified: true, handled: false, reason: 'PAYMENT_SESSION_NOT_FOUND' };
-    }
-
-    const paymentData = paymentSnap.data() || {};
-    if (paymentData.status === 'PAID' && verifyPaymentProof(paymentData)) {
-      return { verified: true, handled: true, alreadyPaid: true, transactionId: paymentData.transactionId };
-    }
-
-    const { luyrielData, checked } = await settleLuyrielFromRemote(
-      firestore,
-      paymentSnap,
-      paymentData,
-      {
-        id: luyrielId || paymentData.luyrielPaymentId || null,
-        hash: eventData.hash || null,
-        amount: eventData.amount ?? paymentData.amount,
-        currency: eventData.currency || paymentData.currency,
-        paidAt: eventData.paid_at || payload.created_at || null,
-      },
-      {
-        req,
-        verifiedBy: 'luyriel_webhook',
-        providerLabel: 'LuyRiel Webhook',
-        eventName: eventName || 'payment.paid',
-      }
-    );
-
-    await recordAuditEvent(req, {
-      eventType: 'PAYMENT_KHQR_WEBHOOK_PAID',
-      severity: 'info',
-      targetType: 'payment',
-      targetId: paymentData.transactionId,
-      status: 'SUCCESS',
-      details: `LuyRiel webhook confirmed ${checked.paidAmount} ${checked.currency} (${luyrielData.paymentId || 'webhook'})`,
-    });
-
-    return { verified: true, handled: true, transactionId: paymentData.transactionId };
-  }
-
-  // Zero-trust callback recheck mode when LUYRIEL_WEBHOOK_SECRET is not exposed by provider UI:
-  // never trust request body state; re-query authoritative LuyRiel API only if a matching PENDING session exists.
-  if (!apiKey) {
-    await reportIncidentBounded(req, {
-      reason: 'LUYRIEL_WEBHOOK_UNCONFIGURED',
-      severity: 'warning',
-      details: 'Rejected webhook POST while neither LUYRIEL_WEBHOOK_SECRET nor LUYRIEL_API_KEY was set',
-    });
-    return { verified: false };
-  }
-
-  if (eventName === 'webhook.test' || eventName === 'test') {
-    return { verified: true, handled: false, mode: 'callback_recheck', test: true };
-  }
-
-  const paymentSnap = await findLuyrielPaymentSnap(firestore, { orderRefId, luyrielId });
-  if (!paymentSnap) {
-    return { verified: true, handled: false, mode: 'callback_recheck', reason: 'NO_MATCHING_SESSION' };
-  }
-
-  const paymentData = paymentSnap.data() || {};
-  if (paymentData.mode !== 'luyriel' || !paymentData.luyrielPaymentId) {
-    return { verified: true, handled: false, mode: 'callback_recheck', reason: 'NOT_LUYRIEL_SESSION' };
-  }
-
-  if (paymentData.status === 'PAID' && verifyPaymentProof(paymentData)) {
-    return { verified: true, handled: true, alreadyPaid: true, transactionId: paymentData.transactionId };
-  }
-
-  const liveRemote = await getLuyrielPaymentStatus(paymentData.luyrielPaymentId);
-  if (!isLuyrielPaidStatus(liveRemote.status)) {
-    return {
-      verified: true,
-      handled: false,
-      mode: 'callback_recheck',
-      status: liveRemote.status,
-      transactionId: paymentData.transactionId,
-    };
-  }
-
-  const { luyrielData, checked } = await settleLuyrielFromRemote(
-    firestore,
-    paymentSnap,
-    paymentData,
-    liveRemote,
-    {
-      req,
-      verifiedBy: 'luyriel_api',
-      providerLabel: 'LuyRiel Callback Verification',
-      eventName: eventName || 'payment.paid',
-    }
-  );
-
-  await recordAuditEvent(req, {
-    eventType: 'PAYMENT_KHQR_CALLBACK_VERIFIED',
-    severity: 'info',
-    targetType: 'payment',
-    targetId: paymentData.transactionId,
-    status: 'SUCCESS',
-    details: `LuyRiel callback recheck confirmed ${checked.paidAmount} ${checked.currency} (${luyrielData.paymentId || 'api'})`,
-  });
-
-  return { verified: true, handled: true, mode: 'callback_recheck', transactionId: paymentData.transactionId };
 }
 
 /**

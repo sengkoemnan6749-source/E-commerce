@@ -7,7 +7,7 @@ export default function PaymentMethod({ selectedMethod = 'khqr', onSelectMethod 
   const methods = [
     {
       id: 'khqr',
-      title: language === 'km' ? 'KHQR (បាគង, ABA, Wing, អេស៊ីលីដា)' : 'KHQR (Bakong, ABA, Wing, ACLEDA)',
+      title: language === 'km' ? 'Bakong KHQR (បាគង KHQR)' : 'Bakong KHQR',
       subtitle:
         language === 'km'
           ? 'ស្កេន និងទូទាត់តាមរយៈកម្មវិធីធនាគារកម្ពុជាណាមួយ'

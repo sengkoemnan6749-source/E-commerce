@@ -42,14 +42,7 @@ app.use(
     credentials: true,
   })
 );
-app.use(
-  express.json({
-    limit: '2mb',
-    verify: (req, _res, buf) => {
-      req.rawBody = buf;
-    },
-  })
-);
+app.use(express.json({ limit: '2mb' }));
 app.use(detectSuspiciousRequest);
 app.use('/api', createRateLimiter({ name: 'global-api', windowMs: 60000, maxRequests: 600, blockDurationMs: 60000 }));
 
