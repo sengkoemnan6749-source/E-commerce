@@ -385,6 +385,50 @@ const PANEL_HTML = `<!doctype html>
 const server = http.createServer(async (req, res) => {
   const urlPath = String(req.url || '/').split('?')[0];
 
+  // Local CORS bridge for Flutter Web (flutter run -d chrome on any localhost port)
+  if (urlPath.startsWith('/proxy-api/')) {
+    const reqOrigin = req.headers.origin || '*';
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': reqOrigin,
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization, x-2fa-token',
+      'Access-Control-Allow-Credentials': 'true',
+    };
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, corsHeaders);
+      res.end();
+      return;
+    }
+    try {
+      const targetUrl = 'https://e-commerce-sigma-tawny.vercel.app/api/' + String(req.url || '').slice('/proxy-api/'.length);
+      const chunks = [];
+      for await (const chunk of req) chunks.push(chunk);
+      const rawBody = chunks.length > 0 ? Buffer.concat(chunks) : undefined;
+      const forwardHeaders = {
+        'Accept': 'application/json',
+        'Content-Type': req.headers['content-type'] || 'application/json',
+      };
+      if (req.headers.authorization) forwardHeaders['Authorization'] = req.headers.authorization;
+      if (req.headers['x-2fa-token']) forwardHeaders['x-2fa-token'] = req.headers['x-2fa-token'];
+
+      const upstream = await fetch(targetUrl, {
+        method: req.method,
+        headers: forwardHeaders,
+        body: req.method !== 'GET' && req.method !== 'HEAD' ? rawBody : undefined,
+      });
+      const text = await upstream.text();
+      res.writeHead(upstream.status, {
+        ...corsHeaders,
+        'Content-Type': upstream.headers.get('content-type') || 'application/json; charset=utf-8',
+      });
+      res.end(text);
+    } catch (err) {
+      res.writeHead(502, { ...corsHeaders, 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: err?.message || 'Proxy error' }));
+    }
+    return;
+  }
+
   if (req.method === 'GET' && urlPath === '/healthz') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify({ ok: true, running: !paused }));

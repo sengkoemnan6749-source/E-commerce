@@ -31,11 +31,22 @@ const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000,http:/
   .map(normalizeOrigin)
   .filter(Boolean);
 
+function isAllowedCorsOrigin(origin) {
+  if (!origin) return true;
+  const normalized = normalizeOrigin(origin);
+  if (allowedOrigins.includes(normalized)) return true;
+  // Allow Flutter Web / local dev servers on any localhost port
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(normalized)) {
+    return true;
+  }
+  return false;
+}
+
 app.use(
   cors({
     origin(origin, callback) {
-      // Allow non-browser clients (curl, mobile apps, Postman) with no Origin header.
-      if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
+      // Allow non-browser clients (curl, mobile apps, Postman) and localhost dev ports.
+      if (isAllowedCorsOrigin(origin)) {
         return callback(null, true);
       }
       return callback(new AppError('Origin not allowed by CORS policy', 403, 'CORS_FORBIDDEN'));
