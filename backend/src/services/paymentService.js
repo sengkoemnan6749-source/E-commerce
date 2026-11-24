@@ -790,6 +790,16 @@ export function startBakongSettlementWatcher({
 
     if (!data.md5Hash) return;
 
+    // Avoid poisoning lorndavid.online's 10s L1-RAM cache during the first 8.5s while the customer is still scanning the QR
+    if (
+      !config.token &&
+      data.status !== 'AWAITING_ADMIN' &&
+      data.createdAt &&
+      Date.now() - Date.parse(data.createdAt) < 8500
+    ) {
+      return;
+    }
+
     inFlightIds.add(id);
     try {
       let apiResult = null;
