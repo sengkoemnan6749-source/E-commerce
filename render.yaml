@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: techtonic-bakong-watcher
+    runtime: node
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm run bakong:watch
+    healthCheckPath: /healthz
+    envVars:
+      - key: BAKONG_ACCOUNT_ID
+        value: seng_koemnan@bkrt
+      - key: BAKONG_GATEWAY_URL
+        value: https://lorndavid.online
+      - key: FIREBASE_SERVICE_ACCOUNT_BASE64
+        sync: false
+      - key: PAYMENT_HMAC_SECRET
+        sync: false
+      - key: PANEL_PASSWORD
+        sync: false

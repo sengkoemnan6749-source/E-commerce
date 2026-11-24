@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import crypto from 'node:crypto';
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,7 +8,16 @@ import { fileURLToPath } from 'node:url';
 import { db } from '../config/firebase.js';
 import { startBakongSettlementWatcher } from '../services/paymentService.js';
 
-const PORT = Number(process.env.BAKONG_PANEL_PORT || 5055);
+const IS_CLOUD = Boolean(
+  process.env.RENDER ||
+    process.env.RAILWAY_ENVIRONMENT ||
+    process.env.FLY_APP_NAME ||
+    process.env.HOST === '0.0.0.0'
+);
+const HOST = IS_CLOUD ? '0.0.0.0' : '127.0.0.1';
+const PORT = Number((IS_CLOUD && process.env.PORT) || process.env.BAKONG_PANEL_PORT || 5055);
+const PANEL_PASSWORD = String(process.env.PANEL_PASSWORD || '').trim();
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const KEEP_ALIVE_PS1 = path.join(__dirname, 'keepAliveWatcher.ps1');
 const STARTUP_DIR = path.join(
@@ -28,11 +38,37 @@ let recentSettled = [];
 let lastError = null;
 let lastGatewayCheck = null;
 
+function safeSecretEqual(a, b) {
+  const digestA = crypto.createHash('sha256').update(String(a || '')).digest();
+  const digestB = crypto.createHash('sha256').update(String(b || '')).digest();
+  return crypto.timingSafeEqual(digestA, digestB);
+}
+
+function checkPanelAuth(req, res) {
+  if (!IS_CLOUD || !PANEL_PASSWORD) return true;
+  const header = String(req.headers.authorization || '');
+  if (header.startsWith('Basic ')) {
+    const decoded = Buffer.from(header.slice(6).trim(), 'base64').toString('utf8');
+    const sep = decoded.indexOf(':');
+    const providedPass = sep === -1 ? decoded : decoded.slice(sep + 1);
+    if (safeSecretEqual(providedPass, PANEL_PASSWORD)) {
+      return true;
+    }
+  }
+  res.writeHead(401, {
+    'WWW-Authenticate': 'Basic realm="Bakong Control Panel"',
+    'Content-Type': 'application/json',
+  });
+  res.end(JSON.stringify({ error: 'Authentication required' }));
+  return false;
+}
+
 function isAutoStartEnabled() {
-  return fs.existsSync(STARTUP_VBS_PATH);
+  return process.platform === 'win32' && !IS_CLOUD && fs.existsSync(STARTUP_VBS_PATH);
 }
 
 function setAutoStart(enabled) {
+  if (process.platform !== 'win32' || IS_CLOUD) return false;
   if (enabled) {
     fs.mkdirSync(STARTUP_DIR, { recursive: true });
     const escapedPs1 = KEEP_ALIVE_PS1.replace(/"/g, '""');
@@ -133,13 +169,19 @@ async function preloadRecentSettled() {
   }
 }
 
-function isAllowedLocalPost(req) {
+function isAllowedPost(req) {
   const host = String(req.headers.host || '').toLowerCase();
-  const validHost = host === `127.0.0.1:${PORT}` || host === `localhost:${PORT}`;
-  if (!validHost) return false;
-  const origin = String(req.headers.origin || '').toLowerCase();
-  if (origin && origin !== `http://127.0.0.1:${PORT}` && origin !== `http://localhost:${PORT}`) {
+  if (!host) return false;
+  if (!IS_CLOUD && host !== `127.0.0.1:${PORT}` && host !== `localhost:${PORT}`) {
     return false;
+  }
+  const origin = String(req.headers.origin || '').trim();
+  if (origin) {
+    try {
+      if (new URL(origin).host.toLowerCase() !== host) return false;
+    } catch {
+      return false;
+    }
   }
   return true;
 }
@@ -147,6 +189,8 @@ function isAllowedLocalPost(req) {
 function getStatusPayload() {
   return {
     running: !paused,
+    isCloud: IS_CLOUD,
+    platform: process.platform,
     startedAt,
     autoStart: isAutoStartEnabled(),
     activeSessions,
@@ -199,14 +243,14 @@ const PANEL_HTML = `<!doctype html>
       <div class="row">
         <div>
           <h1 class="title">Bakong KHQR Auto-Verify</h1>
-          <div class="sub">ប្រព័ន្ធផ្ទៀងផ្ទាត់ស្វ័យប្រវត្តិ (Cambodia IP Bridge)</div>
+          <div id="modeSub" class="sub">ប្រព័ន្ធផ្ទៀងផ្ទាត់ស្វ័យប្រវត្តិ (Cambodia IP Bridge)</div>
         </div>
         <span id="statusBadge" class="badge ok"><span class="dot"></span><span id="statusText">Running</span></span>
       </div>
       <div style="margin-top:10px;">
         <div class="kv"><span class="sub">Bakong Account</span><span id="acc" class="mono">-</span></div>
         <div class="kv"><span class="sub">Gateway Status</span><span id="gw" class="mono">-</span></div>
-        <div class="kv"><span class="sub">Windows Auto-Start</span><span id="autostart" class="mono">-</span></div>
+        <div class="kv"><span id="autoLabel" class="sub">Windows Auto-Start</span><span id="autostart" class="mono">-</span></div>
         <div class="kv"><span class="sub">Uptime</span><span id="uptime" class="mono">-</span></div>
       </div>
       <div class="btns">
@@ -234,6 +278,7 @@ const PANEL_HTML = `<!doctype html>
     </div>
   </div>
   <script>
+    let actionError = '';
     const fmtTime = (iso) => iso ? new Date(iso).toLocaleTimeString() : '-';
     const fmtUptime = (startIso) => {
       const s = Math.max(0, Math.floor((Date.now() - Date.parse(startIso)) / 1000));
@@ -251,19 +296,35 @@ const PANEL_HTML = `<!doctype html>
         document.getElementById('btnPause').textContent = d.running ? 'ផ្អាក (Pause)' : 'បន្តដំណើរការ (Resume)';
         document.getElementById('btnPause').className = d.running ? 'warn' : 'primary';
 
+        document.getElementById('modeSub').textContent =
+          'ប្រព័ន្ធផ្ទៀងផ្ទាត់ស្វ័យប្រវត្តិ (' + (d.isCloud ? 'Cloud Watcher' : 'Cambodia IP Bridge') + ')';
         document.getElementById('acc').textContent = d.accountId || '-';
         const gw = d.lastGatewayCheck;
         document.getElementById('gw').textContent = gw
-          ? (gw.ok ? 'OK (' + gw.status + ') @ ' + fmtTime(gw.checkedAt) : 'Blocked/Err (' + gw.status + ')')
+          ? (gw.ok ? 'OK (' + gw.status + ') @ ' + fmtTime(gw.checkedAt) : 'Blocked (' + gw.status + ')')
           : 'Not tested yet';
-        document.getElementById('autostart').textContent = d.autoStart ? 'ON (Run on Boot)' : 'OFF';
-        document.getElementById('btnAuto').textContent = d.autoStart ? 'បិទ Auto-Start (OFF)' : 'បើក Auto-Start (ON)';
+
+        const btnAuto = document.getElementById('btnAuto');
+        const btnPause = document.getElementById('btnPause');
+        if (d.platform !== 'win32' || d.isCloud) {
+          document.getElementById('autoLabel').textContent = 'Host Mode';
+          document.getElementById('autostart').textContent = 'Cloud 24/7 Mode';
+          btnAuto.style.display = 'none';
+          btnPause.style.gridColumn = 'span 2';
+        } else {
+          document.getElementById('autoLabel').textContent = 'Windows Auto-Start';
+          document.getElementById('autostart').textContent = d.autoStart ? 'ON (Run on Boot)' : 'OFF';
+          btnAuto.style.display = '';
+          btnPause.style.gridColumn = '';
+          btnAuto.textContent = d.autoStart ? 'បិទ Auto-Start (OFF)' : 'បើក Auto-Start (ON)';
+        }
         document.getElementById('uptime').textContent = fmtUptime(d.startedAt);
 
         const errBox = document.getElementById('errBox');
-        if (d.lastError && d.lastError.message) {
+        const msg = actionError || (d.lastError && d.lastError.message ? fmtTime(d.lastError.at) + ' — ' + d.lastError.message : '');
+        if (msg) {
           errBox.style.display = 'block';
-          errBox.textContent = fmtTime(d.lastError.at) + ' — ' + d.lastError.message;
+          errBox.textContent = msg;
         } else {
           errBox.style.display = 'none';
         }
@@ -283,7 +344,16 @@ const PANEL_HTML = `<!doctype html>
     }
 
     async function postAction(path) {
-      await fetch(path, { method: 'POST' });
+      actionError = '';
+      const res = await fetch(path, { method: 'POST' });
+      if (!res.ok) {
+        try {
+          const errJson = await res.json();
+          actionError = errJson.error || ('HTTP ' + res.status);
+        } catch {
+          actionError = 'HTTP ' + res.status;
+        }
+      }
       await refresh();
     }
 
@@ -299,6 +369,14 @@ const PANEL_HTML = `<!doctype html>
 const server = http.createServer(async (req, res) => {
   const urlPath = String(req.url || '/').split('?')[0];
 
+  if (req.method === 'GET' && urlPath === '/healthz') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify({ ok: true, running: !paused }));
+    return;
+  }
+
+  if (!checkPanelAuth(req, res)) return;
+
   if (req.method === 'GET' && urlPath === '/') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(PANEL_HTML);
@@ -312,13 +390,18 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === 'POST') {
-    if (!isAllowedLocalPost(req)) {
+    if (!isAllowedPost(req)) {
       res.writeHead(403, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Forbidden origin/host' }));
       return;
     }
 
     if (urlPath === '/api/toggle-pause') {
+      if (IS_CLOUD && !PANEL_PASSWORD) {
+        res.writeHead(403, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Set PANEL_PASSWORD env var on Render to enable Pause/Resume' }));
+        return;
+      }
       if (paused) startWatcher();
       else pauseWatcher();
       res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -327,6 +410,11 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (urlPath === '/api/toggle-autostart') {
+      if (process.platform !== 'win32' || IS_CLOUD) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Windows Auto-Start is unavailable in Cloud mode' }));
+        return;
+      }
       setAutoStart(!isAutoStartEnabled());
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(getStatusPayload()));
@@ -347,15 +435,15 @@ const server = http.createServer(async (req, res) => {
 
 server.on('error', (err) => {
   if (err?.code === 'EADDRINUSE') {
-    console.log(`[Bakong Auto-Verify] Panel already running on http://127.0.0.1:${PORT}`);
+    console.log(`[Bakong Auto-Verify] Panel already running on http://${HOST}:${PORT}`);
     process.exit(0);
   }
   console.error('[Bakong Panel Server Error]', err);
   process.exit(1);
 });
 
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`[Bakong Auto-Verify] Panel active at http://127.0.0.1:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`[Bakong Auto-Verify] Panel active at http://${HOST}:${PORT}`);
   startWatcher();
   void pingGateway();
   void preloadRecentSettled();
