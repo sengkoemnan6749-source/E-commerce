@@ -743,7 +743,12 @@ let watcherStop = null;
 /**
  * Watches Firestore KHQR sessions via real-time onSnapshot and settles payments from a Cambodia-reachable IP.
  */
-export function startBakongSettlementWatcher({ intervalMs = 2500 } = {}) {
+export function startBakongSettlementWatcher({
+  intervalMs = 2500,
+  onSessionsUpdate = null,
+  onSettled = null,
+  onError = null,
+} = {}) {
   if (watcherStop) return watcherStop;
 
   const firestore = ensureDb();
@@ -755,6 +760,21 @@ export function startBakongSettlementWatcher({ intervalMs = 2500 } = {}) {
   const activeSessions = new Map();
   const inFlightIds = new Set();
 
+  const emitSessions = () => {
+    if (typeof onSessionsUpdate !== 'function') return;
+    onSessionsUpdate(
+      Array.from(activeSessions.values()).map((e) => ({
+        transactionId: e.id,
+        billNumber: e.data?.billNumber || null,
+        amount: e.data?.amount,
+        currency: e.data?.currency,
+        status: e.data?.status,
+        createdAt: e.data?.createdAt,
+        expiresAt: e.data?.expiresAt,
+      }))
+    );
+  };
+
   const checkEntry = async (id, entry) => {
     if (inFlightIds.has(id)) return;
     const data = entry.data || {};
@@ -764,6 +784,7 @@ export function startBakongSettlementWatcher({ intervalMs = 2500 } = {}) {
         .set({ status: 'EXPIRED', updatedAt: FieldValue.serverTimestamp() }, { merge: true })
         .catch(() => {});
       activeSessions.delete(id);
+      emitSessions();
       return;
     }
 
@@ -797,8 +818,22 @@ export function startBakongSettlementWatcher({ intervalMs = 2500 } = {}) {
       if (settled) {
         console.log(`[Bakong Auto-Verify] Settled ${id} (${data.amount} ${data.currency})`);
         activeSessions.delete(id);
+        onSettled?.({
+          transactionId: id,
+          billNumber: data.billNumber || null,
+          amount: data.amount,
+          currency: data.currency,
+          payer:
+            settled.bakongData?.fromAccountName ||
+            settled.bakongData?.fromAccountId ||
+            null,
+          externalRef: settled.bakongData?.externalRef || null,
+          settledAt: new Date().toISOString(),
+        });
+        emitSessions();
       }
     } catch (err) {
+      onError?.(err?.message || String(err));
       if (
         err?.code === 'PAYMENT_RECIPIENT_MISMATCH' ||
         err?.code === 'PAYMENT_AMOUNT_MISMATCH' ||
@@ -807,6 +842,7 @@ export function startBakongSettlementWatcher({ intervalMs = 2500 } = {}) {
       ) {
         console.warn(`[Bakong Auto-Verify] Security mismatch on ${id}: ${err.message}`);
         activeSessions.delete(id);
+        emitSessions();
       }
     } finally {
       inFlightIds.delete(id);
@@ -829,12 +865,14 @@ export function startBakongSettlementWatcher({ intervalMs = 2500 } = {}) {
         for (const doc of snap.docs) {
           activeSessions.set(doc.id, { id: doc.id, ref: doc.ref, data: doc.data() });
         }
+        emitSessions();
         const hasAdded = snap.docChanges().some((c) => c.type === 'added');
         if (hasAdded && activeSessions.size > 0) {
           setTimeout(tick, 1200);
         }
       },
       (err) => {
+        onError?.(err?.message || String(err));
         console.warn('[Bakong Watcher Snapshot Error]', err?.message || err);
       }
     );
