@@ -332,10 +332,18 @@ export default function KHQRPayment({
   const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
   const secs = String(secondsLeft % 60).padStart(2, '0');
 
+  // Format card price number matching official KHQR standee
+  const numericTotal = Number(totalAmount || 0);
+  const displayAmountNumber =
+    currency === 'KHR'
+      ? Math.max(1, Math.round(numericTotal * 4100)).toLocaleString('en-US')
+      : numericTotal.toFixed(2);
+  const currencySymbol = currency === 'KHR' ? '៛' : '$';
+
   return (
     <div className="flex flex-col items-center p-4 sm:p-7 rounded-2xl bg-[#fafafa] border border-slate-200 text-center">
       {/* Currency Selector (USD / KHR) */}
-      <div className="inline-flex flex-wrap justify-center items-center p-1 rounded-xl bg-white border border-slate-200 shadow-2xs mb-4 max-w-full">
+      <div className="inline-flex flex-wrap justify-center items-center p-1 rounded-xl bg-white border border-slate-200 shadow-2xs mb-5 max-w-full">
         {[
           { code: 'USD', label: language === 'km' ? 'ដុល្លារ ($ USD)' : 'USD ($)' },
           { code: 'KHR', label: language === 'km' ? 'ប្រាក់រៀល (៛ KHR)' : 'KHR (៛)' },
@@ -356,124 +364,239 @@ export default function KHQRPayment({
         ))}
       </div>
 
-      {/* Authentic KHQR Card Frame */}
-      <div className="w-full max-w-xs bg-white rounded-2xl shadow-xl border-2 border-red-500 overflow-hidden mb-5">
-        {/* Red KHQR Top Banner */}
-        <div className="bg-red-600 px-4 py-2.5 flex items-center justify-between text-white">
-          <div className="flex items-center gap-1.5 font-black text-sm tracking-wider">
-            <span className="bg-white text-red-600 px-1.5 py-0.5 rounded font-black text-xs">
-              KHQR
-            </span>
-            <span>BAKONG</span>
-          </div>
-          <span className="text-[10px] font-semibold tracking-wide uppercase text-red-100">
-            {language === 'km' ? 'ABA / ACLEDA / Bakong' : 'Zero-Token Auto-Verify'}
+      {/* Exact Official KHQR Standee Card matching reference screenshot */}
+      <div
+        className="w-full bg-white text-[#09090b] overflow-hidden mb-4"
+        style={{
+          maxWidth: '340px',
+          borderRadius: '22px',
+          boxShadow: '0 18px 45px rgba(15, 23, 42, 0.16)',
+          border: '2px solid rgba(226, 232, 240, 0.9)',
+        }}
+      >
+        {/* Top Red KHQR Header with Bottom-Right Diagonal Notch */}
+        <div
+          className="relative flex items-center justify-center"
+          style={{
+            backgroundColor: '#e1232e',
+            height: '48px',
+          }}
+        >
+          <span
+            className="text-white font-black select-none"
+            style={{
+              fontSize: '1.35rem',
+              letterSpacing: '2.5px',
+            }}
+          >
+            KHQR
           </span>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-12px',
+              right: 0,
+              width: '30px',
+              height: '24px',
+              backgroundColor: '#e1232e',
+              clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
+            }}
+          />
         </div>
 
-        {/* Merchant Info */}
-        <div className="px-4 pt-3 pb-2 text-center border-b border-slate-100">
-          <h4 className="text-xs font-bold text-slate-900 tracking-tight">
-            TechTonic Store
-          </h4>
-          <p className="text-[11px] font-mono text-slate-500 mt-0.5">
-            {session?.bakongAccountId || 'seng_koemnan@bkrt'}
-          </p>
-        </div>
-
-        {/* Real Scannable Dynamic Bakong QR Code */}
-        <div className="p-5 flex items-center justify-center bg-white min-h-[232px]">
-          {loadingQr ? (
-            <div className="flex flex-col items-center justify-center gap-2 text-slate-500">
-              <Loader2 className="w-7 h-7 animate-spin text-red-600" />
-              <span className="text-xs font-medium">
-                {language === 'km' ? 'កំពុងបង្កើតកូដ KHQR...' : 'Generating Bakong KHQR...'}
-              </span>
-            </div>
-          ) : qrError ? (
-            <div className="flex flex-col items-center justify-center gap-3 px-2">
-              <AlertCircle className="w-8 h-8 text-rose-500" />
-              <p className="text-xs text-slate-600 leading-relaxed">{qrError}</p>
-              <button
-                type="button"
-                onClick={generateSession}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 cursor-pointer"
+        {/* White Card Body */}
+        <div style={{ padding: '16px 20px 14px' }}>
+          {/* Merchant Row: TECHTONIC STORE + Price on left, ABA / Bakong pill on right */}
+          <div className="flex items-start justify-between text-left">
+            <div>
+              <p
+                className="uppercase tracking-tight"
+                style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  color: '#52525b',
+                }}
               >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>{language === 'km' ? 'ព្យាយាមម្តងទៀត' : 'Retry'}</span>
-              </button>
+                TECHTONIC STORE
+              </p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span
+                  style={{
+                    fontSize: '1.15rem',
+                    fontWeight: 800,
+                    color: '#09090b',
+                  }}
+                >
+                  {currencySymbol}
+                </span>
+                <span
+                  style={{
+                    fontSize: '1.85rem',
+                    fontWeight: 900,
+                    color: '#09090b',
+                    lineHeight: 1.15,
+                  }}
+                >
+                  {displayAmountNumber}
+                </span>
+              </div>
             </div>
-          ) : (
-            <div className="relative p-2 rounded-xl bg-white border border-slate-200 shadow-inner">
-              <img
-                src={session.qrDataUrl}
-                alt="Bakong KHQR Code"
-                className={`w-48 h-48 object-contain ${isExpired ? 'opacity-25 blur-[1px]' : ''}`}
-              />
-              {isExpired ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                  <span className="text-xs font-bold text-slate-800 bg-white/90 px-2 py-1 rounded">
-                    {language === 'km' ? 'QR ផុតកំណត់ហើយ' : 'QR Expired'}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={generateSession}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 cursor-pointer"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    <span>{language === 'km' ? 'បង្កើត QR ថ្មី' : 'New QR'}</span>
-                  </button>
-                </div>
-              ) : paidConfirmed ? (
-                <div className="absolute inset-0 bg-white/95 backdrop-blur-xs rounded-xl flex flex-col items-center justify-center gap-2 border border-slate-100">
-                  <VerifiedCheckmark size="sm" />
-                  <span className="text-xs font-semibold text-emerald-700">
-                    {language === 'km' ? 'ទទួលការទូទាត់ជោគជ័យ' : 'Payment received'}
-                  </span>
-                </div>
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center font-black text-[9px] shadow-lg border-2 border-white">
-                    {currency === 'KHR' ? '៛' : '$'}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
 
-        {/* Amount & Live 5-Minute Expiry Section */}
-        <div className="bg-slate-50 px-4 py-3 border-t border-slate-100 flex flex-col items-center">
-          <div className="text-xl font-extrabold text-slate-900 tracking-tight">
-            {currency === 'KHR' ? formatKHR(totalAmount) : formatUSD(totalAmount)}
-          </div>
-          <div className="text-xs font-semibold text-slate-500">
-            {currency === 'KHR' ? formatUSD(totalAmount) : formatKHR(totalAmount)}
-          </div>
-          {session && !paidConfirmed && (
-            <div className="mt-1.5 inline-flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-[11px] font-mono text-slate-500">
-              {session.billNumber && (
-                <span className="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-[10px] font-bold text-slate-700">
-                  Ref: {session.billNumber}
-                </span>
-              )}
-              <Clock className="w-3 h-3 text-red-500" />
-              <span>{mins}:{secs}</span>
-              {!awaitingAdmin ? (
-                <span className="ml-1 inline-flex items-center gap-1 text-slate-700 font-sans font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {language === 'km' ? 'កំពុងឆែកស្វ័យប្រវត្តិ (2s)' : 'Auto-verifying (2s)'}
-                </span>
-              ) : (
-                <span className="ml-1 inline-flex items-center gap-1 text-slate-700 font-sans font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-700 animate-pulse" />
-                  {language === 'km' ? 'រង់ចាំបញ្ជាក់លើ Telegram' : 'Waiting Telegram'}
-                </span>
-              )}
+            <div
+              style={{
+                backgroundColor: '#eff6ff',
+                color: '#1d4ed8',
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                padding: '3px 8px',
+                borderRadius: '6px',
+              }}
+            >
+              ABA / Bakong
             </div>
-          )}
+          </div>
+
+          {/* Dashed Divider */}
+          <div
+            style={{
+              borderTop: '2px dashed #e4e4e7',
+              margin: '10px 0',
+            }}
+          />
+
+          {/* QR Code Stage (230x230) with Black Circle Currency Center Badge */}
+          <div
+            className="relative mx-auto flex items-center justify-center"
+            style={{
+              width: '230px',
+              height: '230px',
+            }}
+          >
+            {loadingQr ? (
+              <div className="flex flex-col items-center justify-center gap-2 text-slate-500">
+                <Loader2 className="w-7 h-7 animate-spin text-[#e1232e]" />
+                <span className="text-xs font-medium">
+                  {language === 'km' ? 'កំពុងបង្កើតកូដ KHQR...' : 'Generating KHQR...'}
+                </span>
+              </div>
+            ) : qrError ? (
+              <div className="flex flex-col items-center justify-center gap-3 px-2 text-center">
+                <AlertCircle className="w-8 h-8 text-rose-500" />
+                <p className="text-xs text-slate-600 leading-relaxed">{qrError}</p>
+                <button
+                  type="button"
+                  onClick={generateSession}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>{language === 'km' ? 'ព្យាយាមម្តងទៀត' : 'Retry'}</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <img
+                  src={session.qrDataUrl}
+                  alt="Bakong KHQR Payment Code"
+                  className={`w-full h-full object-contain ${isExpired ? 'opacity-25 blur-[1px]' : ''}`}
+                />
+
+                {/* Center Black Circle Currency Symbol Badge */}
+                {!isExpired && !paidConfirmed && (
+                  <div
+                    className="absolute flex items-center justify-center select-none pointer-events-none"
+                    style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '50%',
+                      backgroundColor: '#09090b',
+                      color: '#ffffff',
+                      border: '3px solid #ffffff',
+                      fontWeight: 900,
+                      fontSize: '1rem',
+                    }}
+                  >
+                    {currencySymbol}
+                  </div>
+                )}
+
+                {isExpired && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                    <span className="text-xs font-bold text-slate-800 bg-white/95 px-2.5 py-1 rounded shadow-xs">
+                      {language === 'km' ? 'QR ផុតកំណត់ហើយ' : 'QR Expired'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={generateSession}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#e1232e] text-white text-xs font-bold hover:bg-red-700 cursor-pointer"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      <span>{language === 'km' ? 'បង្កើត QR ថ្មី' : 'New QR'}</span>
+                    </button>
+                  </div>
+                )}
+
+                {paidConfirmed && (
+                  <div className="absolute inset-0 bg-white/96 rounded-xl flex flex-col items-center justify-center gap-2 p-3 text-center">
+                    <VerifiedCheckmark size="sm" />
+                    <h4 className="text-sm font-extrabold text-emerald-800">
+                      {language === 'km' ? 'ទទួលការទូទាត់ជោគជ័យ!' : 'Payment Verified!'}
+                    </h4>
+                    <p className="text-xs font-mono font-bold text-slate-800">
+                      {currency === 'KHR' ? formatKHR(totalAmount) : formatUSD(totalAmount)}
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Card Footer: Ref on Left, ID on Right */}
+          <div
+            className="flex items-center justify-between"
+            style={{
+              marginTop: '10px',
+              paddingTop: '8px',
+              borderTop: '1px solid #f4f4f5',
+              fontFamily: "'Fira Code', ui-monospace, SFMono-Regular, Consolas, monospace",
+              fontSize: '0.7rem',
+              color: '#71717a',
+            }}
+          >
+            <span>
+              Ref:{' '}
+              <strong style={{ color: '#52525b', fontWeight: 700 }}>
+                {session?.billNumber || 'ORDER-000000'}
+              </strong>
+            </span>
+            <span>
+              ID:{' '}
+              <strong style={{ color: '#52525b', fontWeight: 700 }}>
+                {session?.bakongAccountId || 'seng_koemnan@bkrt'}
+              </strong>
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* Live 5-Minute Countdown & Auto-Verify Telemetry Pill */}
+      {session && !paidConfirmed && (
+        <div className="mb-3 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-2xs text-[11px] font-mono text-slate-600">
+          <Clock className="w-3.5 h-3.5 text-[#e1232e]" />
+          <span className="font-bold text-slate-800">{mins}:{secs}</span>
+          <span className="text-slate-300">|</span>
+          {!awaitingAdmin ? (
+            <span className="inline-flex items-center gap-1.5 text-slate-700 font-sans font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              {language === 'km' ? 'កំពុងឆែកស្វ័យប្រវត្តិ (2s)' : 'Auto-verifying every 2s'}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-slate-700 font-sans font-semibold">
+              <span className="w-2 h-2 rounded-full bg-slate-700 animate-pulse" />
+              {language === 'km' ? 'រង់ចាំបញ្ជាក់លើ Telegram' : 'Waiting Telegram'}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Concise Instructions & Single Action Row */}
       <div className="w-full max-w-xs space-y-3">
