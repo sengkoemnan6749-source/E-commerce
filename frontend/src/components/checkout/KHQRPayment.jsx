@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Copy, Check, Smartphone, RefreshCw, Loader2, Clock, AlertCircle } from 'lucide-react';
+import { Copy, Check, RefreshCw, Loader2, Clock, AlertCircle } from 'lucide-react';
 import { formatUSD, formatKHR } from '../../utils/formatPrice';
 import { useToast, useLanguage } from '../../store/StoreContext';
 import { paymentService } from '../../services/paymentService';
-import Button from '../common/Button';
 import VerifiedCheckmark from '../common/VerifiedCheckmark';
 
 // Celebratory 4-note chord chime when KHQR payment is auto-verified
@@ -45,7 +44,6 @@ export default function KHQRPayment({
   const [loadingQr, setLoadingQr] = useState(true);
   const [qrError, setQrError] = useState('');
   const [copied, setCopied] = useState(false);
-  const [verifying, setVerifying] = useState(false);
   const [awaitingAdmin, setAwaitingAdmin] = useState(false);
   const [paidConfirmed, setPaidConfirmed] = useState(false);
   // 5-minute countdown timer (300 seconds) matching https://khqr-aba-autoverify.vercel.app
@@ -279,54 +277,6 @@ export default function KHQRPayment({
       'info'
     );
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleConfirmPayment = async () => {
-    if (!session || settledOnceRef.current) return;
-
-    setVerifying(true);
-    try {
-      const target = session.transactionId || session.md5Hash || session.md5;
-      const mode =
-        session.telegramVerificationEnabled && !session.liveVerificationEnabled
-          ? 'telegram_request'
-          : 'manual';
-      const result = await paymentService.verifyKHQRPayment(target, {
-        md5: session.md5 || session.md5Hash,
-        txToken: session.txToken,
-        amount: session.amount,
-        mode,
-        customerName: customerInfo?.name,
-        customerPhone: customerInfo?.phone,
-      });
-      if (result?.status === 'PAID') {
-        handleVerifiedPaid(result);
-      } else if (result?.status === 'AWAITING_ADMIN') {
-        setAwaitingAdmin(true);
-        addToast(
-          language === 'km'
-            ? 'បានផ្ញើសំណើទៅ Telegram ម្ចាស់ហាងហើយ — កំពុងរង់ចាំការចុច Confirm Paid...'
-            : 'Verification sent to shop Telegram — waiting for confirmation...',
-          'info'
-        );
-      } else {
-        addToast(
-          result?.message ||
-            (language === 'km'
-              ? 'មិនទាន់ឃើញការទូទាត់នៅឡើយទេ សូមស្កេនបង់តាម ABA / ACLEDA / Bakong ជាមុនសិន'
-              : 'Payment not received yet. Please scan and complete transfer via ABA / ACLEDA / Bakong first.'),
-          'info'
-        );
-      }
-    } catch (err) {
-      addToast(
-        err?.message ||
-          (language === 'km' ? 'មិនទាន់ផ្ទៀងផ្ទាត់ការទូទាត់បានទេ' : 'Could not verify payment yet'),
-        'error'
-      );
-    } finally {
-      setVerifying(false);
-    }
   };
 
   const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
@@ -646,35 +596,6 @@ export default function KHQRPayment({
             </span>
           </div>
         )}
-
-        <Button
-          type="button"
-          variant="secondary"
-          size="md"
-          loading={verifying}
-          disabled={!session || loadingQr || isExpired || paidConfirmed}
-          onClick={handleConfirmPayment}
-          className="w-full font-semibold rounded-xl"
-        >
-          <Smartphone className="w-4 h-4 mr-1.5" />
-          <span>
-            {awaitingAdmin
-              ? language === 'km'
-                ? 'ផ្ញើសំណើទៅ Telegram ម្តងទៀត'
-                : 'Resend Telegram Request'
-              : session?.liveVerificationEnabled
-              ? language === 'km'
-                ? 'ខ្ញុំបានបង់ប្រាក់រួច — ពិនិត្យឥឡូវនេះ'
-                : 'I Have Paid — Check Now'
-              : session?.telegramVerificationEnabled
-              ? language === 'km'
-                ? 'ខ្ញុំបានបង់ប្រាក់រួច — ផ្ទៀងផ្ទាត់តាម Telegram'
-                : 'I Have Paid — Verify on Telegram'
-              : language === 'km'
-              ? 'ខ្ញុំបានបង់ប្រាក់រួច — បញ្ចប់ការកុម្ម៉ង់'
-              : 'I Have Paid — Complete Order'}
-          </span>
-        </Button>
       </div>
     </div>
   );
