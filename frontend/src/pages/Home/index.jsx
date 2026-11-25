@@ -548,48 +548,56 @@ export default function Home() {
               <Link
                 key={cat.id}
                 to={`/shop?category=${encodeURIComponent(cat.name)}`}
-                className="group relative flex flex-col rounded-3xl bg-white border border-slate-200/80 hover:border-blue-400/60 shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 overflow-hidden transform hover:-translate-y-1.5"
+                className="group relative flex flex-col rounded-[28px] p-[1.25px] bg-gradient-to-b from-slate-200/95 via-slate-200/55 to-slate-300/75 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_28px_-14px_rgba(15,23,42,0.10)] hover:shadow-[0_2px_6px_rgba(15,23,42,0.05),0_26px_54px_-18px_rgba(15,23,42,0.18),0_14px_30px_-14px_rgba(37,99,235,0.14)] hover:-translate-y-1.5 transition-all duration-300"
               >
-                {/* Visual Stage with Ambient Radial Light and Transparent Product PNG */}
-                <div className={`relative h-48 w-full bg-gradient-to-b ${meta.gradient} flex items-center justify-center p-4 overflow-hidden border-b border-slate-100`}>
-                  {/* Subtle animated ambient aura */}
-                  <div className="absolute w-32 h-32 rounded-full bg-white/60 blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-                  
-                  {/* Category Pill Tag */}
-                  <div className="absolute top-3.5 left-3.5 z-10">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs backdrop-blur-md ${meta.tagColor}`}>
-                      <Icon className="w-3.5 h-3.5" />
-                      <span>{meta.badge}</span>
-                    </span>
+                {/* Precision Hover Bezel Glow */}
+                <div className="pointer-events-none absolute inset-0 rounded-[28px] bg-gradient-to-br from-sky-400/65 via-blue-500/35 to-indigo-500/65 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                {/* Inner White Card Body */}
+                <div className="relative flex flex-col flex-1 bg-white rounded-[26.75px] overflow-hidden ring-1 ring-inset ring-white/90">
+                  {/* Visual Stage with Ambient Radial Light and Inset Frame */}
+                  <div className="p-2.5 pb-0">
+                    <div className={`relative h-44 w-full rounded-[20px] bg-gradient-to-b ${meta.gradient} flex items-center justify-center p-4 overflow-hidden ring-1 ring-inset ring-slate-900/[0.05] group-hover:ring-blue-500/[0.12] transition-all duration-300`}>
+                      {/* Subtle animated ambient aura */}
+                      <div className="absolute w-32 h-32 rounded-full bg-white/60 blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+                      
+                      {/* Category Pill Tag */}
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border shadow-2xs backdrop-blur-md ${meta.tagColor}`}>
+                          <Icon className="w-3.5 h-3.5" />
+                          <span>{meta.badge}</span>
+                        </span>
+                      </div>
+
+                      {/* Floating Product Cutout PNG */}
+                      <img
+                        src={meta.image}
+                        alt={cat.name}
+                        className="relative z-10 max-h-36 max-w-[85%] object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.12)] group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-500 ease-out"
+                      />
+                    </div>
                   </div>
 
-                  {/* Floating Product Cutout PNG */}
-                  <img
-                    src={meta.image}
-                    alt={cat.name}
-                    className="relative z-10 max-h-36 max-w-[85%] object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.12)] group-hover:scale-110 group-hover:-translate-y-2 transition-all duration-500 ease-out"
-                  />
-                </div>
+                  {/* Card Content Details */}
+                  <div className="p-5 sm:p-6 pt-4 flex flex-col flex-1 justify-between bg-white">
+                    <div>
+                      <h3 className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors mb-2">
+                        {translateCategory(cat.name, language)}
+                      </h3>
+                      <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                        {t(`cat_desc_${cat.id || cat.slug}`, cat.description)}
+                      </p>
+                    </div>
 
-                {/* Card Content Details */}
-                <div className="p-6 flex flex-col flex-1 justify-between bg-white">
-                  <div>
-                    <h3 className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors mb-2">
-                      {translateCategory(cat.name, language)}
-                    </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
-                      {t(`cat_desc_${cat.id || cat.slug}`, cat.description)}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-400 group-hover:text-blue-600 transition-colors pt-4 mt-4 border-t border-slate-100">
-                    <span className="inline-flex items-center gap-1.5 text-slate-600 group-hover:text-blue-600">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                      {count} {t('cat_flagship_products', 'Flagship Products')}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-blue-600 font-extrabold group-hover:translate-x-1 transition-transform">
-                      {t('cat_explore_action', 'Explore')} <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-400 group-hover:text-blue-600 transition-colors pt-4 mt-4 border-t border-slate-100">
+                      <span className="inline-flex items-center gap-1.5 text-slate-600 group-hover:text-blue-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                        {count} {t('cat_flagship_products', 'Flagship Products')}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-blue-600 font-extrabold group-hover:translate-x-1 transition-transform">
+                        {t('cat_explore_action', 'Explore')} <ArrowRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
                   </div>
                 </div>
               </Link>

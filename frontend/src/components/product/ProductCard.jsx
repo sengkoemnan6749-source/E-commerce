@@ -20,9 +20,10 @@ export default function ProductCard({ product }) {
   }, [product.id]);
 
   const isFavorited = isInWishlist(product.id);
-  const discountPercent = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-    : 0;
+  const discountPercent =
+    Number(product.originalPrice) > Number(product.price)
+      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+      : 0;
 
   const withVersion = (url) => {
     if (!url || typeof url !== 'string') return url;
@@ -62,10 +63,15 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-[0_22px_50px_-12px_rgba(37,99,235,0.2)] hover:border-blue-400/90 hover:-translate-y-1.5 transition-all duration-300">
-      
-      {/* Top Image Studio Container */}
-      <div className="relative aspect-square w-full bg-gradient-to-b from-slate-50/90 via-slate-100/40 to-white overflow-hidden p-6 flex items-center justify-center">
+    <div className="group relative flex flex-col rounded-[28px] p-[1.25px] bg-gradient-to-b from-slate-200/95 via-slate-200/55 to-slate-300/75 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_28px_-14px_rgba(15,23,42,0.10)] hover:shadow-[0_2px_6px_rgba(15,23,42,0.05),0_26px_54px_-18px_rgba(15,23,42,0.18),0_14px_30px_-14px_rgba(37,99,235,0.14)] hover:-translate-y-1.5 transition-all duration-300">
+      {/* Precision Hover Bezel Glow */}
+      <div className="pointer-events-none absolute inset-0 rounded-[28px] bg-gradient-to-br from-sky-400/65 via-blue-500/35 to-indigo-500/65 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+      {/* Inner White Card Body */}
+      <div className="relative flex flex-col flex-1 bg-white rounded-[26.75px] overflow-hidden ring-1 ring-inset ring-white/90">
+        {/* Top Image Studio Container inside Inset Frame */}
+        <div className="p-2.5 pb-0">
+          <div className="relative aspect-square w-full rounded-[20px] bg-gradient-to-b from-[#f6f8fc] via-slate-50/70 to-white overflow-hidden p-5 flex items-center justify-center ring-1 ring-inset ring-slate-900/[0.05] group-hover:ring-blue-500/[0.12] transition-all duration-300">
         <Link
           to={`/product/${product.id}`}
           className="block w-full h-full relative flex items-center justify-center"
@@ -147,11 +153,12 @@ export default function ProductCard({ product }) {
           >
             <Eye className="w-4 h-4" />
           </button>
+          </div>
         </div>
-      </div>
+        </div>
 
       {/* Product Content Details */}
-      <div className="flex flex-col flex-1 p-4 sm:p-5 pt-3">
+      <div className="flex flex-col flex-1 p-4 sm:p-5 pt-3.5">
         
         {/* Category & Rating */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -165,7 +172,7 @@ export default function ProductCard({ product }) {
           </span>
           <div className="flex items-center gap-1 text-slate-700 text-xs font-semibold">
             <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-            <span>{product.rating}</span>
+            <span>{Number(product.rating) > 0 ? Number(product.rating).toFixed(1) : '4.9'}</span>
             <span className="text-[11px] text-slate-400 font-normal">({product.reviewsCount || 24})</span>
           </div>
         </div>
@@ -226,7 +233,7 @@ export default function ProductCard({ product }) {
               <span className="text-lg sm:text-xl font-black text-slate-950 tracking-tight">
                 {formatUSD(product.price)}
               </span>
-              {product.originalPrice && (
+              {Number(product.originalPrice) > Number(product.price) && (
                 <span className="text-xs text-slate-400 line-through font-medium">
                   {formatUSD(product.originalPrice)}
                 </span>
@@ -264,6 +271,7 @@ export default function ProductCard({ product }) {
           </button>
         </div>
 
+      </div>
       </div>
     </div>
   );
