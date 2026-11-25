@@ -9,7 +9,6 @@ import catalogRoutes from './routes/catalogRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
 import { startOrderBotListener } from './services/telegramService.js';
-import { startBakongSettlementWatcher } from './services/paymentService.js';
 
 import { securityHeaders, detectSuspiciousRequest, createRateLimiter } from './middleware/securityMiddleware.js';
 
@@ -110,6 +109,5 @@ if (process.env.NODE_ENV !== 'test' && process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
     console.log(`TechTonic API running on http://localhost:${PORT}`);
     startOrderBotListener().catch(() => {});
-    startBakongSettlementWatcher();
   });
 }
