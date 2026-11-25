@@ -528,33 +528,16 @@ export default function KHQRPayment({
         </div>
       </div>
 
-      {/* Live 5-Minute Countdown & Auto-Verify Telemetry Pill */}
+      {/* Live 5-Minute Countdown Timer Pill */}
       {session && !paidConfirmed && (
-        <div className="mb-3 inline-flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-2xs text-[11px] font-mono text-slate-600">
+        <div className="mb-3 inline-flex items-center justify-center gap-x-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-2xs text-[11px] font-mono text-slate-600">
           <Clock className="w-3.5 h-3.5 text-[#e1232e]" />
           <span className="font-bold text-slate-800">{mins}:{secs}</span>
-          <span className="text-slate-300">|</span>
-          {!awaitingAdmin ? (
-            <span className="inline-flex items-center gap-1.5 text-slate-700 font-sans font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              {language === 'km' ? 'កំពុងឆែកស្វ័យប្រវត្តិ (2s)' : 'Auto-verifying every 2s'}
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 text-slate-700 font-sans font-semibold">
-              <span className="w-2 h-2 rounded-full bg-slate-700 animate-pulse" />
-              {language === 'km' ? 'រង់ចាំបញ្ជាក់លើ Telegram' : 'Waiting Telegram'}
-            </span>
-          )}
         </div>
       )}
 
-      {/* Concise Instructions & Single Action Row */}
+      {/* Action Row */}
       <div className="w-full max-w-xs space-y-3">
-        <p className="text-[11px] text-slate-500 leading-relaxed">
-          {language === 'km'
-            ? 'ស្កេនកូដ KHQR ជាមួយកម្មវិធី ABA Mobile, ACLEDA ឬ Bakong — ប្រព័ន្ធនឹងផ្ទៀងផ្ទាត់ស្វ័យប្រវត្តិរៀងរាល់ ២ វិនាទី'
-            : 'Scan KHQR with ABA Mobile, ACLEDA, or Bakong — auto-verifies every 2 seconds'}
-        </p>
 
         <div className="flex items-center justify-center gap-2">
           <button
