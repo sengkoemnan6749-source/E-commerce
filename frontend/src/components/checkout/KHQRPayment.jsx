@@ -6,6 +6,30 @@ import { paymentService } from '../../services/paymentService';
 import Button from '../common/Button';
 import VerifiedCheckmark from '../common/VerifiedCheckmark';
 
+// Celebratory 4-note chord chime when KHQR payment is auto-verified
+function playSuccessSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.11);
+      gain.gain.setValueAtTime(0.16, ctx.currentTime + idx * 0.11);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.11 + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + idx * 0.11);
+      osc.stop(ctx.currentTime + idx * 0.11 + 0.35);
+    });
+  } catch {
+    // Ignore audio context autoplay restriction errors
+  }
+}
+
 export default function KHQRPayment({
   totalAmount = 0,
   cartItems = null,
@@ -24,7 +48,8 @@ export default function KHQRPayment({
   const [verifying, setVerifying] = useState(false);
   const [awaitingAdmin, setAwaitingAdmin] = useState(false);
   const [paidConfirmed, setPaidConfirmed] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(600);
+  // 5-minute countdown timer (300 seconds) matching https://khqr-aba-autoverify.vercel.app
+  const [secondsLeft, setSecondsLeft] = useState(300);
 
   const onSessionChangeRef = useRef(onSessionChange);
   const onPaymentSuccessRef = useRef(onPaymentSuccess);
@@ -32,6 +57,8 @@ export default function KHQRPayment({
   const addToastRef = useRef(addToast);
   const cartItemsRef = useRef(cartItems);
   const promoCodeRef = useRef(promoCode);
+  const settledOnceRef = useRef(false);
+
   useEffect(() => {
     onSessionChangeRef.current = onSessionChange;
     onPaymentSuccessRef.current = onPaymentSuccess;
@@ -49,6 +76,31 @@ export default function KHQRPayment({
   });
 
   const isExpired = Boolean(session && secondsLeft <= 0 && !paidConfirmed);
+
+  const handleVerifiedPaid = useCallback((paidResult) => {
+    if (settledOnceRef.current) return;
+    settledOnceRef.current = true;
+    setPaidConfirmed(true);
+    setAwaitingAdmin(false);
+    playSuccessSound();
+    addToastRef.current?.(
+      languageRef.current === 'km'
+        ? '✅ ការទូទាត់ KHQR ត្រូវបានផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ!'
+        : '✅ KHQR Payment Auto-Verified Successfully!',
+      'success'
+    );
+    const payerName =
+      paidResult?.payerAccountName ||
+      paidResult?.bakongData?.fromAccountName ||
+      paidResult?.transaction?.paymentDetails?.fromAccountId ||
+      paidResult?.bakongData?.fromAccountId ||
+      null;
+    onPaymentSuccessRef.current?.({
+      ...paidResult,
+      status: 'PAID',
+      payerAccountName: payerName,
+    });
+  }, []);
 
   const generateSession = useCallback(async () => {
     const numericAmount = Number(totalAmount || 0);
@@ -68,6 +120,7 @@ export default function KHQRPayment({
     setQrError('');
     setAwaitingAdmin(false);
     setPaidConfirmed(false);
+    settledOnceRef.current = false;
     try {
       const requestAmount = currency === 'KHR' ? Math.max(1, Math.round(numericAmount * 4100)) : numericAmount;
       const data = await paymentService.initiateKHQRPayment(requestAmount, currency, {
@@ -77,10 +130,11 @@ export default function KHQRPayment({
       setSession(data);
       onSessionChangeRef.current?.(data);
       if (data?.expiresAt) {
-        const diff = Math.max(0, Math.floor((new Date(data.expiresAt).getTime() - Date.now()) / 1000));
-        setSecondsLeft(diff);
+        const expMs = typeof data.expiresAt === 'number' ? data.expiresAt : new Date(data.expiresAt).getTime();
+        const diff = Math.max(0, Math.floor((expMs - Date.now()) / 1000));
+        setSecondsLeft(diff > 0 && diff <= 300 ? diff : 300);
       } else {
-        setSecondsLeft(600);
+        setSecondsLeft(300);
       }
     } catch (err) {
       setSession(null);
@@ -88,8 +142,8 @@ export default function KHQRPayment({
       setQrError(
         err?.message ||
           (languageRef.current === 'km'
-            ? 'មិនអាចបង្កើតកូដ QR Bakong បានទេ — សូមពិនិត្យ Backend Server រួចសាកម្តងទៀត'
-            : 'Unable to generate Bakong KHQR code — verify backend server connection and retry.')
+            ? 'មិនអាចបង្កើតកូដ QR Bakong បានទេ — សូមពិនិត្យការភ្ជាប់ រួចសាកម្តងទៀត'
+            : 'Unable to generate Bakong KHQR code — please retry.')
       );
     } finally {
       setLoadingQr(false);
@@ -100,7 +154,7 @@ export default function KHQRPayment({
     generateSession();
   }, [generateSession]);
 
-  // Countdown timer
+  // 5-minute Countdown timer
   useEffect(() => {
     if (!session || paidConfirmed || isExpired) return undefined;
     const timer = window.setInterval(() => {
@@ -109,21 +163,23 @@ export default function KHQRPayment({
     return () => window.clearInterval(timer);
   }, [session, paidConfirmed, isExpired]);
 
-  // Auto-poll payment status every 4s (reflects Cambodia watcher or NBC Bakong API settlement) and re-check immediately on tab return
+  // 2-second Auto-Verify polling calling POST /api/check-payment with md5 & txToken + backend database sync
   useEffect(() => {
-    const verifyTarget = session?.transactionId || session?.md5Hash;
+    const md5 = session?.md5 || session?.md5Hash;
+    const txToken = session?.txToken;
+    const verifyTarget = session?.transactionId || md5;
     if (!verifyTarget || paidConfirmed || isExpired || awaitingAdmin) {
       return undefined;
     }
 
     const intervalMs = 2000;
-    const maxPolls = 320;
+    const maxPolls = 180;
     let stopped = false;
     let inFlight = false;
     let pollCount = 0;
 
     const runPoll = async () => {
-      if (stopped || inFlight || document.visibilityState !== 'visible') return;
+      if (stopped || inFlight || settledOnceRef.current) return;
       pollCount += 1;
       if (pollCount > maxPolls) {
         window.clearInterval(pollId);
@@ -132,15 +188,18 @@ export default function KHQRPayment({
       inFlight = true;
       try {
         const res = await paymentService.verifyKHQRPayment(verifyTarget, {
+          md5,
+          txToken,
           amount: session.amount,
           mode: 'poll',
         });
         if (!stopped && res?.status === 'PAID') {
-          setPaidConfirmed(true);
-          onPaymentSuccessRef.current?.(res);
+          stopped = true;
+          window.clearInterval(pollId);
+          handleVerifiedPaid(res);
         }
       } catch {
-        // Silent retry on next poll tick
+        // Silent retry on next 2-second poll tick
       } finally {
         inFlight = false;
       }
@@ -162,9 +221,9 @@ export default function KHQRPayment({
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('focus', onVisible);
     };
-  }, [session, paidConfirmed, isExpired, awaitingAdmin]);
+  }, [session, paidConfirmed, isExpired, awaitingAdmin, handleVerifiedPaid]);
 
-  // Fast 2.5s polling while awaiting Admin 1-Tap Confirm on Telegram Order Bot
+  // Fast 2.5s polling if awaiting Admin 1-Tap Confirm on Telegram Order Bot
   useEffect(() => {
     if (!awaitingAdmin || !session?.transactionId || paidConfirmed || isExpired) {
       return undefined;
@@ -172,20 +231,19 @@ export default function KHQRPayment({
 
     let stopped = false;
     const pollAdmin = async () => {
-      if (stopped) return;
+      if (stopped || settledOnceRef.current) return;
       try {
         const res = await paymentService.verifyKHQRPayment(session.transactionId, {
+          md5: session.md5 || session.md5Hash,
+          txToken: session.txToken,
           amount: session.amount,
           mode: 'poll',
         });
         if (stopped) return;
         if (res?.status === 'PAID') {
-          setPaidConfirmed(true);
-          setAwaitingAdmin(false);
-          onPaymentSuccessRef.current?.({
-            ...res,
-            payerAccountName: res?.payerAccountName || res?.bakongData?.fromAccountName || res?.bakongData?.fromAccountId || null,
-          });
+          stopped = true;
+          window.clearInterval(timerId);
+          handleVerifiedPaid(res);
         } else if (res?.status === 'REJECTED') {
           setAwaitingAdmin(false);
           addToastRef.current?.(
@@ -207,11 +265,12 @@ export default function KHQRPayment({
       window.clearTimeout(firstTick);
       window.clearInterval(timerId);
     };
-  }, [awaitingAdmin, session, paidConfirmed, isExpired]);
+  }, [awaitingAdmin, session, paidConfirmed, isExpired, handleVerifiedPaid]);
 
   const handleCopy = () => {
-    if (!session?.khqrString) return;
-    navigator.clipboard?.writeText(session.khqrString);
+    const rawQr = session?.khqrString || session?.qr;
+    if (!rawQr) return;
+    navigator.clipboard?.writeText(rawQr);
     setCopied(true);
     addToast(
       language === 'km'
@@ -223,31 +282,25 @@ export default function KHQRPayment({
   };
 
   const handleConfirmPayment = async () => {
-    if (!session) return;
+    if (!session || settledOnceRef.current) return;
 
     setVerifying(true);
     try {
-      const target = session.transactionId || session.md5Hash;
-      const mode = session.telegramVerificationEnabled && !session.liveVerificationEnabled ? 'telegram_request' : 'manual';
+      const target = session.transactionId || session.md5Hash || session.md5;
+      const mode =
+        session.telegramVerificationEnabled && !session.liveVerificationEnabled
+          ? 'telegram_request'
+          : 'manual';
       const result = await paymentService.verifyKHQRPayment(target, {
+        md5: session.md5 || session.md5Hash,
+        txToken: session.txToken,
         amount: session.amount,
         mode,
         customerName: customerInfo?.name,
         customerPhone: customerInfo?.phone,
       });
       if (result?.status === 'PAID') {
-        setPaidConfirmed(true);
-        setAwaitingAdmin(false);
-        if (onPaymentSuccess) {
-          await onPaymentSuccess({
-            ...result,
-            payerAccountName:
-              result?.payerAccountName ||
-              result?.bakongData?.fromAccountName ||
-              result?.bakongData?.fromAccountId ||
-              null,
-          });
-        }
+        handleVerifiedPaid(result);
       } else if (result?.status === 'AWAITING_ADMIN') {
         setAwaitingAdmin(true);
         addToast(
@@ -259,7 +312,9 @@ export default function KHQRPayment({
       } else {
         addToast(
           result?.message ||
-            (language === 'km' ? 'មិនទាន់ឃើញការទូទាត់នៅឡើយទេ សូមស្កេនបង់ជាមុនសិន' : 'Payment not received yet. Please complete transfer first.'),
+            (language === 'km'
+              ? 'មិនទាន់ឃើញការទូទាត់នៅឡើយទេ សូមស្កេនបង់តាម ABA / ACLEDA / Bakong ជាមុនសិន'
+              : 'Payment not received yet. Please scan and complete transfer via ABA / ACLEDA / Bakong first.'),
           'info'
         );
       }
@@ -312,14 +367,14 @@ export default function KHQRPayment({
             <span>BAKONG</span>
           </div>
           <span className="text-[10px] font-semibold tracking-wide uppercase text-red-100">
-            {language === 'km' ? 'ស្តង់ដារ NBC' : 'NBC Standard'}
+            {language === 'km' ? 'ABA / ACLEDA / Bakong' : 'Zero-Token Auto-Verify'}
           </span>
         </div>
 
         {/* Merchant Info */}
         <div className="px-4 pt-3 pb-2 text-center border-b border-slate-100">
           <h4 className="text-xs font-bold text-slate-900 tracking-tight">
-            {session?.merchantName || 'TechTonic Store'}
+            {session?.merchantName || 'SENG KOEMNAN'}
           </h4>
           <p className="text-[11px] font-mono text-slate-500 mt-0.5">
             {session?.bakongAccountId || 'seng_koemnan@bkrt'}
@@ -379,7 +434,7 @@ export default function KHQRPayment({
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center font-black text-[9px] shadow-lg border-2 border-white">
-                    KHQR
+                    {currency === 'KHR' ? '៛' : '$'}
                   </div>
                 </div>
               )}
@@ -387,7 +442,7 @@ export default function KHQRPayment({
           )}
         </div>
 
-        {/* Amount & Live Expiry Section */}
+        {/* Amount & Live 5-Minute Expiry Section */}
         <div className="bg-slate-50 px-4 py-3 border-t border-slate-100 flex flex-col items-center">
           <div className="text-xl font-extrabold text-slate-900 tracking-tight">
             {currency === 'KHR' ? formatKHR(totalAmount) : formatUSD(totalAmount)}
@@ -407,7 +462,7 @@ export default function KHQRPayment({
               {!awaitingAdmin ? (
                 <span className="ml-1 inline-flex items-center gap-1 text-slate-700 font-sans font-medium">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {language === 'km' ? 'រង់ចាំទូទាត់ (ផ្ទៀងផ្ទាត់ស្វ័យប្រវត្តិ)' : 'Auto-checking'}
+                  {language === 'km' ? 'កំពុងឆែកស្វ័យប្រវត្តិ (2s)' : 'Auto-verifying (2s)'}
                 </span>
               ) : (
                 <span className="ml-1 inline-flex items-center gap-1 text-slate-700 font-sans font-medium">
@@ -424,14 +479,14 @@ export default function KHQRPayment({
       <div className="w-full max-w-xs space-y-3">
         <p className="text-[11px] text-slate-500 leading-relaxed">
           {language === 'km'
-            ? 'ស្កេនកូដ Bakong KHQR ដោយប្រើកម្មវិធី Bakong ឬធនាគារដៃគូ KHQR'
-            : 'Scan Bakong KHQR with Bakong or any KHQR banking app'}
+            ? 'ស្កេនកូដ KHQR ជាមួយកម្មវិធី ABA Mobile, ACLEDA ឬ Bakong — ប្រព័ន្ធនឹងផ្ទៀងផ្ទាត់ស្វ័យប្រវត្តិរៀងរាល់ ២ វិនាទី'
+            : 'Scan KHQR with ABA Mobile, ACLEDA, or Bakong — auto-verifies every 2 seconds'}
         </p>
 
         <div className="flex items-center justify-center gap-2">
           <button
             type="button"
-            disabled={!session?.khqrString}
+            disabled={!session?.khqrString && !session?.qr}
             onClick={handleCopy}
             className="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white px-3 py-2 rounded-xl border border-slate-200 transition-colors disabled:opacity-50 cursor-pointer"
           >

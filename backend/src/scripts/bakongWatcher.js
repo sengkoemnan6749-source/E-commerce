@@ -128,19 +128,21 @@ function pauseWatcher() {
 }
 
 async function pingGateway() {
-  const gatewayUrl = String(process.env.BAKONG_GATEWAY_URL || 'https://lorndavid.online')
+  const gatewayUrl = String(
+    process.env.BAKONG_GATEWAY_URL || 'https://khqr-aba-autoverify.vercel.app'
+  )
     .trim()
     .replace(/\/+$/, '');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5000);
   try {
-    const res = await fetch(`${gatewayUrl}/api/v1/check/00000000000000000000000000000000`, {
+    const res = await fetch(`${gatewayUrl}/api/config`, {
       method: 'GET',
       headers: { Accept: 'application/json' },
       signal: controller.signal,
     });
     lastGatewayCheck = {
-      ok: res.status === 200 || res.status === 404,
+      ok: res.status === 200,
       status: res.status,
       checkedAt: new Date().toISOString(),
     };
@@ -214,7 +216,9 @@ function getStatusPayload() {
     lastError,
     lastGatewayCheck,
     accountId: String(process.env.BAKONG_ACCOUNT_ID || 'seng_koemnan@bkrt').trim(),
-    gatewayUrl: String(process.env.BAKONG_GATEWAY_URL || 'https://lorndavid.online').trim(),
+    gatewayUrl: String(
+      process.env.BAKONG_GATEWAY_URL || 'https://khqr-aba-autoverify.vercel.app'
+    ).trim(),
   };
 }
 

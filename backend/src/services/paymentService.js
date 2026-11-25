@@ -29,13 +29,13 @@ function ensureDb() {
 function getBakongConfig() {
   return {
     accountId: String(process.env.BAKONG_ACCOUNT_ID || 'seng_koemnan@bkrt').trim(),
-    merchantName: String(process.env.BAKONG_MERCHANT_NAME || 'TechTonic Store').trim().slice(0, 25),
+    merchantName: String(process.env.BAKONG_MERCHANT_NAME || 'SENG KOEMNAN').trim().slice(0, 25),
     merchantCity: String(process.env.BAKONG_MERCHANT_CITY || 'Phnom Penh').trim().slice(0, 15),
     apiUrl: String(process.env.BAKONG_API_URL || 'https://api-bakong.nbc.gov.kh').replace(/\/+$/, ''),
     gatewayUrl: String(
       process.env.BAKONG_GATEWAY_URL !== undefined
         ? process.env.BAKONG_GATEWAY_URL
-        : 'https://lorndavid.online'
+        : 'https://khqr-aba-autoverify.vercel.app'
     )
       .trim()
       .replace(/\/+$/, ''),
@@ -214,19 +214,96 @@ async function checkBakongTransactionByMd5(md5Hash, config) {
   }
 }
 
-async function generateBakongViaGateway(config, { amount, currency, billNumber }) {
+function parseBakongPortalNuxtData(rawJson) {
+  try {
+    const arr = JSON.parse(rawJson);
+    function resolve(idx, depth = 0) {
+      if (depth > 12 || typeof idx !== 'number' || idx < 0 || idx >= arr.length) return idx;
+      const val = arr[idx];
+      if (Array.isArray(val)) {
+        if (val[0] === 'ShallowReactive' || val[0] === 'Reactive' || val[0] === 'Ref') {
+          return resolve(val[1], depth + 1);
+        }
+        return val.map((v) => resolve(v, depth + 1));
+      }
+      if (val && typeof val === 'object') {
+        const out = {};
+        for (const [k, v] of Object.entries(val)) {
+          out[k] = resolve(v, depth + 1);
+        }
+        return out;
+      }
+      return val;
+    }
+    const root = resolve(0);
+    return root?.data?.['tx-lookup'] || null;
+  } catch {
+    return null;
+  }
+}
+
+async function queryBakongGatewayTokenless(md5Hash) {
+  const cookieVal = encodeURIComponent(
+    JSON.stringify({
+      type: 'MD5',
+      value: md5Hash,
+      amount: '',
+      ccy: 'USD',
+    })
+  );
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 6000);
   try {
-    const res = await fetch(`${config.gatewayUrl}/api/v1/khqr/generate`, {
+    const res = await fetch('https://api-bakong.nbc.gov.kh/', {
+      method: 'GET',
+      headers: {
+        Cookie: `tx_search=${cookieVal}`,
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'km-KH,km;q=0.9,en-US;q=0.8,en;q=0.7',
+        Referer: 'https://api-bakong.nbc.gov.kh/',
+      },
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const match = html.match(/<script[^>]*id="__NUXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+    if (!match) return null;
+    const lookup = parseBakongPortalNuxtData(match[1]);
+    if (lookup && lookup.txResult && lookup.txResult.hash) {
+      return {
+        responseCode: 0,
+        responseMessage: 'Success (Tokenless Bakong Official Gateway)',
+        data: lookup.txResult,
+      };
+    }
+    return {
+      responseCode: 1,
+      errorCode: lookup?.txError?.errorCode || 1,
+      responseMessage: 'Transaction not found yet',
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function generateBakongViaGateway(config, { amount, currency, billNumber }) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 7000);
+  try {
+    const res = await fetch(`${config.gatewayUrl}/api/generate-khqr`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
       body: JSON.stringify({
-        accountId: config.accountId,
+        bakongAccountId: config.accountId,
         merchantName: config.merchantName,
+        merchantCity: config.merchantCity,
         amount: Number(amount),
         currency,
         billNumber,
@@ -235,11 +312,12 @@ async function generateBakongViaGateway(config, { amount, currency, billNumber }
       signal: controller.signal,
     });
     const json = await res.json().catch(() => null);
-    const khqrString = String(json?.qrString || json?.qr || '').trim();
-    const md5Hash = String(json?.md5 || '').trim().toLowerCase();
+    const d = json?.data || json || {};
+    const khqrString = String(d?.qr || d?.qrString || '').trim();
+    const md5Hash = String(d?.md5 || '').trim().toLowerCase();
     if (!res.ok || !khqrString || !/^[a-f0-9]{32}$/i.test(md5Hash)) {
       throw new AppError(
-        json?.message || `Bakong gateway generate returned HTTP ${res.status}`,
+        json?.error || json?.message || `Bakong gateway generate returned HTTP ${res.status}`,
         502,
         'BAKONG_GATEWAY_UNAVAILABLE'
       );
@@ -247,8 +325,10 @@ async function generateBakongViaGateway(config, { amount, currency, billNumber }
     return {
       khqrString,
       md5Hash,
-      deeplink: json?.deeplink || null,
-      expirationTimestamp: Number(json?.expirationTimestamp) || null,
+      qrDataUrl: String(d?.qrDataUrl || '').trim() || null,
+      txToken: String(d?.txToken || '').trim() || null,
+      deeplink: d?.deeplink || d?.mobilePayUrl || null,
+      expirationTimestamp: Number(d?.expiresAt || d?.expirationTimestamp) || null,
     };
   } catch (err) {
     if (err instanceof AppError) throw err;
@@ -264,30 +344,80 @@ async function generateBakongViaGateway(config, { amount, currency, billNumber }
   }
 }
 
-async function checkBakongViaGateway(md5Hash, gatewayUrl) {
+async function checkBakongViaGateway(md5Hash, gatewayUrl, txToken = null) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
   try {
-    const res = await fetch(`${gatewayUrl}/api/v1/check/${encodeURIComponent(md5Hash)}`, {
-      method: 'GET',
+    const res = await fetch(`${gatewayUrl}/api/check-payment`, {
+      method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         Accept: 'application/json',
       },
+      body: JSON.stringify({
+        md5: md5Hash,
+        ...(txToken ? { txToken } : {}),
+      }),
       signal: controller.signal,
     });
     const json = await res.json().catch(() => null);
-    if (res.status === 404 && json && typeof json.responseCode === 'number') {
-      return json;
-    }
-    if (!res.ok || !json || typeof json !== 'object') {
-      throw new AppError(
-        `Bakong gateway returned HTTP ${res.status}`,
-        502,
-        'BAKONG_GATEWAY_UNAVAILABLE'
+
+    if (res.ok && json && typeof json === 'object') {
+      if (json.status === 'PAID' || json?.bakongApiFeedback?.responseCode === 0) {
+        const txDetails =
+          json?.bakongApiFeedback?.data ||
+          json?.transaction?.paymentDetails ||
+          json?.transaction ||
+          {};
+        return {
+          responseCode: 0,
+          source: json.source || txDetails.source || 'BAKONG_OFFICIAL_GATEWAY_ZERO_TOKEN',
+          data: {
+            hash: txDetails.hash || md5Hash,
+            fromAccountId: txDetails.fromAccountId || txDetails.payerAccount || null,
+            fromAccountName:
+              txDetails.fromAccountName ||
+              txDetails.payerName ||
+              txDetails.fromAccountId ||
+              null,
+            toAccountId: txDetails.toAccountId || json?.transaction?.bakongAccountId || null,
+            amount: txDetails.amount ?? json?.transaction?.amount,
+            currency: txDetails.currency || json?.transaction?.currency,
+            externalRef: txDetails.externalRef || json?.transaction?.billNumber || null,
+          },
+        };
+      }
+      if (typeof json.responseCode === 'number') {
+        return json;
+      }
+      if (json.cloudflareBlocked) {
+        const directTokenless = await queryBakongGatewayTokenless(md5Hash);
+        if (directTokenless) return directTokenless;
+      }
+      return (
+        json.bakongApiFeedback || {
+          responseCode: 1,
+          errorCode: 1,
+          responseMessage: 'Transaction not found yet',
+        }
       );
     }
-    return json;
+
+    const directFallback = await queryBakongGatewayTokenless(md5Hash);
+    if (directFallback) {
+      return directFallback;
+    }
+
+    throw new AppError(
+      `Bakong gateway returned HTTP ${res.status}`,
+      502,
+      'BAKONG_GATEWAY_UNAVAILABLE'
+    );
   } catch (err) {
+    const directFallback = await queryBakongGatewayTokenless(md5Hash);
+    if (directFallback) {
+      return directFallback;
+    }
     if (err instanceof AppError) throw err;
     throw new AppError(
       err?.name === 'AbortError'
@@ -337,14 +467,16 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
     currency === 'KHR' ? Math.max(1, Math.round(quote.total * 4100)) : quote.total;
 
   const transactionId = `KHQR-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-  const billNumber = `TT${Date.now().toString().slice(-8)}`;
+  const billNumber = `ORDER-${Date.now().toString().slice(-6)}`;
   const nowMs = Date.now();
-  const expiresMs = nowMs + 10 * 60 * 1000;
+  const expiresMs = nowMs + 5 * 60 * 1000;
   const nowIso = new Date(nowMs).toISOString();
   let expiresAt = new Date(expiresMs).toISOString();
 
   let khqrString;
   let md5Hash;
+  let txToken = null;
+  let gatewayQrDataUrl = null;
   let deeplink = null;
   let generatedViaGateway = false;
 
@@ -357,6 +489,8 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
       });
       khqrString = gwResult.khqrString;
       md5Hash = gwResult.md5Hash;
+      txToken = gwResult.txToken || null;
+      gatewayQrDataUrl = gwResult.qrDataUrl || null;
       deeplink = gwResult.deeplink || null;
       if (gwResult.expirationTimestamp && gwResult.expirationTimestamp > Date.now() + 15000) {
         expiresAt = new Date(gwResult.expirationTimestamp).toISOString();
@@ -397,22 +531,25 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
     md5Hash = generated.data.md5;
   }
 
-  const qrDataUrl = await QRCode.toDataURL(khqrString, {
-    width: 360,
-    margin: 1,
-    color: {
-      dark: '#0f172a',
-      light: '#ffffff',
-    },
-  });
+  const qrDataUrl =
+    gatewayQrDataUrl ||
+    (await QRCode.toDataURL(khqrString, {
+      width: 360,
+      margin: 1,
+      color: {
+        dark: '#0f172a',
+        light: '#ffffff',
+      },
+    }));
 
-  const hasBakongAutoVerify = Boolean(config.token || generatedViaGateway);
+  const hasBakongAutoVerify = Boolean(config.token || config.gatewayUrl || generatedViaGateway);
   const liveVerificationEnabled = hasBakongAutoVerify;
-  const fastPolling = Boolean(!config.token && generatedViaGateway);
+  const fastPolling = true;
   const record = {
     id: transactionId,
     transactionId,
     md5Hash,
+    txToken,
     billNumber,
     deeplink: deeplink || null,
     bakongAccountId: config.accountId,
@@ -430,7 +567,7 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
     status: 'PENDING',
     mode: config.token
       ? 'bakong_live'
-      : generatedViaGateway
+      : generatedViaGateway || config.gatewayUrl
       ? 'bakong_gateway'
       : 'telegram_verified',
     createdAt: nowIso,
@@ -444,8 +581,11 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
 
   return {
     transactionId,
+    md5: md5Hash,
     md5Hash,
+    txToken,
     billNumber,
+    qr: khqrString,
     khqrString,
     qrDataUrl,
     deeplink: deeplink || null,
@@ -552,9 +692,11 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
   if (!shouldSkipPollGateway && (config.token || config.gatewayUrl)) {
     let gatewayFallbackTriggered = false;
     try {
+      const effectiveTxToken = payload.txToken || paymentData.txToken || null;
+      const effectiveMd5 = String(payload.md5 || payload.md5Hash || paymentData.md5Hash || '').trim();
       const apiResult = config.token
-        ? await checkBakongTransactionByMd5(paymentData.md5Hash, config)
-        : await checkBakongViaGateway(paymentData.md5Hash, config.gatewayUrl);
+        ? await checkBakongTransactionByMd5(effectiveMd5, config)
+        : await checkBakongViaGateway(effectiveMd5, config.gatewayUrl, effectiveTxToken);
 
       const settled = await trySettleFromBakongApiResult(
         firestore,
@@ -567,6 +709,7 @@ export async function verifyKhqrPayment(payload = {}, user = null, req = null) {
       if (settled) {
         return {
           ...formatPaidReceipt(settled.verifiedRecord),
+          source: apiResult?.source || 'BAKONG_OFFICIAL_GATEWAY_ZERO_TOKEN',
           bakongData: settled.bakongData,
         };
       }
@@ -790,16 +933,6 @@ export function startBakongSettlementWatcher({
 
     if (!data.md5Hash) return;
 
-    // Avoid poisoning lorndavid.online's 10s L1-RAM cache during the first 8.5s while the customer is still scanning the QR
-    if (
-      !config.token &&
-      data.status !== 'AWAITING_ADMIN' &&
-      data.createdAt &&
-      Date.now() - Date.parse(data.createdAt) < 8500
-    ) {
-      return;
-    }
-
     inFlightIds.add(id);
     try {
       let apiResult = null;
@@ -807,7 +940,11 @@ export function startBakongSettlementWatcher({
         apiResult = await checkBakongTransactionByMd5(data.md5Hash, config);
       } else {
         try {
-          apiResult = await checkBakongViaGateway(data.md5Hash, config.gatewayUrl);
+          apiResult = await checkBakongViaGateway(
+            data.md5Hash,
+            config.gatewayUrl,
+            data.txToken || null
+          );
         } catch (gwErr) {
           if (config.token) {
             apiResult = await checkBakongTransactionByMd5(data.md5Hash, config);
