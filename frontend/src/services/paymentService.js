@@ -54,7 +54,7 @@ export const paymentService = {
       },
       body: JSON.stringify({
         bakongAccountId: backendSession?.bakongAccountId || 'seng_koemnan@bkrt',
-        merchantName: 'SENG KOEMNAN',
+        merchantName: 'TechTonic Store',
         merchantCity: 'Phnom Penh',
         amount: backendSession?.amount ?? normalizedAmount,
         currency: backendSession?.currency || normalizedCurrency,
@@ -86,7 +86,7 @@ export const paymentService = {
       khqrString: gwData.qr,
       billNumber: gwData.billNumber || billNumber,
       bakongAccountId: gwData.bakongAccountId || 'seng_koemnan@bkrt',
-      merchantName: gwData.merchantName || 'SENG KOEMNAN',
+      merchantName: 'TechTonic Store',
       amount: gwData.amount ?? normalizedAmount,
       currency: gwData.currency || normalizedCurrency,
       expiresAt: expiresAtIso,

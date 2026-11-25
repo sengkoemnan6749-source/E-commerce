@@ -374,7 +374,7 @@ export default function KHQRPayment({
         {/* Merchant Info */}
         <div className="px-4 pt-3 pb-2 text-center border-b border-slate-100">
           <h4 className="text-xs font-bold text-slate-900 tracking-tight">
-            {session?.merchantName || 'SENG KOEMNAN'}
+            TechTonic Store
           </h4>
           <p className="text-[11px] font-mono text-slate-500 mt-0.5">
             {session?.bakongAccountId || 'seng_koemnan@bkrt'}

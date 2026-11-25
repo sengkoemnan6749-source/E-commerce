@@ -34,14 +34,10 @@ function getBakongConfig() {
     !rawGateway || rawGateway.includes('lorndavid.online')
       ? 'https://khqr-aba-autoverify.vercel.app'
       : rawGateway;
-  const rawMerchant = String(process.env.BAKONG_MERCHANT_NAME || '').trim();
-  const merchantName = (
-    !rawMerchant || rawMerchant === 'TechTonic Store' ? 'SENG KOEMNAN' : rawMerchant
-  ).slice(0, 25);
 
   return {
     accountId: String(process.env.BAKONG_ACCOUNT_ID || 'seng_koemnan@bkrt').trim(),
-    merchantName,
+    merchantName: 'TechTonic Store',
     merchantCity: String(process.env.BAKONG_MERCHANT_CITY || 'Phnom Penh').trim().slice(0, 15),
     apiUrl: String(process.env.BAKONG_API_URL || 'https://api-bakong.nbc.gov.kh').replace(/\/+$/, ''),
     gatewayUrl,
