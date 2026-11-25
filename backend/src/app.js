@@ -35,8 +35,21 @@ function isAllowedCorsOrigin(origin) {
   if (!origin) return true;
   const normalized = normalizeOrigin(origin);
   if (allowedOrigins.includes(normalized)) return true;
-  // Allow Flutter Web / local dev servers on any localhost port
-  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(normalized)) {
+  // Allow all Vercel production & preview deployments for this project
+  if (
+    /^https:\/\/(e-commerce(-[a-z0-9-]+)?|khqr-aba-autoverify(-[a-z0-9-]+)?)\.vercel\.app$/i.test(
+      normalized
+    ) ||
+    normalized === 'https://sengkoemnan6749-source.github.io'
+  ) {
+    return true;
+  }
+  // Allow Flutter Web / local dev servers on any localhost or LAN port
+  if (
+    /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)(:\d+)?$/i.test(
+      normalized
+    )
+  ) {
     return true;
   }
   return false;

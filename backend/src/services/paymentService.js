@@ -27,18 +27,24 @@ function ensureDb() {
 }
 
 function getBakongConfig() {
+  const rawGateway = String(process.env.BAKONG_GATEWAY_URL || '')
+    .trim()
+    .replace(/\/+$/, '');
+  const gatewayUrl =
+    !rawGateway || rawGateway.includes('lorndavid.online')
+      ? 'https://khqr-aba-autoverify.vercel.app'
+      : rawGateway;
+  const rawMerchant = String(process.env.BAKONG_MERCHANT_NAME || '').trim();
+  const merchantName = (
+    !rawMerchant || rawMerchant === 'TechTonic Store' ? 'SENG KOEMNAN' : rawMerchant
+  ).slice(0, 25);
+
   return {
     accountId: String(process.env.BAKONG_ACCOUNT_ID || 'seng_koemnan@bkrt').trim(),
-    merchantName: String(process.env.BAKONG_MERCHANT_NAME || 'SENG KOEMNAN').trim().slice(0, 25),
+    merchantName,
     merchantCity: String(process.env.BAKONG_MERCHANT_CITY || 'Phnom Penh').trim().slice(0, 15),
     apiUrl: String(process.env.BAKONG_API_URL || 'https://api-bakong.nbc.gov.kh').replace(/\/+$/, ''),
-    gatewayUrl: String(
-      process.env.BAKONG_GATEWAY_URL !== undefined
-        ? process.env.BAKONG_GATEWAY_URL
-        : 'https://khqr-aba-autoverify.vercel.app'
-    )
-      .trim()
-      .replace(/\/+$/, ''),
+    gatewayUrl,
     token: String(process.env.BAKONG_TOKEN || '').trim(),
   };
 }
