@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../store/StoreContext';
 
 // Layouts
@@ -38,6 +38,7 @@ import AdminAuditLogs from '../admin/AuditLogs';
 import AdminSupport from '../admin/Support';
 import AdminPromos from '../admin/Promos';
 import AdminShipping from '../admin/Shipping';
+import AdminLogin from '../admin/Login';
 
 function CustomerRouteGuard({ children }) {
   const { isAuthenticated, authReady } = useAuth();
@@ -56,6 +57,10 @@ function CustomerRouteGuard({ children }) {
 
 function AdminRouteGuard({ children }) {
   const { user, isAuthenticated, isAdmin, authReady } = useAuth();
+  const location = useLocation();
+  const isTechTonicRoute = location.pathname.toLowerCase().startsWith('/techtonicadmin');
+  const loginPath = isTechTonicRoute ? '/TechTonicAdmin/login' : '/admin/login';
+
   if (!authReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] text-xs font-medium text-slate-500">
@@ -64,7 +69,8 @@ function AdminRouteGuard({ children }) {
     );
   }
   if (!isAuthenticated) {
-    return <Navigate to="/login?redirect=/admin" replace />;
+    const redirectTarget = encodeURIComponent(`${location.pathname}${location.search}`);
+    return <Navigate to={`${loginPath}?redirect=${redirectTarget}`} replace />;
   }
   if (!isAdmin && user?.role !== 'admin') {
     return <Navigate to="/account" replace />;
@@ -116,6 +122,11 @@ export default function AppRoutes() {
       {/* Dedicated Big-Tech Account Portal (Like Xiaomi Account, Apple ID, Tesla) */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+
+      {/* Dedicated Admin Login Routes (Separate from Customer Login) */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/TechTonicAdmin/login" element={<AdminLogin />} />
+      <Route path="/techtonicadmin/login" element={<Navigate to="/TechTonicAdmin/login" replace />} />
 
       {/* Protected TechTonicAdmin Route */}
       <Route

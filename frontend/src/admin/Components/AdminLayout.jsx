@@ -15,6 +15,7 @@ import {
   ExternalLink,
   ShieldAlert,
   Lock,
+  LogOut,
   MessageSquare,
   Tag,
   Truck
@@ -34,7 +35,7 @@ function AdminLayoutShell() {
   const notifRef = useRef(null);
   const navigate = useNavigate();
   const { language } = useLanguage();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const location = useLocation();
   const isTechTonicAdminRoute = location.pathname.toLowerCase().startsWith('/techtonicadmin');
@@ -506,6 +507,21 @@ function AdminLayoutShell() {
               title={language === 'km' ? 'ចាក់សោ Admin' : 'Lock Admin'}
             >
               <Lock className="w-4 h-4" />
+            </button>
+
+            {/* Sign Out Admin */}
+            <button
+              type="button"
+              onClick={async () => {
+                await adminService.lockVault();
+                logout();
+                navigate(`${adminBase}/login`, { replace: true });
+              }}
+              className="h-9 w-9 rounded-xl text-slate-600 hover:text-rose-600 bg-slate-100/80 hover:bg-rose-50 border border-slate-200/80 hover:border-rose-200 flex items-center justify-center transition-colors cursor-pointer"
+              aria-label={language === 'km' ? 'ចាកចេញពី Admin' : 'Sign Out Admin'}
+              title={language === 'km' ? 'ចាកចេញពី Admin' : 'Sign Out Admin'}
+            >
+              <LogOut className="w-4 h-4" />
             </button>
 
               {/* Admin Profile */}

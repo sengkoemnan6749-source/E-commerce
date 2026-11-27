@@ -62,11 +62,15 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
   const [twoFaUseRecovery, setTwoFaUseRecovery] = useState(false);
   const [twoFaRecoveryCode, setTwoFaRecoveryCode] = useState('');
 
-  // Query redirect handling (sanitized to strictly allow same-origin relative routes)
+  // Query redirect handling (sanitized to strictly allow same-origin customer routes)
   const searchParams = new URLSearchParams(location.search);
   const redirectQuery = sanitizeInternalRedirect(searchParams.get('redirect'));
   const stateFrom = sanitizeInternalRedirect(location.state?.from?.pathname);
   const from = stateFrom || redirectQuery || null;
+  const isAdminDestination = (p) =>
+    typeof p === 'string' &&
+    (p.toLowerCase().startsWith('/admin') || p.toLowerCase().startsWith('/techtonicadmin'));
+  const customerTarget = from && !isAdminDestination(from) ? from : '/account';
 
   // Anti-Brute-Force Sign-In Protection (5 failed attempts -> 30s lockout)
   const LOCKOUT_KEY = 'techtonic_auth_lockout';
@@ -154,7 +158,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
             : `Welcome back, ${res.user.name || res.user.fullName || 'Member'}!`,
           'success'
         );
-        navigate(from || (res.user?.role === 'admin' ? '/admin' : '/account'), { replace: true });
+        navigate(customerTarget, { replace: true });
       } else if (res.requires2fa) {
         setFailedAttempts(0);
         setLockoutUntil(0);
@@ -246,7 +250,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
           language === 'km' ? 'បានបង្កើតគណនីដោយជោគជ័យ! សូមស្វាគមន៍មកកាន់ TechTonic' : 'Account created successfully! Welcome to TechTonic.',
           'success'
         );
-        navigate(from || (res.user?.role === 'admin' ? '/admin' : '/account'), { replace: true });
+        navigate(customerTarget, { replace: true });
       } else {
         setGeneralError(res.message || 'Registration failed');
       }
@@ -269,7 +273,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
             : `Signed in with Google, ${res.user?.fullName || 'Member'}!`,
           'success'
         );
-        navigate(from || (res.user?.role === 'admin' ? '/admin' : '/account'), { replace: true });
+        navigate(customerTarget, { replace: true });
       } else if (!res?.requires2fa) {
         setGeneralError(res?.message || 'Google sign-in failed');
       }
@@ -323,7 +327,7 @@ export default function AuthPortal({ defaultMode = 'signin' }) {
           language === 'km' ? 'បានផ្ទៀងផ្ទាត់ 2FA ដោយជោគជ័យ!' : 'Two-factor verification successful!',
           'success'
         );
-        navigate(from || (res.user?.role === 'admin' ? '/admin' : '/account'), { replace: true });
+        navigate(customerTarget, { replace: true });
       } else {
         setGeneralError(res?.message || 'Invalid verification code');
       }
