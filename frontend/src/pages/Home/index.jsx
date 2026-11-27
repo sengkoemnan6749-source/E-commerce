@@ -574,16 +574,16 @@ export default function Home() {
               <Link
                 key={cat.id}
                 to={`/shop?category=${encodeURIComponent(cat.name)}`}
-                className="group relative flex flex-col rounded-[28px] p-[1.25px] bg-gradient-to-b from-slate-200/95 via-slate-200/55 to-slate-300/75 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_28px_-14px_rgba(15,23,42,0.10)] hover:shadow-[0_2px_6px_rgba(15,23,42,0.05),0_26px_54px_-18px_rgba(15,23,42,0.18),0_14px_30px_-14px_rgba(37,99,235,0.14)] hover:-translate-y-1.5 transition-all duration-300"
+                className="group relative flex flex-col rounded-[28px] p-[1.25px] bg-gradient-to-b from-slate-200/95 via-slate-200/55 to-slate-300/75 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_28px_-14px_rgba(15,23,42,0.10)] hover:shadow-[0_2px_6px_rgba(15,23,42,0.05),0_26px_54px_-18px_rgba(15,23,42,0.18),0_14px_30px_-14px_rgba(15,23,42,0.22)] hover:-translate-y-1.5 transition-all duration-300"
               >
                 {/* Precision Hover Bezel Glow */}
-                <div className="pointer-events-none absolute inset-0 rounded-[28px] bg-gradient-to-br from-sky-400/65 via-blue-500/35 to-indigo-500/65 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="pointer-events-none absolute inset-0 rounded-[28px] bg-slate-950 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                 {/* Inner White Card Body */}
                 <div className="relative flex flex-col flex-1 bg-white rounded-[26.75px] overflow-hidden ring-1 ring-inset ring-white/90">
                   {/* Visual Stage with Ambient Radial Light and Inset Frame */}
                   <div className="p-2.5 pb-0">
-                    <div className={`relative h-44 w-full rounded-[20px] bg-gradient-to-b ${meta.gradient} flex items-center justify-center p-4 overflow-hidden ring-1 ring-inset ring-slate-900/[0.05] group-hover:ring-blue-500/[0.12] transition-all duration-300`}>
+                    <div className={`relative h-44 w-full rounded-[20px] bg-gradient-to-b ${meta.gradient} flex items-center justify-center p-4 overflow-hidden ring-1 ring-inset ring-slate-900/[0.05] group-hover:ring-slate-900/[0.12] transition-all duration-300`}>
                       {/* Subtle animated ambient aura */}
                       <div className="absolute w-32 h-32 rounded-full bg-white/60 blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
                       
