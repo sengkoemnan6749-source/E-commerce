@@ -78,6 +78,7 @@ function normalizeProduct(p) {
 
   return {
     ...p,
+    rating: Number(p.rating) > 0 ? Number(p.rating) : (mockMatch?.rating || 4.9),
     image: primaryImg,
     secondaryImage: secondaryImg,
     images: combinedGallery,

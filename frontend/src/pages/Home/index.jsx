@@ -40,9 +40,16 @@ import WhyChooseUsBento from '../../components/home/WhyChooseUsBento';
 export default function Home() {
   const { t, language } = useLanguage();
   const { addToast } = useToast();
+  const [catalogTick, setCatalogTick] = useState(0);
   const allProducts = productService.getProducts();
   const categories = productService.getCategories();
   const [activePromos, setActivePromos] = useState([]);
+
+  React.useEffect(() => {
+    const refresh = () => setCatalogTick((t) => t + 1);
+    window.addEventListener('techtonic:products-updated', refresh);
+    return () => window.removeEventListener('techtonic:products-updated', refresh);
+  }, []);
 
   React.useEffect(() => {
     let mounted = true;
@@ -70,8 +77,27 @@ export default function Home() {
     );
   };
 
-  const featuredProducts = allProducts.filter((p) => p.isFeatured).slice(0, 4);
-  const bestSellers = allProducts.filter((p) => p.rating >= 4.8).slice(0, 4);
+  const featuredPool = allProducts.filter((p) => p.isFeatured || p.featured);
+  const featuredProducts = (featuredPool.length > 0 ? featuredPool : allProducts).slice(0, 4);
+  const featuredIds = new Set(featuredProducts.map((p) => p.id));
+  const ratedCandidates = allProducts
+    .filter((p) => Number(p.rating) >= 4.8)
+    .sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+  const nonFeaturedBest = ratedCandidates.filter((p) => !featuredIds.has(p.id));
+  const bestSellerPool = [
+    ...nonFeaturedBest,
+    ...allProducts.filter((p) => !featuredIds.has(p.id) && !nonFeaturedBest.some((r) => r.id === p.id)),
+    ...ratedCandidates,
+    ...allProducts,
+  ];
+  const bestSellers = [];
+  const seenBest = new Set();
+  for (const item of bestSellerPool) {
+    if (!item || seenBest.has(item.id)) continue;
+    seenBest.add(item.id);
+    bestSellers.push(item);
+    if (bestSellers.length >= 4) break;
+  }
 
   // Interactive Smartwatch Incoming Call Simulation State
   const [callActive, setCallActive] = useState(false);
