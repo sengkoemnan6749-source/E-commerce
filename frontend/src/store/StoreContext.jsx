@@ -5,6 +5,7 @@ import { api } from '../services/api';
 import { authService } from '../services/authService';
 import { productService } from '../services/productService';
 import { orderService } from '../services/orderService';
+import { shippingService } from '../services/shippingService';
 import { getTranslation } from '../utils/translations';
 
 const StoreContext = createContext(null);
@@ -342,6 +343,22 @@ export function StoreProvider({ children }) {
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
+  const [shippingConfig, setShippingConfig] = useState(() => shippingService.getCachedShippingConfig());
+
+  useEffect(() => {
+    let active = true;
+    shippingService.fetchShippingConfig().then((cfg) => {
+      if (active && cfg) setShippingConfig(cfg);
+    });
+    const onShippingUpdate = (e) => {
+      if (e?.detail) setShippingConfig(e.detail);
+    };
+    window.addEventListener('techtonic:shipping-updated', onShippingUpdate);
+    return () => {
+      active = false;
+      window.removeEventListener('techtonic:shipping-updated', onShippingUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -479,10 +496,53 @@ export function StoreProvider({ children }) {
   };
 
   // Cart calculations
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingFee = 0; // Free shipping enabled for direct testing & checkout
-  const total = Math.max(0, subtotal + shippingFee - discount);
+  const subtotal = Math.round(
+    cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0) * 100
+  ) / 100;
+  const freeShippingThreshold = Number(shippingConfig?.freeShippingThreshold || 0);
+  const shippingFee =
+    cart.length > 0
+      ? shippingService.calculateShippingFee(shippingConfig, null, subtotal).shippingFee
+      : 0;
+  const effectiveDiscount =
+    cart.length > 0
+      ? Math.round(Math.min(subtotal, Math.max(0, Number(discount || 0))) * 100) / 100
+      : 0;
+  const total = Math.round(Math.max(0, subtotal + shippingFee - effectiveDiscount) * 100) / 100;
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Re-validate active promo code when cart items/subtotal change
+  useEffect(() => {
+    if (!promoCode) return undefined;
+    if (cart.length === 0 || subtotal <= 0) {
+      setDiscount(0);
+      setPromoCode('');
+      return undefined;
+    }
+    let active = true;
+    const timer = window.setTimeout(() => {
+      api
+        .post('/promos/validate', { code: promoCode, subtotal })
+        .then((res) => {
+          if (!active) return;
+          if (res?.data?.valid) {
+            setDiscount(Number(res.data.discountAmount || 0));
+          } else {
+            setDiscount(0);
+            setPromoCode('');
+          }
+        })
+        .catch(() => {
+          if (!active) return;
+          setDiscount(0);
+          setPromoCode('');
+        });
+    }, 250);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [subtotal, promoCode, cart.length]);
 
   // -------------------------------------------------------------
   // 4. Wishlist State
@@ -615,10 +675,11 @@ export function StoreProvider({ children }) {
     totalItems: cartCount,
     subtotal,
     shippingFee,
-    discount,
-    discountAmount: discount,
+    freeShippingThreshold,
+    discount: effectiveDiscount,
+    discountAmount: effectiveDiscount,
     promoCode,
-    appliedCoupon: promoCode ? { code: promoCode, amount: discount } : null,
+    appliedCoupon: promoCode ? { code: promoCode, amount: effectiveDiscount } : null,
     total,
     isCartDrawerOpen,
     isDrawerOpen: isCartDrawerOpen,

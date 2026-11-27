@@ -219,6 +219,7 @@ export async function computeServerOrderQuote(
     shippingFee,
     deliveryPartnerId: deliveryPartner.id,
     deliveryPartnerName: deliveryPartner.name,
+    deliveryPartnerEta: deliveryPartner.eta || '1 - 2 Business Days',
     deliveryPartnerWebsite: deliveryPartner.website || '',
     freeShippingApplied: shippingResolution.freeShippingApplied,
     discountAmount,
@@ -480,8 +481,8 @@ export async function createOrder(payload = {}, user = null, req = null) {
         tracking: {
           courier: String(payload.courier || quote.deliveryPartnerName || 'Vireak Buntham Express (VET)'),
           courierWebsite: String(payload.carrierWebsite || quote.deliveryPartnerWebsite || ''),
-          trackingCode: `TT-${orderId.slice(-8)}`,
-          estimatedDelivery: 'Today by 5:30 PM',
+          trackingCode: cleanOrderField(payload.trackingNumber, 40) || `TT-${orderId.slice(-8)}`,
+          estimatedDelivery: cleanOrderField(payload.estimatedDelivery, 80) || quote.deliveryPartnerEta || '1 - 2 Business Days',
           driverName: 'Pending Driver Assignment',
           driverPhone: 'Pending',
           events: [

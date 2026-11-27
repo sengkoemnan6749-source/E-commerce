@@ -7,7 +7,7 @@ import Button from '../common/Button';
 import { formatUSD } from '../../utils/formatPrice';
 
 export default function CartDrawer() {
-  const { isDrawerOpen, closeDrawer, items, updateQuantity, removeFromCart, subtotal, totalItems } = useCart();
+  const { isDrawerOpen, closeDrawer, items, updateQuantity, removeFromCart, subtotal, totalItems, freeShippingThreshold = 0 } = useCart();
   const { user } = useAuth();
   const { addToast } = useToast();
   const { t, language } = useLanguage();
@@ -73,23 +73,23 @@ export default function CartDrawer() {
             </button>
           </div>
 
-          {/* Delivery Threshold Notice (Clean white + thin progress bar, no pastel banner) */}
-          {items.length > 0 && (
+          {/* Delivery Threshold Notice (Only shown when threshold > 0) */}
+          {items.length > 0 && Number(freeShippingThreshold) > 0 && (
             <div className="bg-white border-b border-slate-100">
               <div className="px-5 py-2.5 text-xs text-slate-600 flex items-center gap-2">
-                <Truck className={`w-4 h-4 flex-shrink-0 ${subtotal >= 100 ? 'text-emerald-600' : 'text-slate-400'}`} />
-                <span className={subtotal >= 100 ? 'font-medium text-slate-700' : ''}>
-                  {subtotal >= 100
+                <Truck className={`w-4 h-4 flex-shrink-0 ${subtotal >= Number(freeShippingThreshold) ? 'text-emerald-600' : 'text-slate-400'}`} />
+                <span className={subtotal >= Number(freeShippingThreshold) ? 'font-medium text-slate-700' : ''}>
+                  {subtotal >= Number(freeShippingThreshold)
                     ? t('cart_free_shipping_eligible', 'You unlocked Free Express Delivery!')
                     : language === 'km'
-                    ? `${t('cart_add_prefix', 'បន្ថែម')} ${formatUSD(100 - subtotal)} ${t('cart_free_shipping_remaining', 'ទៀត ដើម្បីទទួលបានសេវាដឹកឥតគិតថ្លៃ')}`
-                    : `Add ${formatUSD(100 - subtotal)} ${t('cart_free_shipping_remaining', 'away from Free Express Delivery')}`}
+                    ? `${t('cart_add_prefix', 'បន្ថែម')} ${formatUSD(Number(freeShippingThreshold) - subtotal)} ${t('cart_free_shipping_remaining', 'ទៀត ដើម្បីទទួលបានសេវាដឹកឥតគិតថ្លៃ')}`
+                    : `Add ${formatUSD(Number(freeShippingThreshold) - subtotal)} ${t('cart_free_shipping_remaining', 'away from Free Express Delivery')}`}
                 </span>
               </div>
               <div className="h-0.5 w-full bg-slate-100">
                 <div
-                  className={`h-full transition-all duration-300 ${subtotal >= 100 ? 'bg-emerald-500' : 'bg-blue-600'}`}
-                  style={{ width: `${Math.min(100, Math.round((subtotal / 100) * 100))}%` }}
+                  className={`h-full transition-all duration-300 ${subtotal >= Number(freeShippingThreshold) ? 'bg-emerald-500' : 'bg-blue-600'}`}
+                  style={{ width: `${Math.min(100, Math.round((subtotal / Number(freeShippingThreshold)) * 100))}%` }}
                 />
               </div>
             </div>

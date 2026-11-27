@@ -16,9 +16,17 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const { language } = useLanguage();
 
+  const [catalogTick, setCatalogTick] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setCatalogTick((v) => v + 1);
+    window.addEventListener('techtonic:products-updated', refresh);
+    return () => window.removeEventListener('techtonic:products-updated', refresh);
+  }, []);
+
   const product = useMemo(() => {
     return productService.getProductById(id);
-  }, [id]);
+  }, [id, catalogTick]);
 
   // Synchronized Variant & Image state
   const [selectedVariant, setSelectedVariant] = useState(

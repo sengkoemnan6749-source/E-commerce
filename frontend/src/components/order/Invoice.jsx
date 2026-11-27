@@ -36,7 +36,7 @@ export default function Invoice({ order, onBack }) {
   const items = Array.isArray(order.items) ? order.items : [];
   const blankRowCount = Math.max(0, 7 - items.length);
 
-  const subtotal = order.subtotal || order.total || 0;
+  const subtotal = order.subtotal ?? order.total ?? 0;
   const shippingFee = order.shippingFee !== undefined ? order.shippingFee : 0;
   const discount = order.discount || order.discountAmount || 0;
   const grandTotal = order.total ?? (subtotal + shippingFee - discount);

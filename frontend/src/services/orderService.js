@@ -83,8 +83,8 @@ function normalizeOrder(o) {
     items: o.items || [],
     paymentMethod: o.paymentMethod || 'KHQR (Bakong / ABA)',
     paymentStatus: o.paymentStatus || 'PAID',
-    carrier: o.carrier || o.courier || 'GrabExpress Phnom Penh',
-    estimatedDelivery: o.estimatedDelivery || 'Scheduled for dispatch',
+    carrier: o.tracking?.courier || o.carrier || o.courier || o.deliveryPartner || 'Vireak Buntham Express (VET)',
+    estimatedDelivery: o.tracking?.estimatedDelivery || o.estimatedDelivery || '1 - 2 Business Days',
     createdAt: o.createdAt || new Date().toISOString()
   };
 }
@@ -122,6 +122,8 @@ export const orderService = {
       courier: orderPayload.deliveryPartner,
       carrierWebsite: orderPayload.carrierWebsite || '',
       deliveryPartnerId: orderPayload.deliveryPartnerId || orderPayload.shippingAddress?.deliveryPartner || null,
+      trackingNumber: orderPayload.trackingNumber || null,
+      estimatedDelivery: orderPayload.estimatedDelivery || null,
       shippingAddress: {
         ...(orderPayload.shippingAddress || {}),
         fullName: orderPayload.customerName || orderPayload.shippingAddress?.fullName,

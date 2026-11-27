@@ -11,18 +11,22 @@ export default function OrderSummary({ items = [], subtotal = 0, shippingFee = 0
   const { addToast } = useToast();
   const [promoInput, setPromoInput] = useState('');
   const [applyingPromo, setApplyingPromo] = useState(false);
+  const [promoError, setPromoError] = useState('');
 
   const handleApplyPromo = async (codeToApply) => {
     const clean = String(codeToApply || promoInput || '').trim();
     if (!clean) return;
     setApplyingPromo(true);
+    setPromoError('');
     try {
       const res = await applyCoupon(clean);
       if (res?.success) {
         addToast(res.message, 'success');
         setPromoInput('');
       } else {
-        addToast(res?.message || 'Invalid promo code.', 'error');
+        const msg = res?.message || (language === 'km' ? 'កូដប្រូម៉ូសិនមិនត្រឹមត្រូវទេ។' : 'Invalid promo code.');
+        setPromoError(msg);
+        addToast(msg, 'error');
       }
     } finally {
       setApplyingPromo(false);
@@ -113,7 +117,10 @@ export default function OrderSummary({ items = [], subtotal = 0, shippingFee = 0
               <input
                 type="text"
                 value={promoInput}
-                onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  setPromoInput(e.target.value.toUpperCase());
+                  if (promoError) setPromoError('');
+                }}
                 placeholder={language === 'km' ? 'បញ្ចូលកូដប្រូម៉ូសិន...' : 'Promo code...'}
                 className="flex-1 uppercase rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-mono font-bold text-slate-800 placeholder:normal-case placeholder:font-sans placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
@@ -126,6 +133,9 @@ export default function OrderSummary({ items = [], subtotal = 0, shippingFee = 0
                 {language === 'km' ? 'ប្រើកូដ' : 'Apply'}
               </button>
             </div>
+            {promoError && (
+              <p className="mt-1.5 text-[11px] font-semibold text-rose-600">{promoError}</p>
+            )}
             <PromoVouchersList
               subtotal={subtotal}
               applying={applyingPromo}

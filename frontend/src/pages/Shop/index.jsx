@@ -36,8 +36,15 @@ export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { wishlist, isInWishlist } = useWishlist();
   const { t, language } = useLanguage();
+  const [catalogTick, setCatalogTick] = useState(0);
   const allProducts = productService.getProducts();
   const categories = productService.getCategories();
+
+  useEffect(() => {
+    const refresh = () => setCatalogTick((v) => v + 1);
+    window.addEventListener('techtonic:products-updated', refresh);
+    return () => window.removeEventListener('techtonic:products-updated', refresh);
+  }, []);
 
   const isWishlistOnly = searchParams.get('filter') === 'wishlist';
 
@@ -189,8 +196,8 @@ export default function Shop() {
           const matchesTag = (p.tagline || '').toLowerCase().includes(q);
           if (!matchesName && !matchesBrand && !matchesCat && !matchesSub && !matchesDesc && !matchesTag) return false;
         }
-        // Price match
-        if (p.price > maxPrice) {
+        // Price match (350 means $350+, no upper cap)
+        if (maxPrice < 350 && p.price > maxPrice) {
           return false;
         }
         // Stock match
@@ -203,11 +210,17 @@ export default function Shop() {
         if (sortBy === 'price-low') return a.price - b.price;
         if (sortBy === 'price-high') return b.price - a.price;
         if (sortBy === 'rating') return b.rating - a.rating;
-        if (sortBy === 'newest') return b.id - a.id;
+        if (sortBy === 'newest') {
+          return String(b.createdAt || b.id || '').localeCompare(
+            String(a.createdAt || a.id || ''),
+            undefined,
+            { numeric: true }
+          );
+        }
         // Default: featured
         return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
       });
-  }, [allProducts, selectedCategory, selectedSubcategory, searchQuery, maxPrice, inStockOnly, sortBy, isWishlistOnly, isInWishlist]);
+  }, [allProducts, catalogTick, selectedCategory, selectedSubcategory, searchQuery, maxPrice, inStockOnly, sortBy, isWishlistOnly, isInWishlist]);
 
   // Pagination slice
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);

@@ -53,6 +53,7 @@ export default function Checkout() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
   const khqrSessionRef = useRef(null);
   const finalizingRef = useRef(false);
   const getUserKey = (u) => u?.id || u?.uid || u?.email || null;
@@ -195,6 +196,7 @@ export default function Checkout() {
   const handleNextToPayment = (e) => {
     e.preventDefault();
     if (validateStep1()) {
+      setCheckoutError('');
       setCurrentStep(2);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -210,6 +212,7 @@ export default function Checkout() {
     if (finalizingRef.current) return;
     finalizingRef.current = true;
     setIsProcessing(true);
+    setCheckoutError('');
 
     try {
       let paymentResult;
@@ -316,10 +319,9 @@ export default function Checkout() {
       );
       navigate(`/order-success?orderId=${newOrder.id}`);
     } catch (err) {
-      addToast(
-        err.message || (language === 'km' ? 'ការទូទាត់បរាជ័យ។ សូមព្យាយាមម្ដងទៀត។' : 'Payment processing failed. Please retry.'),
-        'error'
-      );
+      const msg = err.message || (language === 'km' ? 'ការទូទាត់បរាជ័យ។ សូមព្យាយាមម្ដងទៀត។' : 'Payment processing failed. Please retry.');
+      setCheckoutError(msg);
+      addToast(msg, 'error');
     } finally {
       finalizingRef.current = false;
       setIsProcessing(false);
@@ -441,6 +443,11 @@ export default function Checkout() {
               </div>
 
               <div className="space-y-6">
+                {checkoutError && (
+                  <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+                    {checkoutError}
+                  </div>
+                )}
                 <PaymentMethod selectedMethod="khqr" onSelectMethod={() => {}} />
 
                 <KHQRPayment

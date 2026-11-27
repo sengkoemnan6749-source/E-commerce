@@ -11,6 +11,7 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
     subtotal,
     discountAmount,
     shippingFee,
+    freeShippingThreshold = 0,
     total,
     appliedCoupon,
     applyCoupon,
@@ -24,18 +25,22 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
 
   const [couponCode, setCouponCode] = useState('');
   const [applying, setApplying] = useState(false);
+  const [promoError, setPromoError] = useState('');
 
   const applyCode = async (rawCode) => {
     const clean = String(rawCode || '').trim();
     if (!clean) return;
     setApplying(true);
+    setPromoError('');
     try {
       const res = await applyCoupon(clean);
       if (res?.success) {
         addToast(res.message, 'success');
         setCouponCode('');
       } else {
-        addToast(res?.message || 'Invalid promo code.', 'error');
+        const msg = res?.message || (language === 'km' ? 'កូដប្រូម៉ូសិនមិនត្រឹមត្រូវទេ។' : 'Invalid promo code.');
+        setPromoError(msg);
+        addToast(msg, 'error');
       }
     } finally {
       setApplying(false);
@@ -60,9 +65,11 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
     }
   };
 
-  const freeShippingThreshold = 100;
-  const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
-  const freeShippingProgress = Math.min(100, Math.round((subtotal / freeShippingThreshold) * 100));
+  const hasThreshold = Number(freeShippingThreshold) > 0;
+  const remainingForFreeShipping = hasThreshold ? Math.max(0, Number(freeShippingThreshold) - subtotal) : 0;
+  const freeShippingProgress = hasThreshold
+    ? Math.min(100, Math.round((subtotal / Number(freeShippingThreshold)) * 100))
+    : 0;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm flex flex-col gap-5">
@@ -70,25 +77,27 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
         {t('cart_order_summary', 'Order Summary')}
       </h3>
 
-      {/* Free Shipping Progress bar */}
-      <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-100">
-        <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
-          <span className="text-blue-950 flex items-center gap-1.5">
-            <Truck className="w-3.5 h-3.5 text-blue-600" />
-            {remainingForFreeShipping === 0
-              ? t('cart_free_shipping_eligible', 'Congratulations! You unlocked FREE express delivery')
-              : language === 'km'
-              ? `${t('cart_add_prefix', 'បន្ថែម')} ${formatUSD(remainingForFreeShipping)} ${t('cart_free_shipping_remaining', 'ទៀត ដើម្បីទទួលបានសេវាដឹកឥតគិតថ្លៃ')}`
-              : `Add ${formatUSD(remainingForFreeShipping)} more for FREE Express delivery`}
-          </span>
+      {/* Free Shipping Progress bar (only shown when threshold > 0) */}
+      {hasThreshold && (
+        <div className="p-3.5 rounded-xl bg-blue-50/70 border border-blue-100">
+          <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
+            <span className="text-blue-950 flex items-center gap-1.5">
+              <Truck className="w-3.5 h-3.5 text-blue-600" />
+              {remainingForFreeShipping === 0
+                ? t('cart_free_shipping_eligible', 'Congratulations! You unlocked FREE express delivery')
+                : language === 'km'
+                ? `${t('cart_add_prefix', 'បន្ថែម')} ${formatUSD(remainingForFreeShipping)} ${t('cart_free_shipping_remaining', 'ទៀត ដើម្បីទទួលបានសេវាដឹកឥតគិតថ្លៃ')}`
+                : `Add ${formatUSD(remainingForFreeShipping)} more for FREE Express delivery`}
+            </span>
+          </div>
+          <div className="h-2 w-full bg-blue-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${freeShippingProgress}%` }}
+            />
+          </div>
         </div>
-        <div className="h-2 w-full bg-blue-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${freeShippingProgress}%` }}
-          />
-        </div>
-      </div>
+      )}
 
       {/* Price breakdown */}
       <div className="space-y-3 text-sm text-slate-600">
@@ -159,7 +168,10 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
               <input
                 type="text"
                 value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  setCouponCode(e.target.value.toUpperCase());
+                  if (promoError) setPromoError('');
+                }}
                 placeholder="TECH10 / SAVE5"
                 className="w-full uppercase rounded-xl border border-slate-300 px-3 py-2 text-xs font-mono font-bold text-slate-800 placeholder:normal-case placeholder:font-sans placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
@@ -174,6 +186,9 @@ export default function CartSummary({ showCheckoutButton = true, onCheckout }) {
               {t('cart_apply', 'Apply')}
             </Button>
           </div>
+          {promoError && (
+            <p className="mt-1.5 text-[11px] font-semibold text-rose-600">{promoError}</p>
+          )}
           <PromoVouchersList
             subtotal={subtotal}
             applying={applying}
