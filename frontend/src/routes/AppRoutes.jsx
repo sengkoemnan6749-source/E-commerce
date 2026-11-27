@@ -37,6 +37,7 @@ import AdminCustomers from '../admin/Customers';
 import AdminAuditLogs from '../admin/AuditLogs';
 import AdminSupport from '../admin/Support';
 import AdminPromos from '../admin/Promos';
+import AdminShipping from '../admin/Shipping';
 
 function CustomerRouteGuard({ children }) {
   const { isAuthenticated, authReady } = useAuth();
@@ -131,6 +132,7 @@ export default function AppRoutes() {
         <Route path="orders" element={<AdminOrders />} />
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="promos" element={<AdminPromos />} />
+        <Route path="shipping" element={<AdminShipping />} />
         <Route path="support" element={<AdminSupport />} />
         <Route path="audit-logs" element={<AdminAuditLogs />} />
       </Route>
@@ -153,6 +155,7 @@ export default function AppRoutes() {
         <Route path="orders" element={<AdminOrders />} />
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="promos" element={<AdminPromos />} />
+        <Route path="shipping" element={<AdminShipping />} />
         <Route path="support" element={<AdminSupport />} />
         <Route path="audit-logs" element={<AdminAuditLogs />} />
       </Route>

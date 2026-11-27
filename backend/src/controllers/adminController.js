@@ -1,5 +1,6 @@
 import * as adminService from '../services/adminService.js';
 import * as promoService from '../services/promoService.js';
+import * as shippingService from '../services/shippingService.js';
 import { recordAuditEvent, listAuditLogs } from '../services/auditService.js';
 
 export async function getDashboard(_req, res, next) {
@@ -227,6 +228,34 @@ export async function deletePromoCode(req, res, next) {
       details: `Deleted promo code "${result.deletedCode}"`,
     });
     res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getShippingRates(_req, res, next) {
+  try {
+    const config = await shippingService.getShippingConfig();
+    res.json({ success: true, data: config });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateShippingRates(req, res, next) {
+  try {
+    const updated = await shippingService.updateShippingConfig(req.body);
+    recordAuditEvent(req, {
+      eventType: 'ADMIN_SHIPPING_RATES_UPDATED',
+      severity: 'info',
+      targetType: 'settings',
+      targetId: 'shipping',
+      status: 'SUCCESS',
+      details: `Updated shipping rates (threshold=$${updated.freeShippingThreshold}, partners=${updated.partners
+        .map((p) => `${p.id}:$${p.fee}${p.enabled ? '' : '[off]'}`)
+        .join(', ')})`,
+    });
+    res.json({ success: true, data: updated });
   } catch (error) {
     next(error);
   }

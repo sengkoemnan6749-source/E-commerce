@@ -11,10 +11,12 @@ import {
   getDashboard,
   getOrders,
   getPromoCodes,
+  getShippingRates,
   updateCategory,
   updateOrderStatus,
   updateProduct,
   updatePromoCode,
+  updateShippingRates,
 } from '../controllers/adminController.js';
 import { requireAdmin, verifyFirebaseToken } from '../middleware/authMiddleware.js';
 import { requireAdminVault } from '../middleware/adminVaultMiddleware.js';
@@ -78,6 +80,8 @@ router.get('/promos', getPromoCodes);
 router.post('/promos', createPromoCode);
 router.patch('/promos/:code', updatePromoCode);
 router.delete('/promos/:code', deletePromoCode);
+router.get('/shipping-rates', getShippingRates);
+router.put('/shipping-rates', updateShippingRates);
 router.get('/audit-logs', getAuditLogs);
 router.get('/support-tickets', getAdminSupportTickets);
 router.patch('/support-tickets/:id', patchAdminSupportTicket);

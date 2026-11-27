@@ -29,9 +29,9 @@ function getSigningKey() {
 }
 
 /**
- * Builds a canonical SHA-256 digest of cart items and promo code to prevent cart/price tampering after QR creation.
+ * Builds a canonical SHA-256 digest of cart items, promo code, and shipping selection to prevent cart/price tampering after QR creation.
  */
-export function buildCartDigest(items = [], promoCode = null) {
+export function buildCartDigest(items = [], promoCode = null, deliveryPartner = null, shippingFee = null) {
   const normalized = (Array.isArray(items) ? items : [])
     .map((item) => ({
       id: String(item.id || item.productId || '').trim(),
@@ -43,6 +43,12 @@ export function buildCartDigest(items = [], promoCode = null) {
   const payload = JSON.stringify({
     items: normalized,
     promoCode: promoCode ? String(promoCode).trim().toUpperCase() : null,
+    ...(deliveryPartner != null || shippingFee != null
+      ? {
+          deliveryPartner: deliveryPartner ? String(deliveryPartner).trim() : null,
+          shippingFee: Number(Number(shippingFee || 0).toFixed(2)),
+        }
+      : {}),
   });
 
   return crypto.createHash('sha256').update(payload).digest('hex');

@@ -93,7 +93,7 @@ const CAMBODIA_PROVINCES_KM = {
   'Tbong Khmum': 'ត្បូងឃ្មុំ'
 };
 
-export default function ShippingForm({ formData, onChange, errors = {} }) {
+export default function ShippingForm({ formData, onChange, errors = {}, shippingPartners = null, freeShippingApplied = false }) {
   const { language } = useLanguage();
   const handleChange = (field, value) => {
     onChange({ ...formData, [field]: value });
@@ -216,7 +216,12 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
         </div>
 
         <div className="border border-slate-200/90 rounded-2xl divide-y divide-slate-100 overflow-hidden bg-white shadow-2xs">
-          {DELIVERY_PARTNERS.map((partner) => {
+          {(Array.isArray(shippingPartners) && shippingPartners.length > 0
+            ? shippingPartners.filter((p) => p.enabled !== false)
+            : DELIVERY_PARTNERS
+          ).map((partner) => {
+            const partnerFee = Number(partner.fee || 0);
+            const isFree = freeShippingApplied || partnerFee === 0;
             const isSelected = (formData.deliveryPartner || 'vireak_buntham') === partner.id;
             return (
               <label
@@ -249,9 +254,22 @@ export default function ShippingForm({ formData, onChange, errors = {} }) {
                   </div>
                 </div>
 
-                <span className="text-xs sm:text-sm font-bold text-slate-900 font-mono whitespace-nowrap shrink-0">
-                  ${partner.fee.toFixed(2)} USD
-                </span>
+                <div className="text-right shrink-0 whitespace-nowrap flex items-center gap-2">
+                  {freeShippingApplied && partnerFee > 0 && (
+                    <span className="text-[11px] text-slate-400 line-through font-mono">
+                      ${partnerFee.toFixed(2)}
+                    </span>
+                  )}
+                  {isFree ? (
+                    <span className="text-xs sm:text-sm font-bold text-emerald-600 uppercase">
+                      {language === 'km' ? 'ឥតគិតថ្លៃ' : 'FREE'}
+                    </span>
+                  ) : (
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 font-mono">
+                      ${partnerFee.toFixed(2)} USD
+                    </span>
+                  )}
+                </div>
               </label>
             );
           })}

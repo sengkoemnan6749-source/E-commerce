@@ -1,4 +1,17 @@
 import * as catalogService from '../services/catalogService.js';
+import { getShippingConfig } from '../services/shippingService.js';
+
+export async function getShippingRates(_req, res, next) {
+  try {
+    const config = await getShippingConfig();
+    res.json({
+      success: true,
+      data: config,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 export async function getCategories(_req, res, next) {
   try {

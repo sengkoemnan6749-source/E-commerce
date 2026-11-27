@@ -120,6 +120,8 @@ export const orderService = {
       payerAccountName: orderPayload.payerAccountName || null,
       transactionId: orderPayload.transactionId,
       courier: orderPayload.deliveryPartner,
+      carrierWebsite: orderPayload.carrierWebsite || '',
+      deliveryPartnerId: orderPayload.deliveryPartnerId || orderPayload.shippingAddress?.deliveryPartner || null,
       shippingAddress: {
         ...(orderPayload.shippingAddress || {}),
         fullName: orderPayload.customerName || orderPayload.shippingAddress?.fullName,

@@ -1,4 +1,5 @@
 import { api } from './api';
+import { shippingService } from './shippingService';
 
 export const adminService = {
   async getDashboard() {
@@ -72,6 +73,19 @@ export const adminService = {
 
   async deletePromo(code) {
     const res = await api.delete(`/admin/promos/${encodeURIComponent(code)}`);
+    return res?.data || null;
+  },
+
+  async getShippingRates() {
+    const res = await api.get('/admin/shipping-rates');
+    return res?.data || null;
+  },
+
+  async updateShippingRates(payload) {
+    const res = await api.put('/admin/shipping-rates', payload);
+    if (res?.data) {
+      shippingService.saveCachedShippingConfig(res.data);
+    }
     return res?.data || null;
   },
 

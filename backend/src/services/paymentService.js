@@ -454,7 +454,8 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
   }
 
   const promoCode = payload.promoCode || payload.appliedCoupon || null;
-  const quote = await computeServerOrderQuote(firestore, payload.items, promoCode);
+  const deliveryPartner = String(payload.deliveryPartner || payload.deliveryPartnerId || '').trim() || null;
+  const quote = await computeServerOrderQuote(firestore, payload.items, promoCode, null, deliveryPartner);
   if (quote.total <= 0) {
     throw new AppError(
       'Order total is $0.00 after promo discount; KHQR payment is not required',
@@ -465,6 +466,8 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
   const expectedTotalUsd = quote.total;
   const cartDigest = quote.cartDigest;
   const appliedPromoCode = quote.appliedCoupon;
+  const deliveryPartnerId = quote.deliveryPartnerId;
+  const shippingFee = quote.shippingFee;
   const normalizedAmount =
     currency === 'KHR' ? Math.max(1, Math.round(quote.total * 4100)) : quote.total;
 
@@ -565,6 +568,8 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
     expectedTotalUsd,
     cartDigest,
     promoCode: appliedPromoCode,
+    deliveryPartner: deliveryPartnerId,
+    shippingFee,
     khqrString,
     status: 'PENDING',
     mode: config.token
@@ -595,6 +600,8 @@ export async function initiateKhqrPayment(payload = {}, user = null) {
     merchantName: config.merchantName,
     amount: record.amount,
     expectedTotalUsd,
+    shippingFee,
+    deliveryPartner: deliveryPartnerId,
     currency,
     status: 'PENDING',
     expiresAt,

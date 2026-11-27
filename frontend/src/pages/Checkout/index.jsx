@@ -9,6 +9,7 @@ import OrderSummary from '../../components/checkout/OrderSummary';
 import Button from '../../components/common/Button';
 import { orderService } from '../../services/orderService';
 import { paymentService } from '../../services/paymentService';
+import { shippingService } from '../../services/shippingService';
 import { validatePhone, validateEmail } from '../../utils/validation';
 
 function buildInitialShippingData(user) {
@@ -25,13 +26,14 @@ function buildInitialShippingData(user) {
     city: defaultAddr?.city || '',
     province: defaultAddr?.province || 'Phnom Penh',
     postalCode: defaultAddr?.postalCode || '',
+    deliveryPartner: 'vireak_buntham',
     saveAddress: false,
   };
 }
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { items, subtotal, shippingFee, discountAmount, total, appliedCoupon, clearCart } = useCart();
+  const { items, subtotal, discountAmount, appliedCoupon, clearCart } = useCart();
   const { user, addAddress } = useAuth();
   const { addToast } = useToast();
   const { language } = useLanguage();
@@ -59,6 +61,43 @@ export default function Checkout() {
   // Step 1: Shipping Form State (prefill only from real saved user profile/address)
   const [shippingData, setShippingData] = useState(() => buildInitialShippingData(user));
   const [shippingErrors, setShippingErrors] = useState({});
+  const [shippingConfig, setShippingConfig] = useState(() => shippingService.getCachedShippingConfig());
+
+  useEffect(() => {
+    let active = true;
+    shippingService.fetchShippingConfig().then((cfg) => {
+      if (active && cfg) setShippingConfig(cfg);
+    });
+    const onShippingUpdate = (e) => {
+      if (e?.detail) setShippingConfig(e.detail);
+    };
+    window.addEventListener('techtonic:shipping-updated', onShippingUpdate);
+    return () => {
+      active = false;
+      window.removeEventListener('techtonic:shipping-updated', onShippingUpdate);
+    };
+  }, []);
+
+  const enabledPartners = (shippingConfig?.partners || []).filter((p) => p.enabled !== false);
+  const {
+    partner: activePartner,
+    shippingFee: activeShippingFee,
+    freeShippingApplied,
+  } = shippingService.calculateShippingFee(shippingConfig, shippingData.deliveryPartner, subtotal);
+
+  const checkoutTotal =
+    Math.round(
+      Math.max(0, Number(subtotal || 0) + Number(activeShippingFee || 0) - Number(discountAmount || 0)) * 100
+    ) / 100;
+
+  useEffect(() => {
+    if (activePartner?.id && shippingData.deliveryPartner !== activePartner.id) {
+      const currentlyEnabled = enabledPartners.some((p) => p.id === shippingData.deliveryPartner);
+      if (!currentlyEnabled) {
+        setShippingData((prev) => ({ ...prev, deliveryPartner: activePartner.id }));
+      }
+    }
+  }, [activePartner?.id, enabledPartners, shippingData.deliveryPartner]);
 
   // Sync shipping data when user profile loads or account switches
   useEffect(() => {
@@ -174,7 +213,7 @@ export default function Checkout() {
 
     try {
       let paymentResult;
-      if (Number(total || 0) <= 0) {
+      if (Number(checkoutTotal || 0) <= 0) {
         paymentResult = {
           success: true,
           status: 'PAID',
@@ -186,29 +225,29 @@ export default function Checkout() {
       } else {
         const sessionTarget = khqrSessionRef.current?.md5Hash || khqrSessionRef.current?.transactionId;
         paymentResult = await paymentService.verifyKHQRPayment(sessionTarget, {
-          amount: total,
+          amount: checkoutTotal,
           mode: 'manual',
         });
       }
 
-      const partnerId = shippingData.deliveryPartner || 'vireak_buntham';
+      const partnerId = activePartner?.id || shippingData.deliveryPartner || 'vireak_buntham';
       const carrierInfo = partnerId === 'vireak_buntham'
         ? {
-            partnerName: 'Vireak Buntham Express (VET)',
-            partnerWebsite: 'https://vireakbuntham.com/',
+            partnerName: activePartner?.name || 'Vireak Buntham Express (VET)',
+            partnerWebsite: activePartner?.website || 'https://vireakbuntham.com/',
             trackingNumber: `VET-KH-${Math.floor(100000 + Math.random() * 900000)}`,
             estimatedDelivery: 'Within 24-48 Hours (Vireak Buntham Express)'
           }
         : partnerId === 'jt_express'
         ? {
-            partnerName: 'J&T Express Cambodia',
-            partnerWebsite: 'https://www.jtexpresskh.com/',
+            partnerName: activePartner?.name || 'J&T Express Cambodia',
+            partnerWebsite: activePartner?.website || 'https://www.jtexpresskh.com/',
             trackingNumber: `JTH${Math.floor(10000000 + Math.random() * 90000000)}`,
             estimatedDelivery: 'Within 24-36 Hours (J&T Express Door-to-Door)'
           }
         : {
-            partnerName: 'GrabExpress Cambodia',
-            partnerWebsite: 'https://www.grab.com/kh/express/',
+            partnerName: activePartner?.name || 'GrabExpress Cambodia',
+            partnerWebsite: activePartner?.website || 'https://www.grab.com/kh/express/',
             trackingNumber: `GRAB-PP-${Math.floor(1000 + Math.random() * 9000)}`,
             estimatedDelivery: 'Today by 5:30 PM (GrabExpress Phnom Penh)'
           };
@@ -219,18 +258,22 @@ export default function Checkout() {
         customerName: shippingData.fullName || user?.fullName || user?.name || 'Customer',
         customerPhone: shippingData.phone || user?.phone || '',
         customerEmail: user?.email || 'customer@techtonic.store',
-        shippingAddress: shippingData,
+        shippingAddress: {
+          ...shippingData,
+          deliveryPartner: partnerId,
+        },
+        deliveryPartnerId: partnerId,
         deliveryPartner: carrierInfo.partnerName,
         carrierWebsite: carrierInfo.partnerWebsite,
         trackingNumber: carrierInfo.trackingNumber,
         items: items,
         subtotal: subtotal,
-        shippingFee: shippingFee,
+        shippingFee: activeShippingFee,
         discountAmount: discountAmount,
-        total: total,
+        total: checkoutTotal,
         appliedCoupon: appliedCoupon?.code || null,
         paymentMethod:
-          Number(total || 0) <= 0
+          Number(checkoutTotal || 0) <= 0
             ? 'Promo / Free Checkout ($0.00)'
             : paymentResult?.currency === 'KHR'
             ? 'KHQR Bakong (KHR)'
@@ -364,6 +407,8 @@ export default function Checkout() {
                 formData={shippingData}
                 onChange={setShippingData}
                 errors={shippingErrors}
+                shippingPartners={enabledPartners}
+                freeShippingApplied={freeShippingApplied}
               />
 
               <div className="pt-8 mt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
@@ -399,9 +444,10 @@ export default function Checkout() {
                 <PaymentMethod selectedMethod="khqr" onSelectMethod={() => {}} />
 
                 <KHQRPayment
-                  totalAmount={total}
+                  totalAmount={checkoutTotal}
                   cartItems={items}
                   promoCode={appliedCoupon?.code || null}
+                  deliveryPartner={activePartner?.id || shippingData.deliveryPartner || 'vireak_buntham'}
                   customerInfo={{ name: shippingData.fullName, phone: shippingData.phone }}
                   onSessionChange={(s) => {
                     khqrSessionRef.current = s;
@@ -421,7 +467,7 @@ export default function Checkout() {
                   <span>{language === 'km' ? 'ត្រឡប់ទៅការដឹកជញ្ជូន' : 'Back to Shipping'}</span>
                 </button>
 
-                {Number(total || 0) <= 0 && (
+                {Number(checkoutTotal || 0) <= 0 && (
                   <Button
                     variant="primary"
                     size="lg"
@@ -443,9 +489,9 @@ export default function Checkout() {
           <OrderSummary
             items={items}
             subtotal={subtotal}
-            shippingFee={shippingFee}
+            shippingFee={activeShippingFee}
             discountAmount={discountAmount}
-            total={total}
+            total={checkoutTotal}
             appliedCoupon={appliedCoupon}
           />
         </div>

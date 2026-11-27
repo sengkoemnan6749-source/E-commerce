@@ -10,7 +10,7 @@ export const paymentService = {
   /**
    * Generates a KHQR payment session via backend + https://khqr-aba-autoverify.vercel.app/api/generate-khqr
    */
-  async initiateKHQRPayment(amount, currency = 'USD', { items = null, promoCode = null } = {}) {
+  async initiateKHQRPayment(amount, currency = 'USD', { items = null, promoCode = null, deliveryPartner = null } = {}) {
     const normalizedCurrency = String(currency || 'USD').toUpperCase() === 'KHR' ? 'KHR' : 'USD';
     const normalizedAmount =
       normalizedCurrency === 'KHR' ? Math.max(1, Math.round(Number(amount || 0))) : Number(Number(amount || 0).toFixed(2));
@@ -22,6 +22,7 @@ export const paymentService = {
         currency: normalizedCurrency,
         ...(Array.isArray(items) && items.length > 0 ? { items } : {}),
         ...(promoCode ? { promoCode } : {}),
+        ...(deliveryPartner ? { deliveryPartner } : {}),
       });
       if (res?.data) {
         backendSession = res.data;

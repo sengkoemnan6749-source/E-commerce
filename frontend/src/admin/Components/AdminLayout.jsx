@@ -16,7 +16,8 @@ import {
   ShieldAlert,
   Lock,
   MessageSquare,
-  Tag
+  Tag,
+  Truck
 } from 'lucide-react';
 import { productService } from '../../services/productService';
 import { adminService } from '../../services/adminService';
@@ -139,6 +140,12 @@ function AdminLayoutShell() {
       to: `${adminBase}/promos`,
       label: language === 'km' ? 'ប្រូម៉ូសិន' : 'Promo Codes',
       icon: Tag,
+      count: null
+    },
+    {
+      to: `${adminBase}/shipping`,
+      label: language === 'km' ? 'ថ្លៃដឹកជញ្ជូន' : 'Shipping Fees',
+      icon: Truck,
       count: null
     },
     {

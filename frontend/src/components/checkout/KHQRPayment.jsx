@@ -33,6 +33,7 @@ export default function KHQRPayment({
   totalAmount = 0,
   cartItems = null,
   promoCode = null,
+  deliveryPartner = 'vireak_buntham',
   customerInfo = null,
   onPaymentSuccess,
   onSessionChange,
@@ -55,6 +56,7 @@ export default function KHQRPayment({
   const addToastRef = useRef(addToast);
   const cartItemsRef = useRef(cartItems);
   const promoCodeRef = useRef(promoCode);
+  const deliveryPartnerRef = useRef(deliveryPartner);
   const settledOnceRef = useRef(false);
 
   useEffect(() => {
@@ -64,13 +66,15 @@ export default function KHQRPayment({
     addToastRef.current = addToast;
     cartItemsRef.current = cartItems;
     promoCodeRef.current = promoCode;
-  }, [onSessionChange, onPaymentSuccess, language, addToast, cartItems, promoCode]);
+    deliveryPartnerRef.current = deliveryPartner;
+  }, [onSessionChange, onPaymentSuccess, language, addToast, cartItems, promoCode, deliveryPartner]);
 
   const cartSignature = JSON.stringify({
     items: Array.isArray(cartItems)
       ? cartItems.map((i) => ({ id: i.id, qty: i.quantity, variant: i.variant || null }))
       : null,
     promoCode: promoCode || null,
+    deliveryPartner: deliveryPartner || 'vireak_buntham',
   });
 
   const isExpired = Boolean(session && secondsLeft <= 0 && !paidConfirmed);
@@ -124,6 +128,7 @@ export default function KHQRPayment({
       const data = await paymentService.initiateKHQRPayment(requestAmount, currency, {
         items: cartItemsRef.current,
         promoCode: promoCodeRef.current,
+        deliveryPartner: deliveryPartnerRef.current,
       });
       setSession(data);
       onSessionChangeRef.current?.(data);

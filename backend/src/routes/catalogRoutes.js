@@ -5,6 +5,7 @@ import {
   getProductById,
   getProductReviews,
   getProducts,
+  getShippingRates,
   markReviewHelpful,
 } from '../controllers/catalogController.js';
 import { verifyFirebaseToken } from '../middleware/authMiddleware.js';
@@ -27,6 +28,7 @@ const reviewHelpfulLimiter = createRateLimiter({
 });
 
 router.get('/categories', getCategories);
+router.get('/shipping-rates', getShippingRates);
 router.get('/products', getProducts);
 router.get('/products/:id', getProductById);
 router.get('/products/:id/reviews', getProductReviews);

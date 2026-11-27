@@ -3,6 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../config/firebase.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { calculateDiscountForPromo } from './promoService.js';
+import { getShippingConfig, resolveShippingFee } from './shippingService.js';
 import { sendOrderConfirmationEmail } from './emailService.js';
 import {
   buildCartDigest,
@@ -117,7 +118,13 @@ export function normalizeOrderItems(rawItems) {
 /**
  * Authoritatively computes product subtotal, promo discount, shipping, total, and canonical cart digest inside Firestore or an active transaction.
  */
-export async function computeServerOrderQuote(firestore, rawItems, rawPromoCode = null, tx = null) {
+export async function computeServerOrderQuote(
+  firestore,
+  rawItems,
+  rawPromoCode = null,
+  tx = null,
+  rawDeliveryPartner = null
+) {
   const normalizedItems = normalizeOrderItems(rawItems);
   const promoCode = String(rawPromoCode || '').trim().toUpperCase();
 
@@ -130,9 +137,10 @@ export async function computeServerOrderQuote(firestore, rawItems, rawPromoCode 
   const productRefs = uniqueIds.map((id) => firestore.collection('products').doc(id));
   const readDoc = (ref) => (tx ? tx.get(ref) : ref.get());
 
-  const [productSnaps, promoSnap] = await Promise.all([
+  const [productSnaps, promoSnap, shippingConfig] = await Promise.all([
     Promise.all(productRefs.map(readDoc)),
     promoCode ? readDoc(firestore.collection('promoCodes').doc(promoCode)) : Promise.resolve(null),
+    getShippingConfig(firestore, tx),
   ]);
 
   const productMap = new Map();
@@ -196,9 +204,11 @@ export async function computeServerOrderQuote(firestore, rawItems, rawPromoCode 
     appliedCoupon = promoCode;
   }
 
-  const shippingFee = 0;
+  const shippingResolution = resolveShippingFee(shippingConfig, rawDeliveryPartner, subtotal);
+  const shippingFee = shippingResolution.shippingFee;
+  const deliveryPartner = shippingResolution.partner;
   const total = roundCurrency(Math.max(0, subtotal + shippingFee - discountAmount));
-  const cartDigest = buildCartDigest(normalizedItems, appliedCoupon);
+  const cartDigest = buildCartDigest(normalizedItems, appliedCoupon, deliveryPartner.id, shippingFee);
 
   return {
     normalizedItems,
@@ -207,6 +217,10 @@ export async function computeServerOrderQuote(firestore, rawItems, rawPromoCode 
     orderItems,
     subtotal,
     shippingFee,
+    deliveryPartnerId: deliveryPartner.id,
+    deliveryPartnerName: deliveryPartner.name,
+    deliveryPartnerWebsite: deliveryPartner.website || '',
+    freeShippingApplied: shippingResolution.freeShippingApplied,
     discountAmount,
     appliedCoupon,
     total,
@@ -236,6 +250,8 @@ export async function createOrder(payload = {}, user = null, req = null) {
   const promoCode = String(payload.promoCode || payload.appliedCoupon || '')
     .trim()
     .toUpperCase();
+  const requestedDeliveryPartner =
+    String(payload.deliveryPartnerId || payload.shippingAddress?.deliveryPartner || '').trim() || null;
   const submittedTxId = String(payload.transactionId || '').trim();
 
   const orderId = generateOrderId();
@@ -244,13 +260,13 @@ export async function createOrder(payload = {}, user = null, req = null) {
   let createdOrder;
   try {
     createdOrder = await firestore.runTransaction(async (tx) => {
-      // 1. Perform ALL transaction reads up front (products, promo, and payment session)
+      // 1. Perform ALL transaction reads up front (products, promo, shipping config, and payment session)
       const payRef = submittedTxId.startsWith('KHQR-')
         ? firestore.collection('payments').doc(submittedTxId)
         : null;
 
       const [quote, paySnap] = await Promise.all([
-        computeServerOrderQuote(firestore, payload.items, promoCode, tx),
+        computeServerOrderQuote(firestore, payload.items, promoCode, tx, requestedDeliveryPartner),
         payRef ? tx.get(payRef) : Promise.resolve(null),
       ]);
 
@@ -446,6 +462,7 @@ export async function createOrder(payload = {}, user = null, req = null) {
         },
         subtotal,
         shippingFee,
+        deliveryPartnerId: quote.deliveryPartnerId,
         discount: discountAmount,
         discountAmount,
         total,
@@ -456,12 +473,13 @@ export async function createOrder(payload = {}, user = null, req = null) {
         },
         shippingAddress: {
           ...shippingAddress,
+          deliveryPartner: quote.deliveryPartnerId,
           email: customerEmail,
         },
         items: orderItems,
         tracking: {
-          courier: String(payload.courier || 'GrabExpress Dispatch'),
-          courierWebsite: '',
+          courier: String(payload.courier || quote.deliveryPartnerName || 'Vireak Buntham Express (VET)'),
+          courierWebsite: String(payload.carrierWebsite || quote.deliveryPartnerWebsite || ''),
           trackingCode: `TT-${orderId.slice(-8)}`,
           estimatedDelivery: 'Today by 5:30 PM',
           driverName: 'Pending Driver Assignment',
