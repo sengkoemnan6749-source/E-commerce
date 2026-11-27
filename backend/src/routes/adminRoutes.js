@@ -13,6 +13,7 @@ import {
   getPromoCodes,
   getShippingRates,
   updateCategory,
+  updateCustomerRole,
   updateOrderStatus,
   updateProduct,
   updatePromoCode,
@@ -76,6 +77,7 @@ router.get('/orders', getOrders);
 router.patch('/orders/:id/status', updateOrderStatus);
 
 router.get('/customers', getCustomers);
+router.patch('/customers/:id/role', updateCustomerRole);
 router.get('/promos', getPromoCodes);
 router.post('/promos', createPromoCode);
 router.patch('/promos/:code', updatePromoCode);

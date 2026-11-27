@@ -1,5 +1,5 @@
 import { FieldValue } from 'firebase-admin/firestore';
-import { db } from '../config/firebase.js';
+import { auth, db } from '../config/firebase.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { mapStatusToStepIndex } from './orderService.js';
 import { sendOrderStatusEmail } from './emailService.js';
@@ -638,33 +638,131 @@ export async function updateOrderStatus(orderId, payload = {}) {
   return updatedOrder;
 }
 
+function getEnvAdminEmails() {
+  return String(process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 /**
- * Lists all customers for Admin CRM view.
+ * Lists all registered users (customers & admins) for Admin Directory / Role Management.
  */
 export async function listAllCustomers(query = {}) {
   const firestore = ensureDb();
+  const envAdmins = getEnvAdminEmails();
   const snapshot = await firestore.collection('users').get();
-  let customers = snapshot.docs
-    .map((doc) => ({ id: doc.id, ...doc.data() }))
-    .filter((u) => u.role !== 'admin');
+  let users = snapshot.docs.map((doc) => {
+    const data = doc.data() || {};
+    const emailLower = String(data.email || '').trim().toLowerCase();
+    const isPrimaryAdmin = Boolean(emailLower && envAdmins.includes(emailLower));
+    const role = isPrimaryAdmin || data.role === 'admin' ? 'admin' : 'customer';
+    return {
+      id: doc.id,
+      ...data,
+      role,
+      isPrimaryAdmin,
+    };
+  });
 
-  const { search, status } = query;
+  const { search, status, role: roleFilter } = query;
+
+  if (roleFilter && String(roleFilter).toLowerCase() !== 'all') {
+    const targetRole = String(roleFilter).trim().toLowerCase();
+    users = users.filter((u) => u.role === targetRole);
+  }
 
   if (status && String(status).toLowerCase() !== 'all') {
     const target = String(status).trim().toLowerCase();
-    customers = customers.filter((c) => String(c.status || 'Active').toLowerCase() === target);
+    users = users.filter((c) => String(c.status || 'Active').toLowerCase() === target);
   }
 
   if (search && String(search).trim()) {
     const q = String(search).trim().toLowerCase();
-    customers = customers.filter((c) =>
+    users = users.filter((c) =>
       [c.name, c.fullName, c.email, c.phone]
         .filter(Boolean)
         .some((f) => String(f).toLowerCase().includes(q))
     );
   }
 
-  customers.sort((a, b) => Number(b.totalSpent ?? 0) - Number(a.totalSpent ?? 0));
-  return customers;
+  users.sort((a, b) => {
+    if (a.role !== b.role) return a.role === 'admin' ? -1 : 1;
+    return Number(b.totalSpent ?? 0) - Number(a.totalSpent ?? 0);
+  });
+  return users;
+}
+
+/**
+ * Promotes or demotes a registered user between 'admin' and 'customer' roles in Firestore and Firebase Auth claims.
+ */
+export async function updateUserRole(targetUserId, payload = {}, actorUser = null) {
+  const firestore = ensureDb();
+  const cleanId = String(targetUserId || '').trim();
+  const nextRole = String(payload?.role || '').trim().toLowerCase();
+
+  if (!cleanId) {
+    throw new AppError('User ID is required', 400, 'VALIDATION_ERROR');
+  }
+  if (nextRole !== 'admin' && nextRole !== 'customer') {
+    throw new AppError('Role must be admin or customer', 400, 'VALIDATION_ERROR');
+  }
+
+  const userRef = firestore.collection('users').doc(cleanId);
+  const snap = await userRef.get();
+  if (!snap.exists) {
+    throw new AppError('User account not found', 404, 'USER_NOT_FOUND');
+  }
+
+  const existing = snap.data() || {};
+  const emailLower = String(existing.email || '').trim().toLowerCase();
+  const envAdmins = getEnvAdminEmails();
+  const isPrimaryAdmin = Boolean(emailLower && envAdmins.includes(emailLower));
+  const previousRole = isPrimaryAdmin || existing.role === 'admin' ? 'admin' : 'customer';
+
+  if (actorUser?.uid && actorUser.uid === cleanId && nextRole !== 'admin') {
+    throw new AppError('You cannot remove your own admin role.', 400, 'SELF_DEMOTION_BLOCKED');
+  }
+
+  if (isPrimaryAdmin && nextRole !== 'admin') {
+    throw new AppError('Primary environment admin cannot be demoted.', 400, 'PRIMARY_ADMIN_PROTECTED');
+  }
+
+  const nowIso = new Date().toISOString();
+  await userRef.set(
+    {
+      role: nextRole,
+      roleUpdatedAt: nowIso,
+      roleUpdatedBy: actorUser?.email || actorUser?.uid || null,
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  if (auth) {
+    try {
+      const fbUser = await auth.getUser(cleanId);
+      const nextClaims = {
+        ...(fbUser.customClaims || {}),
+        role: nextRole,
+        admin: nextRole === 'admin',
+      };
+      await auth.setCustomUserClaims(cleanId, nextClaims);
+      if (nextRole !== 'admin') {
+        await auth.revokeRefreshTokens(cleanId);
+      }
+    } catch {
+      // Firestore role remains authoritative via authMiddleware lookup even if UID is non-Firebase
+    }
+  }
+
+  const refreshed = await userRef.get();
+  return {
+    id: refreshed.id,
+    ...refreshed.data(),
+    previousRole,
+    role: nextRole,
+    isPrimaryAdmin,
+  };
 }
 

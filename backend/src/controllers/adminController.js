@@ -159,6 +159,26 @@ export async function getCustomers(req, res, next) {
   }
 }
 
+export async function updateCustomerRole(req, res, next) {
+  try {
+    const updated = await adminService.updateUserRole(req.params.id, req.body, req.user);
+    recordAuditEvent(req, {
+      eventType: 'ADMIN_USER_ROLE_UPDATED',
+      severity: 'warning',
+      targetType: 'user',
+      targetId: updated.id,
+      status: 'SUCCESS',
+      details: `Changed role for "${updated.email || updated.id}" from ${updated.previousRole} to ${updated.role}`,
+    });
+    res.json({
+      success: true,
+      data: updated,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getAuditLogs(req, res, next) {
   try {
     const result = await listAuditLogs(req.query);

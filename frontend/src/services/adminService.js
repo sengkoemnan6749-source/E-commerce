@@ -56,6 +56,11 @@ export const adminService = {
     return Array.isArray(res?.data) ? res.data : [];
   },
 
+  async updateCustomerRole(userId, role) {
+    const res = await api.patch(`/admin/customers/${encodeURIComponent(userId)}/role`, { role });
+    return res?.data || null;
+  },
+
   async getPromos() {
     const res = await api.get('/admin/promos');
     return Array.isArray(res?.data) ? res.data : [];
